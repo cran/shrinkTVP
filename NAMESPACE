@@ -2,6 +2,7 @@
 
 S3method(plot,mcmc.tvp)
 S3method(plot,shrinkTVP_res)
+S3method(print,shrinkTVP_res)
 S3method(print,summary.shrinkTVP_res)
 S3method(summary,shrinkTVP_res)
 export(shrinkTVP)

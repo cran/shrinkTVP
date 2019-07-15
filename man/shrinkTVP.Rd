@@ -61,8 +61,6 @@ supplied:
 \item \code{c0}: The default value is 2.5.
 \item \code{g0}: The default value is 5.
 \item \code{G0}: The default value is 5 / (2.5 - 1).
-\item \code{cp}: The default value is 1.
-\item \code{np}: The default value is 20.
 \item \code{e1}: The default value is 0.001.
 \item \code{e2}: The default value is 0.001.
 \item \code{d1}: The default value is 0.001.
@@ -153,12 +151,12 @@ parameter for the stochastic volatility model on the errors. Not returned if \co
 \item{\code{LPDS}}{\emph{(optional)} value of the log predictive density score, calculated with \code{y_test} and \code{x_test}.}
 To display the output, use \code{plot} and \code{summary}. The \code{summary} method displays the specified prior values stored in
 \code{priorvals} and the posterior summaries stored in \code{summaries}, while the \code{plot} method calls \code{coda}'s \code{plot.mcmc}
-or the \code{plot.mcmc.tvp} method. Furthermore, all functions that can be appplied to \code{coda::mcmc} objects
+or the \code{plot.mcmc.tvp} method. Furthermore, all functions that can be applied to \code{coda::mcmc} objects
 (e.g. \code{coda::acfplot}) can be applied to all output elements that are \code{coda} compatible.
 }
 \description{
 \code{shrinkTVP} samples from the joint posterior distribution of the parameters of a time-varying
-parameter model with shrinkage, potentially including stochastiv volatility (SV), and returns the MCMC draws.
+parameter model with shrinkage, potentially including stochastic volatility (SV), and returns the MCMC draws.
 }
 \details{
 For details concerning the algorithm please refer to the paper by Bitto and Frühwirth-Schnatter (2019).
@@ -196,7 +194,7 @@ res <- shrinkTVP(y ~ x1 + x2, data = data,
 
 ## Example 4, changing some of the default hyperparameters
 res <- shrinkTVP(y ~ x1 + x2, data = data,
-                hyperprior_param = list(cp = 5,
+                hyperprior_param = list(b_xi = 5,
                                         nu_xi = 10))
 }
 

@@ -1,3 +1,21 @@
+
+#' Nicer printing of shrinkTVP_res objects
+#'
+#' @param x A \code{shrinkTVP_res} object
+#' @param ... Currently ignored.
+#'
+#' @return Called for its side effects and returns invisibly.
+#' @export
+print.shrinkTVP_res <- function(x, ...){
+  cat(paste0("Object containing a fitted TVP model ", ifelse(attr(x, "sv"), "with stochastic volatility ", ""), "with:\n",
+      " - ", formatC(length(attr(x, "colnames")), width = 7), " covariates\n",
+      " - ", formatC(length(x$model$y), width = 7), " timepoints\n",
+      " - ", formatC(attr(x, "niter"), width = 7), " MCMC draws\n",
+      " - ", formatC(attr(x, "nburn"), width = 7), " burn-n\n",
+      " - ", formatC(attr(x, "nthin"), width = 7), " thinning"))
+  invisible(x)
+}
+
 #' @export
 summary.shrinkTVP_res <- function(object, digits = 3, showprior = TRUE, ...) {
 
@@ -192,12 +210,16 @@ plot.mcmc.tvp <- function(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), ...){
   # Plot
   do.call(plot, args)
 
+  # Add horizontal line at 0
+  abline(h = 0, lty = 2, col = "grey")
+
   # Plot all quantiles as red dashed lines
   for (i in rownames(quants)){
     if (i != "50%"){
       lines(quants[i, ], lty = 2, col = "red")
     }
   }
+
 }
 
 #' Graphical summary of posterior distribution
