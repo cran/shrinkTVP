@@ -24,7 +24,7 @@ double log_ratio_value_marginalBFS(int d, double proposal, double old_val, doubl
     if(par1B < 50 and par2B < 50){
       besselKvalue_partB(j) = std::log(R::bessel_k(par2B, par1B, true)) - par2B;
     }else{
-      besselKvalue_partA(j) = unur_bessel_k_nuasympt(par2B, par1B, true, false);
+      besselKvalue_partB(j) = unur_bessel_k_nuasympt(par2B, par1B, true, false);
     }
 
   }

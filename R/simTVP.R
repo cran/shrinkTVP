@@ -119,10 +119,7 @@ simTVP <- function(N = 200, d = 3, sv = FALSE, sigma2 = 1, theta, beta_mean){
     Q <- diag(theta)
   }
 
-  cholQ <- suppressWarnings(chol(Q, pivot = TRUE))
-  pivot <- attr(cholQ, "pivot")
-  oo <- order(pivot)
-  cholQ <- t(Q[, oo])
+  cholQ <- sqrt(Q)
 
   beta <- matrix(NA, d, N)
   beta_init <- beta_mean + cholQ %*% rnorm(d)

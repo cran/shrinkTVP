@@ -1,0 +1,1191 @@
+%\VignetteIndexEntry{Shrinkage in the Time-Varying Parameter Model Framework Using the R Package shrinkTVP}
+%\VignetteEngine{R.rsp::tex}
+
+\documentclass[article, nojss]{jss}
+
+%% -- LaTeX packages and custom commands ---------------------------------------
+
+%% recommended packages
+\usepackage{caption}
+\usepackage{thumbpdf,lmodern}
+\usepackage{framed}
+\usepackage{bm}
+\usepackage{natbib}
+\usepackage{color}
+\usepackage[plain,noend]{algorithm2e}
+\usepackage{graphicx}
+\usepackage{amsmath,amssymb}
+\usepackage[utf8]{inputenc}
+\usepackage{multirow}
+\usepackage{booktabs}
+\usepackage{framed}
+%\usepackage{lipsum}
+
+\usepackage[usenames,dvipsnames]{xcolor}
+%\newcommand{\comment}[1]{\textcolor{Green}{#1}}  % changes by Sylvia
+\newcommand{\comment}[1]{#1}  % changes by Sylvia
+\newcommand{\commentred}[1]{\textcolor{Green}{#1}}  % changes by Sylvia
+%% changes in the notation by Sylvia
+
+\newcommand{\QQ}{\comment{\mathbf{Q}}} % Sylvia
+%\renewcommand{\QQ}{Q} % AAP
+\newcommand{\aphi}{\comment{a_\phi}} % Sylvia
+%\newcommand{\aphi}{a_0^{sv}}  % AAP
+\newcommand{\bphi}{\comment{b_\phi}} % Sylvia
+%\newcommand{\aphi}{b_0^{sv}}  % AAP
+\newcommand{\Bsv}{\comment{B_\sigma}} % Sylvia
+%\newcommand{\Bsv}{B_\sigma^{sv} % AAP
+\newcommand{\OOmega}{\comment{\Omegav}} % Sylvia
+%\newcommand{\OOmega}{\Omega} % AAP
+\newcommand{\SSigma}{\comment{\Sigmam}} % Sylvia
+%\newcommand{\SSigma}{\Sigma} % AAP
+ %% new commands by Sylvia
+\newcommand{\bct}[2]{\comment{\beta_{{#1}{#2}}}} % j first, t second
+\newcommand{\bvt}{\comment{\tilde{\betav}}}
+\newcommand{\xv}{\comment{\bm x}}
+\newcommand{\cv}{\comment{\bm c}}
+\newcommand{\imm}[1]{^{\comment{(#1)}}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\atauprold}{\lambda^{[a^{\tau}]}}  % ANGELA
+\newcommand{\axiprold}{\lambda^{[a^{\xi}]}}    % ANGELA
+\newcommand{\ataupr}{b^{\tau}}  % Sylvia
+\newcommand{\axipr}{b^{\xi}}    % Sylvia
+\newcommand{\gammav}{\boldsymbol{\gamma}}
+
+\newcommand{\e}{\mbox{\rm e}}
+\newcommand{\dimy}{r}                     % dimension of y_t
+\newcommand{\tr}{{\tiny \mbox{\rm tr}}}
+\newcommand{\ytr}{\ym^{\tr}}
+\newcommand{\LPSo}[1]{\LPS^{\star}_{#1}}
+
+\newcommand{\weg}[1]{}
+\newcommand{\dx}{\,\mathrm{d}x}
+\newcommand{\V}{\mathrm{V}}
+\newcommand{\B}{\mathrm{B}}
+\newcommand{\Exp}{\mathcal{E}}
+\newcommand{\Cm}{{\mathbf C}}
+\newcommand{\Bm}{{\mathbf B}}
+\newcommand{\Am}{{\mathbf A}}
+\newcommand{\Dm}{{\mathbf D}}
+\newcommand{\cm}{{\mathbf c}}
+\newcommand{\Fm}{{\mathbf F}}
+\newcommand{\ystar}{y^\star}
+\renewcommand{\arraystretch}{1.2}
+\renewcommand{\vfill}{\vspace*{\fill}}
+\newcommand{\nb}{\small}
+\newcommand{\spc}{\phantom{$-$}}
+% general parameters
+\newcommand{\rvYm}{\mathbf{Y}}
+\newcommand{\EVfs}{\mathrm{EV}}
+\newcommand{\Gamfun}[1]{\Gamma (#1)}
+\newcommand{\kfRc}{  R}  % symbol for the cov of the obs noise
+\newcommand{\kfR}{{\mathbf \kfRc}}  % symbol for the cov of the obs noise
+\newcommand{\pitrue}{\pi ^{\rm true}}
+\newcommand{\thc}{\vartheta} %notation used to summarize  univariate unknown model parameters
+\newcommand{\thmod}{{\mathbf{\boldsymbol{\thc}}}} %notation used to summarize  multivaraite   unknown vector
+\newcommand{\thetav}{{\mathbf{\boldsymbol{\theta}}}} %notation used to summarize  multivaraite   unknown vector
+%%%% Specific new commands for this paper
+\newcommand{\iid}{\mbox{\rm i.i.d.}}
+\newcommand{\bfz}{{\mathbf{0}}}
+\newcommand{\ypro}{u}
+\newcommand{\ypros}{y^{\star}}
+\newcommand{\yprov}{\ym^{u}}
+\newcommand{\yprodiff}{z}
+\newcommand{\yprodiffv}{\mathbf{\yprodiff}}
+\newcommand{\tm}{\mathbf{t}}
+\newcommand{\errordiff}{\varepsilon}
+\newcommand{\errordiffv}{\boldsymbol{\varepsilon}}
+\newcommand{\psiv}{\boldsymbol{\psi}}
+\newcommand{\tauv}{\boldsymbol{\tau}}
+\newcommand{\xiv}{\boldsymbol{\xi}}
+\newcommand{\Omegav}{\boldsymbol \Omega}
+\newcommand{\sigmaerr}{R}
+\newcommand{\alphad}{r} %sdimension of regression coefficient
+\newcommand{\scale}{\omega} % scaling factor for variance heterogeneity
+%\newcommand{\scalev}{{\mathbf{\scale}}}% fettdruck geht nicht
+\newcommand{\scalev}{\boldsymbol{\scale}}
+\newcommand{\im}[1]{^{(#1)}}
+\newcommand{\labset}{L}
+\newcommand{\Rv}{\mathbf{R}} % all mixture indicators
+\newcommand{\Pm}{\mathbf{P}}
+\newcommand{\Qm}{\mathbf{Q}}
+\newcommand{\Sm}{\mathbf{S}}
+\newcommand{\mv}{\mathbf{m}}
+\newcommand{\sa}{Q}
+\newcommand{\ev}{\mathbf{e}}
+\newcommand{\z}{\phantom{0}}
+\newcommand{\zz}{\phantom{00}}
+\newcommand{\zzz}{\phantom{000}}
+\newcommand{\Probsym}{\mbox{\rm Pr}}
+
+\newcommand{\betac}{\beta} %symbol for regression parameter
+\newcommand{\betad}{d} %sdimension of regression coefficient
+\newcommand{\betar}{\boldsymbol{\betac}} % vector of regression coefficients
+\newcommand{\betav}{\betar} % vector of regression coefficients - notation used in some chapter
+\newcommand{\betai}[1]{\indiv{\betav}_{#1}} %notation for a subject specific parameter
+\newcommand{\betavi}{\indiv{\betav}} %notation for a subject specific parameter
+\newcommand{\betavitilde}{\indiv{\tilde{\betav}}}
+\newcommand{\betainoncen}{b}
+\newcommand{\zetai}[1]{\indiv{\betainoncen}_{#1}} %notation for a subject specific parameter
+\newcommand{\zetaitilde}[1]{\indiv{\tilde{\betainoncen}}_{#1}} %notation for a subject specific parameter
+\newcommand{\zetavi}[1]{\indiv{\mathbf{\betainoncen}}_{#1}} %notation for a subject specific parameter
+\newcommand{\zetavitilde}[1]{\indiv{\tilde{\mathbf{\betainoncen}}}_{#1}} %notation for a subject specific parameter
+\newcommand{\Psim}{\boldsymbol{\Psi}}
+\newcommand{\Xbeta}{{  \mathbf \Xz}}
+\newcommand{\Xz}{x}% symbol used for the row in a regressor matrix.
+% \newcommand{\Normal}[1]{ \mathcal{N}\left(#1\right)}
+\newcommand{\Normult}[2]{ \mathcal{N} _{#1}\left(#2\right)}
+\newcommand{\Mulnom}[1]{\mbox{\rm MulNom}\left(#1\right)}
+\newcommand{\bs}{b} %mean of prior and posterior of mu
+\newcommand{\Bs}{B} %variance- prior and posterior of variance
+\newcommand{\br}{{\mathbf{\bs}}} %mean of prior and posterior of beta
+\newcommand{\Br}{{\mathbf{\Bs}}} %variance-covariance of prior and posterior of beta (independence prior)
+\newcommand{\yc}{y}
+\newcommand{\ydens}{\yc}  % argument of a univariate rv in a density
+\newcommand{\ym}{{\mathbf \yc}} % y multivariate observation
+\newcommand{\yv}{\ym}
+\newcommand{\constant}{\mbox{\rm constant}}
+\newcommand{\pdf}[3]{f_{ {\footnotesize #1}}(#2;#3)}
+\newcommand{\Normalpdfa}[2]{\pdf{\mathcal{N}}{#1}{#2}}
+\newcommand{\Normal}[1]{ \mathcal{N}\left(#1\right)}
+\newcommand{\NoGo}[1]{ \mathcal{NG}\left(#1\right)}
+\newcommand{\Normalpdf}{\varphi}
+\newcommand{\Gammad}[1]{ \mathcal{G}\left(#1\right)}
+\newcommand{\IGammad}[1]{ \mathcal{IG}\left(#1\right)}
+\newcommand{\GIG}[3]{ \mathcal{GIG}\left(#1,#2,#3\right)}
+\newcommand{\Lap}[3]{ Lap\left(#1,#2\right)}
+\newcommand{\InvGau}[2]{ \mathcal{InvGau}\left(#1,#2\right)}
+\newcommand{\xm}{\mathbf{x}} % vector of regression coefficients
+
+\newcommand{\LPS}{{\mbox{\rm LPDS}}}
+
+\newcommand{\Fd}[1]{\mbox{\rm F}\left(#1\right)}
+\newcommand{\Td}[2]{\mbox{\rm T}_{#1}\left(#2\right)}
+\newcommand{\indic}[1]{I\{#1\}}
+\newcommand{\trans}[1]{#1 ^{'}} % transposed sign in linear algebra
+% \newcommand{\Exp}[1]{\mathcal{E}\left(#1\right)}
+\newcommand{\EV}{\mathcal{EV}}
+\newcommand{\KS}{\mathcal{KS}}
+\newcommand{\Kv}{{\mathbf  K}}
+\newcommand{\Logistic}{\mathcal{LO}}
+\newcommand{\GenLogistic}{\mathcal{LG}}
+\newcommand{\Real}{\Re}
+\newcommand{\Betadis}[1]{\mathcal{B}\left(#1\right)}
+\newcommand{\Betafun}[1]{B (#1)}
+\newcommand{\new}{^\mathrm{new}}
+\newcommand{\old}{^\mathrm{old}}
+\newcommand{\minusindex}[1]{ - #1 }
+\newcommand{\Chi}{\chi^2}
+\newcommand{\Chisqu}[1]{\chi^2 _{#1}}
+\newcommand{\Xbetar}{\Xbeta^r} % design matrix for the random effects - vector
+\newcommand{\Xbetaf}{\Xbeta^f} % design matrix for the fixed effects - vector
+\newcommand{\alphaf}{\alpha} % notation for fixed effects
+\newcommand{\alphav}{\boldsymbol{\alphaf}} % vector of regression coefficients
+\newcommand{\Sigmam}{\boldsymbol{\Sigma}} % vector of regression coefficients
+\newcommand{\omegav}{\boldsymbol{\omega}} % vector of regression coefficients
+\newcommand{\Edis}[1]{\mbox{\rm E}\left(#1\right)} % Expectation of a rv in displaymode
+\newcommand{\Bincoef}[2]{\left( \begin{array}{c}   #1 \\#2 \end{array}\right)}
+\newcommand{\indivsymb}{s}
+\newcommand{\indiv}[1]{ #1 ^{\indivsymb}} %notation for a subject specific parameter
+\newcommand{\kfwc}{ w}
+\newcommand{\kfw}{{\mathbf{\kfwc}}}  % symbol for the state noise
+\newcommand{\wt}[1]{\kfw_{#1}}
+\newcommand{\Qrcm}{{\mathbf{\kfQ}}} % covariance in random effects model
+\newcommand{\mum}{\boldsymbol{\mu}} % multivariate mean of a normal distribtuion-
+\newcommand{\Cholrcm}{{\mathbf{C}}} % group mean  in mixture model
+\newcommand{\kfQc}{ Q }  % symbol for the cov of the state noise
+\newcommand{\kfQ}{{\mathbf{\kfQc}}}  % symbol for the cov of the state noise
+\newcommand{\Xbetamat}{{  \mathbf X}}
+\newcommand{\Xbetarmat}{\Xbetamat^r} % design matrix for the random effects - matrix
+\newcommand{\Xbetafmat}{\Xbetamat^f} % design matrix for the fixed effects - matrix
+\newcommand{\error}{\varepsilon} % symbol for error
+\newcommand{\errorv}{\boldsymbol{\error}}
+\newcommand{\Ferror}{F_{\error}}
+\newcommand{\ferror}{f_{\error}}
+\newcommand{\Vrcm}{{\mathbf{V}}} % error variance in the marginal model
+\newcommand{\Diag}[1]{\mbox{\rm Diag}\left(#1\right)}
+\newcommand{\dimmat}[2]{(#1\times #2)} % Dimension of a matrix
+\newcommand{\Bino}[1]{\mbox{\rm BiNom}\left(#1\right)}
+\newcommand{\zs}{z}% symbol used for explanatory variable
+\newcommand{\zv}{\mathbf{\zs}}% symbol used for explanatory variable
+\newcommand{\betaci}[1]{\indiv{\betac}_{#1}} %notation for a subject specific parameter
+\newcommand{\Gammainv}[1]{\mathcal{G}^{-1} \left(#1\right)}
+
+
+\newcommand{\Uniform}[1]{\mathcal{U}\left[#1\right]}
+\newcommand{\Ew}[1]{\mbox{\rm E}(#1)}   % Expectation of a rv
+\newcommand{\Vw}[1]{\mbox{\rm V}(#1)}   % Expectation of a rv
+\newcommand{\pl}{\pi}  %notation used for the probabilities in a logit model
+\newcommand{\plv}{{\mathbf{\boldsymbol{\pl}}}}  %notation used for the probabilities in a logit model
+\newcommand{\plt}[1]{\pl_{#1}} %probability with index for a binary model
+\newcommand{\plsw}[2]{\pl_{#1,#2}} %swithcing probability, single component; first index:class, second
+\newcommand{\identm}{{\mathbf I}}
+\newcommand{\identy}[1]{{\identm}_{#1}}
+\newcommand{\kfW}{{\mathbf{W}}}  % symbol for the weight matrix
+\newcommand{\dm}{{\mathbf{d}}}  % symbol for the weight matrix
+\newcommand{\minusmcmc}[1]{_{\minusindex{#1}}} % exclude MCMC
+\newcommand{\Studmult}[2]{t _{#1}\left(#2\right)}
+\newcommand{\rv}{{\mathbf{r}}}
+
+\newcommand{\Lihood}[2]{L \left(#1 |#2 \right) }
+\newcommand{\expND}[0]{-\frac{1}{2} \sum_{i=1}^{n}\left(\xm_{i} - \mu \right)' \rho \left(\xm_{i} - \mu   \right)}
+\newcommand{\expNDtwo}[0]{         \sum_{i=1}^{n}\left(\xm_{i} - \mu \right)' \rho \left(\xm_{i} - \mu    \right)}
+\newcommand{\expNDtwominusrho}[0]{ \sum_{i=1}^{n}\left(\xm_{i} - \mu \right)' \left(\xm_{i} - \mu         \right)}
+\newcommand{\expNDthree}[0]{\sum_{i=1}^{n}\left(\xm_{i} - \bar \xm \right)' \rho \left(\xm_{i} - \bar \xm \right)}
+\newcommand{\expNDfour}[0]{\sum_{i=1}^{n}\left(\xm_{i} - \bar \xm \right)'  \left(\xm_{i} - \bar \xm      \right)}
+
+%% new custom commands
+\newcommand{\class}[1]{`\code{#1}'}
+\newcommand{\fct}[1]{\code{#1()}}
+\newtheorem{alg}{Algorithm}
+
+%% -- Article metainformation (author, title, ...) -----------------------------
+
+%% - \author{} with primary affiliation
+%% - \Plainauthor{} without affiliations
+%% - Separate authors by \And or \AND (in \author) or by comma (in \Plainauthor).
+%% - \AND starts a new line, \And does not.
+\Plainauthor{Angela Bitto-Nemling, Annalisa Cadonna, Sylvia Fr\"uhwirth-Schnatter, Peter Knaus}
+
+\author{Angela Bitto-Nemling
+\And Annalisa Cadonna\\WU Vienna
+\And Sylvia Fr\"uhwirth-Schnatter\\WU Vienna
+\AND Peter Knaus\\WU Vienna}
+
+%% - \title{} in title case
+%% - \Plaintitle{} without LaTeX markup (if any)
+%% - \Shorttitle{} with LaTeX markup (if any), used as running title
+\title{Shrinkage in the Time-Varying Parameter Model Framework Using the \proglang{R} Package \pkg{shrinkTVP}}
+\Plaintitle{Shrinkage in the Time-Varying Parameter Model Framework Using the R Package shrinkTVP}
+\Shorttitle{Shrinkage for TVP Models Using \pkg{shrinkTVP}}
+
+
+%% - \Abstract{} almost as usual
+%\Abstract{
+%The  \proglang{R} package \pkg{shrinkTVP}
+%provides a fully Bayesian implementation of time-varying parameters (TVP) models with shrinkage priors both on the variances and the initial values means, with the aim to automatically reduce time-varying parameters to static ones, and shrink the static parameters to zero. The package employs a Markov chain Monte
+%Carlo (MCMC) sampler to obtain draws from the posterior
+%distribution of the parameters and provides summary and plot methods to extract the main information from the posterior draws. The package can straightforwardly utilized by a beginner R user, while allowing fine tuning to more experienced partitioner.
+%The goal of this paper is present the functionalities of \pkg{shrinkTVP}. in addition, it provides an brief introduction to TVP models and variance shrinkage, and a few working examples.
+%}
+\Abstract{
+Time-varying parameter (TVP) models are widely used in time series analysis to
+flexibly deal with processes which gradually change over time. However, the risk of
+overfitting in TVP models is well known. This issue can be dealt with using appropriate
+global-local shrinkage priors, which pull time-varying parameters towards static ones. In this paper, we introduce the  \proglang{R} package \pkg{shrinkTVP} \citep{kna-etal:shr},  which
+provides a fully Bayesian implementation of shrinkage priors for TVP models, taking advantage of recent developments in the literature, in particular that of \cite{bit-fru:ach}.
+The package \pkg{shrinkTVP}  allows for posterior simulation of the parameters through an efficient Markov Chain Monte Carlo (MCMC)
+scheme. Moreover, summary and visualization methods, as well as the possibility of assessing predictive performance through log predictive density scores (LPDSs), are provided.
+The computationally intensive tasks have been implemented in \proglang{C++} and interfaced with \proglang{R}.  The paper includes a brief overview
+of the models and shrinkage priors implemented in the package. Furthermore, core functionalities are illustrated, both with simulated and real data.
+}
+
+
+
+
+%% - \Keywords{} with LaTeX markup, at least one required
+%% - \Plainkeywords{} without LaTeX markup (if necessary)
+%% - Should be comma-separated and in sentence case.
+%% - \Keywords{} with LaTeX markup, at least one required
+%% - \Plainkeywords{} without LaTeX markup (if necessary)
+%% - Should be comma-separated and in sentence case.
+\Keywords{Bayesian inference, Gibbs sampler, Markov chain Monte Carlo (MCMC),
+ normal-gamma prior,  time-varying parameter (TVP) models, log predictive density scores}
+
+%% - \Address{} of at least one author
+%% - May contain multiple affiliations for each author
+%%   (in extra lines, separated by \emph{and}\\).
+%% - May contain multiple authors for the same affiliation
+%%   (in the same first line, separated by comma).
+
+%% - \Address{} of at least one author
+%% - May contain multiple affiliations for each author
+%%   (in extra lines, separated by \emph{and}\\).
+%% - May contain multiple authors for the same affiliation
+%%   (in the same first line, separated by comma).
+\Address{
+Peter Knaus\\
+Institute for Statistics and Mathematics\\
+Department of Finance, Accounting and Statistics\\
+WU Vienna University of Economics and Business\\
+Welthandelsplatz 1, Building D4, Entrance A, 4th Floor\\
+1020 Vienna, Austria\\
+E-mail: \email{peter.knaus@wu.ac.at}
+URL: \url{https://www.wu.ac.at/statmath/faculty-staff/faculty/peter-knaus}
+}
+
+
+
+
+
+\begin{document}
+%% -- Introduction -------------------------------------------------------------
+
+%% - In principle "as usual".
+%% - But should typically have some discussion of both _software_ and _methods_.
+%% - Use \proglang{}, \pkg{}, and \code{} markup throughout the manuscript.
+%% - If such markup is in (sub)section titles, a plain text version has to be
+%%   added as well.
+%% - All software mentioned should be properly \cite-d.
+%% - All abbreviations should be introduced.
+%% - Unless the expansions of abbreviations are proper names (like "Journal
+%%   of Statistical Software" above) they should be in sentence case (like
+%%   "generalized linear models" below).
+
+\section[Introduction]{Introduction} \label{sec:intro}
+
+ %\textcolor{green}{(To discuss: abstract submitted by me (Angela) in december or different version -if yes, why? McCausland details and LPDS. Algorithm details; To Do for ABN: check bib references; are we consistent with notation especially hyperparameters etc in the documentation and formulas;  )
+ %}.
+
+Time-varying parameter (TVP) models are
+widely used in time series analysis, because of their flexibility and ability to capture gradual changes in the model \comment{parameters} %variables
+over time. The popularity of TVP models in macroeconomics and finance is based on the fact that, in most applications, the influence of certain predictors on the outcome variables varies over time \citep{pri:tim, dan-hal:pre, bel-etal:hie_tv}. TVP models, while capable of reproducing salient features of the data in a very effective way, present a concrete risk of overfitting, as often only a small subset of the parameters are time-varying. Hence, in the last decade, there has been a growing need for models and methods able to discriminate between time-varying and static parameters in TVP models.
+A key contribution in this direction was the introduction of the non-centered parameterization of TVP models in  \cite{fru-wag:sto}, which recasts the problem of variance selection and shrinkage in terms of variable selection, thus allowing any tool used to this end in multiple regression models to be used to perform selection or shrinkage of variances.
+\cite{fru-wag:sto} employ a spike and slab prior, while continuous shrinkage priors have been utilised as a regularization alternative in, e.g., \cite{bel-etal:hie_tv} and
+\cite{bit-fru:ach}. For an excellent review of shrinkage priors, with a particular focus on high dimensional regression, the reader is directed to  \cite{bha-etal:las}.
+
+In this paper, we describe the \pkg{shrinkTVP} package \citep{kna-etal:shr} for Bayesian TVP models with shrinkage. The package is available under the general public license (GPL $\geq$ 2) from the Comprehensive R
+Archive Network (CRAN) at \url{https://cran.r-project.org/web/packages/shrinkTVP}.
+The package efficiently implements recent developments in the Bayesian literature, in particular the ones
+presented in \cite{bit-fru:ach}. The  computationally intensive algorithms in the package are written in \proglang{C++} and interfaced with \proglang{R} \citep{R}  via the \pkg{Rcpp} \citep{edd-bal:ext} and the \pkg{RcppArmadillo} \citep{edd-san:acc} packages.
+This approach combines the ease-of-use of R and its underlying functional programming paradigm with the computational speed of \proglang{C++}.
+The goal is to provide an easy entry point for fitting TVP models with shrinkage priors, while also giving more experienced users the option to adapt the model to their needs. This is achieved by providing a robust baseline model that can be estimated by only passing the data, while also allowing the user to specify more advanced options. Coupled with intuitive summary and plot methods, this leads to a package that is both easy to use while remaining highly flexible.
+
+\pkg{shrinkTVP} is, to our knowledge, the only \proglang{R} package that combines TVP models with shrinkage priors.
+In the TVP models context, the most popular \proglang{R} package is \pkg{dlm} \citep{pet:anr}, which provides routines for maximum likelihood \comment{estimation}, Kalman filtering and smoothing, and Bayesian analysis for dynamic linear models (DLMs), of which TVP models are a subset.
+\comment{The package \pkg{bsts}  \citep{sco:bst} performs  Bayesian analysis for the closely related class of  structural time series models.} Moreover, a number of \proglang{R} packages providing regularization and shrinkage methods are available.  For example, \pkg{shrink} \citep{dun-etal:shr} implements various shrinkage methods for linear, generalized linear, or Cox regressions, \pkg{biglasso} \citep{zen:big} aims at very fast lasso-type models for high-dimensional linear regression and \pkg{glmnet} \citep{sim-etal:reg} provides efficient procedures for implementing elastic-net regularization for a variety of models. With regards to Bayesian shrinkage, the normal-beta prime shrinkage prior is implemented in the package \pkg{NormalBetaPrime} \citep{bai:nor} and the popular horseshoe prior in the package \pkg{horseshoe} \citep{pas:hor}. Both of these packages focus on high-dimensional regression models, and do not provide shrinkage for TVP models.
+
+The remainder of the paper is organized as follows.
+Section \ref{sec:model} briefly introduces TVP \comment{models} and the normal-gamma shrinkage priors, and describes the Markov Chain Monte Carlo (MCMC) algorithm for posterior simulation. The package \pkg{shrinkTVP} is introduced in Section \ref{sec:pkgshrinkTVP}. In particular, we illustrate how to run the MCMC sampler using the main function \code{shrinkTVP}, how to choose a specific model, and how to conduct posterior inference using the return object of \code{shrinkTVP}. Section \ref{sec:LPDS} explains how to assess the performance of the model by calculating log predictive density scores (LPDSs), and how to use LPDSs to compare the predictive performances of different priors. This is illustrated using the \code{usmacro.update} data set from the \pkg{bvarsv} \citep{kru:bva} package. Finally, Section \ref{sec:conclusions} concludes the paper.
+
+
+\section{Model specification and estimation } \label{sec:model}
+
+\subsection{TVP models}
+%In particular, we focus on the non-centered parametrization of state space models, which  recasts the variance selection problem as a variable selection problem \citep{fru-wag:sto}.
+Let us recall the state space form of a TVP model. For $t = 1, \ldots, T$, we have that
+\begin{equation}
+\label{eq:centeredpar}
+\begin{aligned}
+&y_{t} =   \bm x_t \bm {\beta_{t}}  +  \epsilon_{t} , \qquad
+\epsilon_{t} \sim \mathcal N (0,\sigma^2_t), \\
+& \bm {\beta}_{t} =  \bm {\beta}_{t-1} + \bm w_{t}, \qquad   \bm w_{t}  \sim \mathcal N_d (0, \QQ),
+\end{aligned}
+\end{equation}
+where $y_t$ is a univariate response variable and $\bm x_t = (x_{t 1}, x_{t 2}, \ldots, x_{t  d})$ is a $d$-dimensional row vector containing the regressors at time $t$, with $x_{t 1}$ corresponding to the intercept.
+For simplicity, we assume here that $\QQ = \text{Diag}(\theta_1, \ldots, \theta_d)$ \comment{is a diagonal matrix}, implying that the state innovations are conditionally independent.
+Moreover, we assume the initial value follows a normal distribution, i.e. $\bm \beta_{0} \sim \mathcal N_d (\bm \beta, \QQ)$\comment{, with initial mean
+$\bm \beta = (\beta_1, \ldots, \beta_d)$}.
+Model (\ref{eq:centeredpar}) can be rewritten equivalently in the non-centered parametrization as
+\begin{equation}
+\label{eq:noncenteredpar}
+\begin{aligned}
+&y_t= \bm x_t \bm \beta +   \bm x_t \text{Diag}(\sqrt{\theta}_1, \ldots, \sqrt{\theta}_d)
+\tilde{\bm \beta}_{t} +  \epsilon_t, \quad  \epsilon_t \sim \mathcal N (0,\sigma^2_t),\\
+&\tilde{\bm \beta}_{t} =\tilde {\bm \beta}_{t-1} + \tilde{\bm u}_{t}, \qquad \tilde{\bm u}_{t} \sim  \mathcal N_d (0, I_d),
+\end{aligned}
+\end{equation}
+with $ \tilde{\bm \beta}_{0} \sim \mathcal{N}_d (\bm 0, I_d)$, where $I_d$ is the $d$-dimensional identity matrix.
+
+\pkg{shrinkTVP} is capable of modelling the observation error both homoscedastically, i.e. $\sigma^2_t \equiv \sigma^2$ for all $t = 1, \ldots, T$ and heteroscedastically, via a stochastic volatility \comment{(SV)}  specification. In the latter case, the log-volatility $h_t = \log \sigma^2_t$ follows an AR(1) model \citep{jac-etal:bayJBES,kas-fru:anc, kas:dea}. More specifically,
+\begin{eqnarray}
+	\label{eq:svht}
+	h_t | h_{t-1}, \mu, \phi, \sigma_\eta^2 \sim \mathcal{N} \left(\mu +\phi ( h_{t-1}-\mu),\sigma^2_\eta \right),
+\end{eqnarray}
+with initial state $h_0 \sim \mathcal N \left(\mu, \sigma_\eta^2/(1-\phi^2) \right)$.
+The stochastic volatility model on the errors can prevent the detection of spurious variations in the TVP coefficients \citep{nak:tim, sim:com} by capturing some of the variability in the error term.
+
+
+\subsection{Prior Specification} \label{sec:priors}
+
+\subsubsection{Shrinkage priors on variances and model parameters}
+
+We place conditionally independent normal-gamma priors \citep{gri-bro:inf} both on the standard deviations of the innovations, that is the $\sqrt{\theta_j}$'s,
+and on the means of the initial value $\beta_j$, for $j = 1, \ldots, d$. Note that, in the case of the standard deviations,
+this can equivalently be seen as a double gamma prior on the innovation variances $\theta_j$, for $j = 1, \ldots, d$.
+This prior can be represented as a conditionally normal distribution, with the component specific variance following a gamma distribution, that is
+\begin{eqnarray} \label{eq:normal}
+\sqrt{\theta}_j|\xi^{2}_j  \sim \Normal{0,\xi_j^{2}}, \qquad \xi_j^2|a^\xi,\kappa^2  \sim  \Gammad{a^\xi,\frac{a^\xi \kappa^2}{2}}, \\
+\beta_{j}|\tau^2_j \sim  \Normal{0,\tau^2_j}, \qquad \tau_j^2|a^\tau ,\lambda^2 \sim  \Gammad{a^\tau,\frac{a^\tau \lambda^2}{2}}.
+\end{eqnarray}
+The   \comment{prior variances} % component specific parameters
+$\xi^{2}_j$ and $\tau^2_j$ are referred to as \emph{local shrinkage parameters}, in that they control the strength with which each individual parameter \comment{$\sqrt{\theta}_j$ and $\beta_j$} is pulled \comment{toward} zero. The parameters $\kappa^2$ and $\lambda^2$ are dubbed \emph{global shrinkage parameters}, as they determine how strongly \emph{all} parameters are pulled to zero. \comment{Since $\Ew{\theta_j|a^\xi,\kappa^2}=2/\kappa^2$ and $\Ew{\beta^2_{j}|a^\tau ,\lambda^2}=2/\lambda^2$, the}  %. The
+ larger  $\kappa^2$ and $\lambda^2$, the stronger  \comment{this effect}. % the effteco.
+Finally, we refer to $a^\xi$ and $a^\tau$ as \emph{shrinkage adaption parameters}. As $a^\xi$ and $a^\tau$ decrease, marginally more mass is placed around zero and jointly more mass is put on sparse specifications of the model. In particular, setting the local adaption parameters, $a^\xi$ and $a^\tau$, equal to one results in a Bayesian Lasso \citep{par-cas:bay} prior on the \comment{$\sqrt\theta_j$'s} and the \comment{$\beta_j$'s}, respectively.
+
+The parameters $\kappa^2$, $\lambda^2$, $a^\xi$, $a^\tau$ can be learned from the data through appropriate prior distributions.
+As priors for the global shrinkage parameters, we use
+\begin{align} \label{eq:equNG03}
+	\kappa^2 \sim \mathcal G (d_1, d_2), \qquad \lambda^2 \sim \mathcal G (e_1, e_2).
+\end{align}
+Moreover, in order to learn the shrinkage adaption parameters, we generalize the approach taken in \cite{bit-fru:ach} and place the following gamma distributions as priors:
+\begin{align} \label{eq:equNG02}
+a^\xi\sim \mathcal G(\nu^\xi, \nu^\xi b^\xi), \qquad
+a^\tau \sim \mathcal G(\nu^\tau, \nu^\tau b^\tau),
+\end{align}
+which corresponds to the exponential prior used in \cite{bit-fru:ach} when $\nu^\xi=1$ and $\nu^\tau=1$. The parameters $\nu^\xi$ and $\nu^\tau$ act as degrees of freedom and allow the prior to be bounded away from zero.
+
+
+
+
+\subsubsection{Prior on the volatility parameter}
+
+
+In the homoscedastic case we employ a hierarchical prior, \comment{where the scale of an inverse gamma prior  for $\sigma^2$ follows a gamma distribution}, that is,
+\begin{eqnarray} \label{eq:priorsigma}
+	\sigma^2|C_0 \sim \Gammainv{c_0,C_0}, \qquad  C_0 \sim \Gammad{g_0,G_0},
+\end{eqnarray}
+with hyperparameters $c_0$, $g_0$, and $G_0$.
+
+In the case of stochastic volatility, the priors on the parameters $\mu$, $\phi$ and $\sigma^2_\eta$ in Equation~\eqref{eq:svht} are chosen as in \citet{kas-fru:anc}, that is
+\begin{eqnarray} \label{eq:volpriors}
+	\mu  \sim \mathcal{N}( b_\mu, B_\mu ), \quad \dfrac{\phi +1 }{2} \sim \mathcal{B}(\aphi, \bphi), \quad  \sigma^2_\eta \sim \mathcal{G}(1/2, 1/2 \Bsv ),
+\end{eqnarray}
+\comment{with hyperparameters $b_\mu, B_\mu, \aphi, \bphi,$ and $\Bsv$.}
+
+\subsection{MCMC sampling algorithm}
+
+\label{sec:MCMC}
+The package \pkg{shrinkTVP} implements an MCMC Gibbs sampling algorithm with Metropolis-Hasting steps to obtain draws from the posterior distribution of the model parameters.
+Here, we roughly sketch the sampling algorithm and refer the interested reader to \cite{bit-fru:ach} for further details.
+
+\begin{alg} \label{facsvalg}
+Gibbs Sampling Algorithm
+ \begin{enumerate}
+\item Sample the latent states $\tilde \betav =( \tilde \betav_0, \ldots, \tilde \betav_T)$ in the non-centered parametrization from
+  a multivariate \comment{normal} %Gaussian
+  distribution;
+
+\item Sample jointly $\beta_1, \dots,\beta_d,$ and $\sqrt{\theta_1},\dots,\sqrt{\theta_d}$ in the non-centered parametrization from a multivariate \comment{normal} %Gaussian
+    distribution;
+
+\item Perform an ancillarity-sufficiency interweaving step and redraw $\beta_1, \dots,\beta_d$, each from a \comment{normal} %Gaussian
+ distribution
+and ${\theta_1},\dots,{\theta_d}$, each from a generalized inverse Gaussian distribution using \pkg{GIGrvg} \citep{hoe-ley:gig};
+
+\item
+
+\begin{enumerate}
+	\item Sample the variance shrinkage adaption parameter $ a^\xi$ using a random walk Metro\-polis-Hastings step;
+	\item Sample the parameter shrinkage adaption parameter $a^\tau$ using a random walk Metro\-polis-Hastings step;
+\end{enumerate}
+
+\item
+
+\begin{enumerate}
+\item Sample the local shrinkage parameters $\xi_j^2$, for $j = 1, \ldots, d$,  from conditionally independent  generalized inverse Gaussian distributions;
+
+\item  Sample the local shrinkage prameters $\tau_j^2$, for $j = 1, \ldots, d$,  from conditionally independent  generalized inverse Gaussian distributions;
+\end{enumerate}
+
+\item  Sample the error variance $\sigma^2$ from an inverse gamma distribution in the homoscedastic case or, in the SV case, sample the level $\mu$, the persistence $\phi$, % and
+    the volatility of the volatility $\sigma^2_{\eta}$ \comment{and the latent log-volatilities $\bm h= (h_0, \ldots, h_T)$} using \pkg{stochvol} \citep{kas:dea}.
+\end{enumerate}
+\end{alg}
+
+When fitting the  %hierarchical
+model \comment{under the full hierarchical shrinkage prior defined in Equations~\eqref{eq:normal}--\eqref{eq:equNG02}}, all steps in Algorithm~\ref{facsvalg} are performed, while steps 4(a), 4(b), 5(a) and 5(b) are skipped in certain prior setups.
+
+One key feature of the algorithm is the joint sampling of the time-varying parameters $\tilde{\bm \beta}_t$, for $t=0, \ldots, T$ in step 1 of Algorithm~\ref{facsvalg}. We employ the procedure described in
+\cite{mcc-etal:sim} which exploits the sparse, block tri-diagonal structure of the precision matrix of the full conditional distribution of
+ \comment{$\tilde \betav =( \tilde \betav_0, \ldots, \tilde \betav_T)$},  %$\tilde{\bm \beta}_t$, for $t=0, \ldots, T$,
+ to speed up computations.
+
+Moreover, as described in \cite{bit-fru:ach}, in step 3 we make use of the {\em ancillarity-sufficiency interweaving strategy} (ASIS) introduced by  \citet{yu-men:cen}. ASIS is well known to improve mixing by sampling certain parameters both in the centered and non-centered parameterization.
+This strategy has been successfully applied to univariate SV models \citep{kas-fru:anc}, multivariate factor SV models \citep{kas-etal:eff}  and  dynamic linear state space models \citep{sim-etal:int}.
+
+
+
+\section{The shrinkTVP package}
+\label{sec:pkgshrinkTVP}
+
+
+
+
+\subsection{Running the model}
+The core function of the package \pkg{shrinkTVP} is the function \code{shrinkTVP}, which serves as an R-wrapper for the actual sampler coded in \proglang{C++}. The function works out-of-the-box, meaning that estimation can be performed with minimal user input. With default settings, the TVP model in \comment{Equation}~\eqref{eq:centeredpar} is estimated in a Bayesian fashion with priors~\eqref{eq:normal} to~\eqref{eq:equNG02} and the following choice for the hyperparameters: $d_1 = d_2 = e_1 = e_2 = 0.001$, $\nu^\xi=\nu^\tau=5$ and $b^\xi=b^\tau=10$, \comment{implying a prior mean of  $\Ew{a^\xi}= \Ew{a^\tau}=0.1$}.
+The error is assumed to be homoscedastic, with prior defined in \comment{Equation}~\eqref{eq:priorsigma} and hyperparameters $c_0 = 2.5$, $g_0 = 5$, and $G_0 = g_0/(c_0 - 1)$.
+
+The only compulsory argument is an object of class \ ``formula'', which most users will be familiar with (see, for example, the use in the function \code{lm} in the package \pkg{stats} \citep{R}). The second argument is an optional data frame, containing the response variable and the covariates. Exemplary usage of this function is given in the code snippet below, along with the default output.
+All code was on run on a personal computer with an Intel i5-8350U CPU.
+
+\begin{CodeChunk}
+\begin{CodeInput}
+R> library(shrinkTVP)
+R>
+R> # Baseline model
+R> set.seed(123)
+R> sim <- simTVP(theta = c(0.2, 0, 0), beta_mean = c(1.5, -0.3, 0))
+R> data <- sim$data
+R> res <- shrinkTVP(y ~ x1 + x2, data = data)
+\end{CodeInput}
+\begin{CodeOutput}
+0%   10   20   30   40   50   60   70   80   90   100%
+[----|----|----|----|----|----|----|----|----|----|
+**************************************************|
+Timing (elapsed): 4.39 seconds.
+3417 iterations per second.
+
+Converting results to coda objects and summarizing draws... Done!
+\end{CodeOutput}
+\end{CodeChunk}
+
+Note that the data in the example is generated by the function \code{simTVP}, which can create synthetic datasets of varying sizes for illustrative purposes. The inputs \code{theta} and \code{beta} can be used to specify the true $\theta_1, \ldots, \theta_d$ and $\beta_1, \ldots, \beta_d$ used in the data generating process, in order to evaluate how well \code{shrinkTVP} recaptures these true values. The values correspond to the ones used in the synthetic example of \cite{bit-fru:ach}.
+
+The user can specify the following MCMC algorithm parameters:  \code{niter}, which determines the number of MCMC iterations including the burn-in,
+\code{nburn}, which equals the number of MCMC iterations discarded as burn-in, and
+\code{nthin}, indicating the thinning parameter, meaning that every nthin-th draw is kept and returned.
+The default values are \code{niter = 10000}, \code{nburn = round(niter/2)} and \code{nthin = 1}.
+
+The user is strongly encouraged to check convergence of the  produced Markov chain, especially for a large number of covariates. The output is made \pkg{coda} \citep{plu:cod} compatible, so that the user can utilize the tools provided by the excellent package \pkg{coda} to assess convergence.
+
+
+
+
+
+\subsection{Specifying the priors}  \label{sec3:priors}
+
+
+More granular control over the prior setup can be exercised by specifying all or a subset of the parameters. In addition to changing the hyperparameters given in Section~\ref{sec:priors}, the user can fix  \comment{one or both} %the
+values of the global shrinkage \comment{parameters} ($\kappa^2$, $\lambda^2$) and the shrinkage adaption parameters ($a^\tau$, $a^\xi$), instead of learning them from the data as done in the default setting. The benefit of this is twofold: on the one hand, desired degrees of sparsity and global shrinkage can be achieved through fixing the hyperparameters; on the other hand, interesting special cases arise from setting certain values of hyperparameters. For example, setting the local adaption parameters, $a^\xi$ and $a^\tau$, equal to one results in a Bayesian Lasso \citep{par-cas:bay} prior on the \comment{$\sqrt\theta_j$'s} and the \comment{$\beta_j$'s}, respectively. If the user desires a higher degree of sparsity, this can be achieved by setting the shrinkage adaption parameters to a value \comment{closer} to zero.  Table~\ref{tab:tablepriors} gives an overview of different model specifications. Note that separate prior choices can be made for the variances and the means of the initial values.
+
+
+\begin{table}[]
+	\centering
+	\begin{tabular}{@{}lllll@{}}
+	\toprule
+									& \multicolumn{2}{l}{Shrinkage on $\sqrt{\theta_j}$}                          & \multicolumn{2}{l}{Shrinkage on $\beta_j$}                           \\ \midrule
+									& $a^\xi$                               & $\kappa^2$              & $a^\tau$                                 & $\lambda^2$             \\ \cmidrule (r{4pt}){2-3} \cmidrule (l){4-5}
+	Full hierarchical  \comment{shrinkage prior} % model
+& $\mathcal{G}(\nu^\xi, \nu^\xi b^\xi)$ & $\mathcal{G}(d_1, d_2)$ & $\mathcal{G}(\nu^\tau, \nu^\tau b^\tau)$ & $\mathcal{G}(e_1, e_2)$ \\
+	Hierarchical normal-gamma prior & fixed                                 & $\mathcal{G}(d_1, d_2)$ & fixed                                    & $\mathcal{G}(e_1, e_2)$ \\
+	Normal-gamma prior              & fixed                                 & fixed                   & fixed                                    & fixed                   \\
+\comment{Bayesian Lasso} & \comment{fixed at 1} &  fixed   & \comment{fixed at 1} & fixed \\
+\bottomrule
+	\end{tabular}
+	\caption{Overview of different possible model specifications}
+	\label{tab:tablepriors}
+\end{table}
+
+In the following, we give some examples of models that can be estimated with the \pkg{shrinkTVP} package. In particular, we demonstrate how certain combinations of input arguments correspond to different model specifications. Note that in the following snippets of code, the argument \code{display_progress} is always set to \code{FALSE}, in order to suppress the progress bar and other outputs.
+
+\paragraph{Fixing the shrinkage adaption parameters}
+
+It is possible \comment{to set} %fix
+the shrinkage adaption parameter $a^\xi$($a^\tau$) \comment{to a fixed value} through the input argument \code{a_xi} (\code{a_tau}), after setting \code{learn_a_xi} (\code{learn_a_tau}) to \code{FALSE}. As an example, we show how to fit a hierarchical Bayesian Lasso, both on the $\sqrt{\theta_j}$ and on the $\beta_j$:
+\begin{CodeChunk}
+\begin{CodeInput}
+R> res_hierlasso <- shrinkTVP(y ~ x1 + x2, data = data,
++    learn_a_xi = FALSE,  learn_a_tau = FALSE,
++    a_xi = 1, a_tau = 1, display_progress = FALSE)
+\end{CodeInput}
+\end{CodeChunk}
+
+\paragraph{Fixing the global shrinkage parameters}
+The user can choose to fix the value of $\kappa^2$($\lambda^2$) by specifying the argument \code{kappa2} (\code{lambda2}), after setting \code{learn_k2} (\code{learn_lambda2}) to \code{FALSE}. In the code below, we give an example on how to fit a (non-hierarchical) Bayesian Lasso on both $\sqrt{\theta_j}$ and $\beta_j$, with corresponding global shrinkage parameters fixed both to $100$:
+\begin{CodeChunk}
+\begin{CodeInput}
+R> res_lasso <- shrinkTVP(y ~ x1 + x2, data = data,
++    learn_a_xi = FALSE, learn_a_tau = FALSE, a_xi = 1, a_tau = 1,
++    learn_kappa2 = FALSE, learn_lambda2 = FALSE, kappa2 = 100, lambda2 = 100,
++    display_progress = FALSE)
+\end{CodeInput}
+\end{CodeChunk}
+
+
+\subsection{Stochastic volatility specification}
+
+The stochastic volatility specification defined in Equation~\eqref{eq:svht} can be used by setting the option \code{sv} to \code{TRUE}. This is made possible by a call to the \code{update_sv} function exposed by the \pkg{stochvol} package.
+The code below fits a model in which all the parameters are learned and the observation equation errors are modeled through stochastic volatility:
+\begin{CodeChunk}
+\begin{CodeInput}
+R> res_sv <- shrinkTVP(y ~ x1 + x2, data = data, sv = TRUE,
++    display_progress = FALSE)
+\end{CodeInput}
+\end{CodeChunk}
+The priors on the SV parameters are the ones defined in Equation~\ref{eq:volpriors}, with hyperparameters fixed to
+$b_\mu = 0$ , $B_\mu = 1$, $\aphi = 5$, $\bphi = 1.5$ , and $\Bsv = 1$.
+
+\subsection{Specifying the hyperparameters}
+
+Beyond simply switching off parts of the hierarchical structure of the prior setup, users can also modify the hyperparameters governing the prior distributions. This can be done through the arguments \code{hyperprior_param} and \code{sv_param}, which both have to be named lists.
+
+In addition to user defined hyperparameters, unspecified parameters will be set to default values, as defined in Section~\ref{sec3:priors}.
+
+
+\begin{CodeChunk}
+\begin{CodeInput}
+R> res_hyp <- shrinkTVP(y ~ x1 + x2, data = data,
++    hyperprior_param = list(b_xi = 5, nu_xi = 10),
++    display_progress = FALSE)
+\end{CodeInput}
+\end{CodeChunk}
+
+
+\subsection{Posterior inference: Summarize and visualize the posterior distribution}
+
+The return value of \code{shrinkTVP} is an object of type \code{shrinkTVP_res}, which is a named list containing a variable number of elements, depending on the prior specification. For the default model, the values are:
+
+\begin{enumerate}
+	\itemsep0em
+	\item the parameter draws of $\sigma^2$  in \code{sigma2},
+	\item the parameter draws of $(\sqrt{\theta_1}, \dots, \sqrt{\theta_d})$ in \code{theta_sr},
+	\item the parameter draws of $\bm \beta = (\beta_1, \dots, \beta_d)$ in \code{beta_mean},
+	\item a list holding $d$ \code{mcmc.tvp} objects (one for each $\comment{\bm{\beta}_j=(\bct{j}{0}, \ldots, \bct{j}{T})}$)
+containing the parameter draws in \code{beta},
+	\item the parameter draws of $\xi_1^2,  \ldots,\xi_d^2,$ in \code{xi2},
+	\item  the parameter draws of $a^{\xi}$ in \code{a_xi},
+	\item  some acceptance statistics for the Metropolis Hastings step for $a^{\xi}$ in \code{a_xi_acceptance},
+	\item the parameter draws of $\tau_1^2, \ldots, \tau_d^2$ in \code{tau2},
+	\item  the parameter draws of $a^{\tau}$ in \code{a_tau},
+	\item some acceptance statistics for the Metropolis Hastings step for $a^{\tau}$ in \code{a_tau_acceptance},
+	\item  the parameter draws for $\kappa^2$ in \code{kappa2},
+	\item  the parameter draws for $\lambda^2$ in \code{lambda2},
+	\item  the parameter draws of $C_0$ in \code{C0},
+	\item the prior hyperparameters in \code{priorvals},
+	\item the design matrix and the response in \code{model}, %\footcomment{ad 15:Data matrix?}
+ and
+	\item summary statistics for the parameter draws in \code{summaries}.
+\end{enumerate}
+When some parameters are fixed by the user, the corresponding output value is omitted. %\footcomment{Do the fixed parameters become part of  the priorvals?}
+In the SV case, the draws for the parameters of the SV model on the errors are contained in \code{sv_mu}, \code{sv_phi} and \code{sv_sigma}.  For details, see \cite{kas:dea}.
+
+The two main tools for summarizing the output of \code{shrinkTVP} are the \code{summary} and \code{plot} methods implemented for \code{shrinkTVP_res} objects. \code{summary} has two arguments beyond the mandatory \code{shrinkTVP_res} object itself, namely \code{digits} and \code{showprior}, which control the output displayed. \code{digits} indicates the number of decimal places to round the posterior summary statistics to, while \code{showprior} determines whether or not to show the prior distributions resulting from the user input. In the example below, the default \code{digits} value of 3 is used, while the prior specification is omitted. The output of \code{summary} consists of the mean, standard deviation, median, 95\% \comment{highest} posterior density region and effective sample size (ESS) for the non time-varying parameters.
+
+
+\begin{CodeChunk}
+\begin{CodeInput}
+R> summary(res, showprior = FALSE)
+\end{CodeInput}
+\begin{CodeOutput}
+Summary of 5000 MCMC draws after burn-in of 5000.
+
+Statistics of posterior draws of parameters (thinning = 1):
+
+ param                   mean    sd       median HPD 2.5% HPD 97.5% ESS
+ sigma2                  1.018   0.11     1.013  0.815    1.239     3343.207
+
+ abs(theta_sr_Intercept) 0.198   0.046    0.193  0.118    0.289     268.578
+ abs(theta_sr_x1)        0.007   0.015    0.001  0        0.04      284.642
+ abs(theta_sr_x2)        0.004   0.008    0      0        0.018     610.114
+
+ beta_mean_Intercept     1.067   0.67     1.141  -0.08    2.144     229.597
+ beta_mean_x1            -0.297  0.126    -0.308 -0.491   0.013     486.943
+ beta_mean_x2            0.001   0.037    0      -0.089   0.083     3643.73
+
+ xi2_Intercept           5.924   102.961  0.06   0.001    2.869     3979.303
+ xi2_x1                  0.044   1.336    0      0        0.018     5000
+ xi2_x2                  0.073   1.683    0      0        0.005     5000
+
+ a_xi                    0.09    0.04     0.083  0.031    0.175     465.036
+
+ tau2_Intercept          161.552 4343.276 1.447  0        79.21     5000
+ tau2_x1                 32.77   1105.99  0.184  0        11.658    5000
+ tau2_x2                 0.451   10.085   0      0        0.107     5000
+
+ a_tau                   0.099   0.042    0.092  0.027    0.183     574.134
+
+ kappa2                  75.682  204.592  6.363  0        398.87    3932.451
+
+ lambda2                 9.399   42.184   0.317  0        41.283    823.744
+
+ C0                      1.721   0.629    1.644  0.651    2.983     5008.619
+\end{CodeOutput}
+\end{CodeChunk}
+
+
+The \code{plot} method can be used to visualize the posterior distribution estimated by \code{shrinkTVP}.
+
+Aside from the \code{shrinkTVP_res} object, its arguments are the mandatory \code{pars}, a character vector containing the names of the parameters to visualize, and in the case of time-varying parameters \code{nplot}, which controls the number of plots to display per page. The names supplied in \code{pars} have to coincide with the names of the list elements of the \code{shrinkTVP_res} object. The default value is \code{c("beta")}, i.e. empirical quantiles of the posterior of $\bm \beta_t$ over time are shown. If there are too many plots to fit on one page, \code{plot} will cycle through all parameters to display. It will call either \code{plot.mcmc} from the \pkg{coda} package, if the parameter is non time-varying, or \code{plot.mcmc.tvp} from the \pkg{shrinkTVP} package for time-varying parameters, passing all additional arguments specified via \code{...} to the respective plotting functions. See the code below for an example and Figure~\ref{fig:beta} for the corresponding output.
+
+\begin{CodeChunk}
+\begin{CodeInput}
+R> plot(res)
+\end{CodeInput}
+\end{CodeChunk}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{./figs/plot_beta.pdf}
+\caption{Visualization of the  evolution of the \comment{time-varying  parameter  $\bm{\beta}_j=(\bct{j}{0}, \ldots, \bct{j}{T}), j=1, \ldots, 3,$
+over time  $t=0,\ldots,T$}, as provided by the \code{plot} method. \code{plot} is in turn calling \code{plot.mcmc.tvp} on the individual \code{mcmc.tvp} objects. The median is always displayed as a black line, and the red dotted lines indicate the \comment{pointwise}
+2.5\%, 25\%, 75\% and 97.5\% quantiles, unless otherwise specified.}
+\label{fig:beta}
+\end{figure}
+
+To visualize other parameters via the \code{plot} method, the user has to change the \code{pars} argument. \code{pars} can either be set to a single character object or to a vector of characters containing the names of the parameter draws to display. In the latter case, the \code{plot} method will display groups of plots at a time, prompting the user to move on \comment{to} the next series of plots, similarly to how \pkg{coda} handles long plot outputs. Naturally, as all parameter draws are converted to \pkg{coda} objects, any
+\comment{method  from this package  that users are familiar with} %methods that users are familiar with from this package
+(e.g. to check convergence) can be applied to the parameter draws contained in a \code{shrinkTVP_res} object. An example of this can be seen in Figure~\ref{fig:theta}, where \code{pars = "theta_sr"},  \comment{changes} % changing
+the output to a graphical summary of the parameter draws of $\sqrt{\theta_1}, \dots, \sqrt{\theta_d}$, using \pkg{coda}'s \code{plot.mcmc} function. To obtain Figure~\ref{fig:theta}, one can run
+\begin{CodeChunk}
+\begin{CodeInput}
+R> plot(res, pars = "theta_sr")
+\end{CodeInput}
+\end{CodeChunk}
+
+\clearpage
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{./figs/plot_theta.pdf}
+\caption{\comment{Trace plots (left column) and kernel density estimates of the posterior density (right column) for the parameters
+$\sqrt{\theta}_1, \dots, \sqrt{\theta}_3$}, as provided by the \code{plot} method. \code{plot} is in turn calling \pkg{coda}'s \code{plot.mcmc}.}
+\label{fig:theta}
+\end{figure}
+
+
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{./figs/plot_beta_2.pdf}
+\caption{Visualization of the  evolution of  the \comment{time-varying  parameter  $\bct{j}{t}$
+over time  $t=100,\ldots,200$ for $j=1, \ldots, 3$}, as provided by the \code{plot} method. \code{plot} is in turn calling \code{plot.mcmc.tvp} on the individual \code{mcmc.tvp} objects. Arbitrary arguments can be passed to \code{plot}, in this example the x-axis of the plot was restricted with \code{xlim} and the label of the y-axis was changed with \code{ylab}. The median is always displayed as a black line, and the red dotted lines indicate the  \comment{pointwise}
+2.5\%, 25\%, 75\% and 97.5\% quantiles, unless otherwise specified.}
+\label{fig:beta2}
+\end{figure}
+
+\clearpage
+
+%\footcomment{According to our definition of $\xm_t$, {\tt x1} corresponds to $x_{t2}$ and {\tt x2} corresponds to $x_{t3}$ in Figure~1-3. x-label in Figure~1 should be $t$.}
+
+The \code{plot} method will pass any additional arguments on to the respective plotting functions, allowing for some flexibility in the displayed plots. An example of this behavior is demonstrated in the code below and the resulting Figure~\ref{fig:beta2}, where the x-axis is truncated with the \code{xlim} argument and the label for the y-axis is changed by the \code{ylab} argument.
+\begin{CodeChunk}
+\begin{CodeInput}
+R> plot(res, pars = "beta", xlim = c(100, 200),
++    ylab = expression(beta[c]), xlab = "t")
+\end{CodeInput}
+\end{CodeChunk}
+
+
+
+The \code{plot.mcmc.tvp} method displays empirical posterior quantiles of a single time-varying parameter over time. Instead of being called indirectly via \code{plot}, the user can also directly call it by calling \code{plot} on a single \code{mcmc.tvp} object within the \code{shrinkTVP_res} object. \code{plot.mcmc.tvp} takes one additional mandatory argument, \code{probs}, which is a vector of quantiles to plot. \code{plot.mcmc.tvp} will automatically add $0.5$, i.e. the median, to \code{probs} if the user does not. It will pass on any additional arguments specified via \code{...}, allowing the user some flexibility concerning the final plot. In the code below, this behavior is exploited to add a title to the plot, resulting in Figure~\ref{fig:sigma2}.
+
+\begin{CodeChunk}
+\begin{CodeInput}
+R> par(cex.main = 1, mar = c(3, 4, 4, 2) + 0.1)
+R> plot(res_sv$sigma2, xlab = "",
++   main = bquote("Traceplot of posterior of " ~ sigma[t]^2))
+\end{CodeInput}
+\end{CodeChunk}
+
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\linewidth]{./figs/plot_sigma2.pdf}
+\caption{Visualization of the  evolution of the \comment{stochastic volatility $\sigma^2_t$ over time $t=1,\ldots,T$,}
+%parameter $\sigma^2_t$ over time,
+as provided by the \code{plot.mcmc.tvp} method. The median is always displayed as a black line, and the red dotted lines indicate the  \comment{pointwise} 2.5\%, 25\%, 75\% and 97.5\% quantiles, unless otherwise specified.}
+\label{fig:sigma2}
+\end{figure}
+
+%% -- Illustrations ------------------------------------------------------------
+
+%% - Virtually all JSS manuscripts list source code along with the generated
+%%   output. The style files provide dedicated environments for this.
+%% - In R, the environments {Sinput} and {Soutput} - as produced by Sweave() or
+%%   or knitr using the render_sweave() hook - are used (without the need to
+%%   load Sweave.sty).
+%% - Equivalently, {CodeInput} and {CodeOutput} can be used.
+%% - The code input should use "the usual" command prompt in the respective
+%%   software system.
+%% - For R code, the prompt "R> " should be used with "+  " as the
+%%   continuation prompt.
+%% - Comments within the code chunks should be avoided - these should be made
+%%   within the regular LaTeX text.
+
+\section{Predictive performances and model comparison}
+\label{sec:LPDS}
+
+Within a Bayesian framework, a natural way to predict a future observation is through its posterior predictive density.  For this reason, log-predictive density scores (LPDSs) provide a means of assessing how well the model performs in terms of prediction on real data. The log-predictive density score for time $t_0 +1$
+is obtained by evaluating at $y_{t_0 +1}$ the
+\comment{log of the posterior predictive density} % obtained by fitting the model to the previous  data points $y_{1}, \ldots, y_{t_0}$.}
+%log-predictive density
+obtained by fitting the model to the previous $t_0$ data points.
+Given the data up to time $t_0$, the posterior predictive density at time $t_0 + 1$ is given by
+\begin{align} \label{MCpred}
+p(y_{t_0 + 1}| y_{1}, \ldots, y_{t_0}, \bm x_{t_0 +1} ) =  \int p(y_{t_0 + 1}| \bm x_{t_0 +1}, \bm \psi )  p (\bm \psi| y_{1}, \ldots, y_{t_0} )d \bm \psi,
+\end{align}
+where $\bm \psi$ is the set of model parameters \comment{and latent variables up to $t_0+1$.  For a TVP model with homoscedastic  errors, $\bm \psi=  (\tilde {\bm \beta}_0,\ldots \tilde {\bm \beta}_{t_0 +1}, \sqrt \theta_1, \ldots, \sqrt{\theta_d}, \beta_1, \ldots, \beta_d, \sigma^2)$,
+whereas for a TVP model with  SV errors,
+ $\bm \psi=  (\tilde {\bm \beta}_0,\ldots \tilde {\bm \beta}_{t_0 +1}, \sqrt \theta_1, \ldots, \sqrt{\theta_d}, \beta_1, \ldots, \beta_d,
+ \sigma^2_1, \ldots,\sigma^2_{t_0 +1})$.}
+\comment{Given $M$ samples from the posterior distribution of the parameters and latent variables, $p (\bm \psi| y_{1}, \ldots, y_{t_0} )$, Monte Carlo integration
+could be applied immediately to approximate (\ref{MCpred}).
+However, \cite{bit-fru:ach} propose a more efficient approximation of the predictive density,   \comment{the so-called conditionally optimal Kalman mixture approximation which is}
+obtained by analytically integrating out $\tilde {\bm \beta}_{t_0+1}$ from the likelihood at time $t_0 +1$.}
+
+% In our model   $\bm \psi=  (\tilde {\bm \beta}_0,\ldots \tilde {\bm \beta}_T, \sqrt \theta_1, \ldots, \sqrt{\theta_d}, \beta_1, \ldots, \beta_d, \sigma^2)$ and $\bm \psi=  (\tilde {\bm \beta}_0,\ldots \tilde {\bm \beta}_T, \sqrt \theta_1, \ldots, \sqrt{\theta_d}, \beta_1, \ldots, \beta_d, \sigma^2_1, \ldots,\sigma^2_T)$ in the SV case. However, in a TVP model, the likelihood depends on the one step ahead value of the states, $\tilde {\bm \beta}_{t_0+1}$, which are neither observed nor estimated.  As a solution to this, \cite{bit-fru:ach} propose an approximation of the predictive density,
+
+ In the homoscedastic error case, given $M$ samples from the posterior distribution of the parameters  \comment{and the latent variables up to $t_0$}, the predictive density approximated by Monte Carlo integration is given by
+\begin{align*}
+\label{eq:approx_mixture}
+\hspace{-0.15cm}
+p(y_{t_0+1}| y_{1},\ldots, y_{t_0}, \xv_{t_0+1}) \approx \dfrac{1}{M} \sum_{m=1}^M  &p(y_{t_0+1}| \bm x_{t_0+1} \bm \beta^{(m)} + \\
+&\bm F_{t_0+1}\imm{m}  \bvt ^{(m)}_{t_0} + \bm m_{t_0} \imm{m}, \bm F_{t_0+1} \imm{m} (\SSigma_{t_0} \imm{m} + I_d)
+( \bm F_{t_0+1}\imm{m}) ^\top + (\sigma^{2})\imm{m} ),
+\end{align*}
+where \comment{the conditional predictive  densities of   $y_{t_0+1}$ are  Gaussian with  the mean and the variance depending on the MCMC draws.
+These moments are computed for  the  $m$th MCMC iteration from}
+ $\bm F_{t_0+1}=  \bm x_{t_0+1} \text{Diag}(\sqrt{\theta_1}, \ldots, \sqrt{\theta_d)}$ and
+ \comment{the mean  $\bm m_{t_0}$ and  the covariance matrix  $\SSigma_{t_0}$}
+ % $\bm m_{t_0}$ and $\SSigma_{t_0}$ are the mean and covariance matrix
+ of the posterior distribution of $\tilde {\bm \beta}_{t_0}$.
+These quantities can be obtained by iteratively calculating $\SSigma_{t}$ and $\bm m_{t}$ up to time $t_0$, as described in \cite{mcc-etal:sim}:
+\begin{align*}
+&\SSigma_1 = (\OOmega_{11})^{-1}, \qquad \bm m_1 = \SSigma_1 \bm c_1,\\
+&\SSigma_t = (\OOmega_{tt} - \OOmega_{t-1,t}^{\top} \SSigma_{t-1} \OOmega_{t-1,t})^{-1}, \qquad \bm m_t = \SSigma_t (\bm c_t - \OOmega_{t-1,t}^{\top} \bm m_{t-1} ).
+\end{align*}
+The quantities $\cv_t$,  $\OOmega_{tt}$ and  $\OOmega_{t-1,t}$ for $t=1,  \ldots, t_0$ are given in Appendix~\ref{sec:mccau}.
+
+\comment{For the SV case,  it is still  possible to analytically integrate  out $\tilde {\bm \beta}_{t_0+1}$ from the likelihood at time $t_0 +1$ conditional on
+a known value of $\sigma^2_{t_0+1}$, however it is not possible to integrate  the likelihood with respect to both  latent variables $\tilde {\bm \beta}_{t_0+1}$  and $\sigma^2_{t_0+1}$.
+ % from at time $t_0 + 1$.
+%% A compounding factor in the SV case is that $\sigma^2_{t_0+1}$ also needs to be integrated out from the likelihood at time $t_0 + 1$. However, this integral is not available in closed form, necessitating another layer of approximation.
+Hence, at each MCMC iteration a draw is taken from the predictive distribution of  $\sigma^2_{t_0+1}=\exp (h_{t_0+1})$, derived from Equation~\eqref{eq:svht},} and used to calculate the \comment{conditional predictive density of   $y_{t_0+1}$}.
+The approximation of the one step ahead predictive density can then be obtained through the following steps:
+\begin{enumerate}
+	\item   \comment{for each MCMC draw of $(\mu, \phi,\sigma_{\eta}^2) \imm{m}$ and $h_{t_0} \imm{m}$,  obtain a  draw of $(\sigma^{2}_{t_0+1})\imm{m}$}; %$\sigma_{t_0+1}^{(m)}$;
+%obtain $M$ samples of  \comment{(\sigma^{2}_{t_0+1})\imm{m}}; %$\sigma_{t_0+1}^{(m)}$;
+	\item calculate the  \comment{conditionally optimal Kalman} % optimal
+mixture approximation as
+	\begin{align*}
+	\hspace{-1cm}
+	p(y_{t_0 + 1}| y_{1}, \ldots, y_{t_0}, \bm x_{t_0 +1} ) \approx \dfrac{1}{M} \sum_{m=1}^M  &p(y_{t_0+1}| \bm x_{t_0+1} \bm \beta^{(m)} + \bm F_{t_0+1} \imm{m} \bvt^{(m)}_{t_0} + \bm m_{t_0} \imm{m} ,\\
+	 &  \bm F_{t_0+1}  \imm{m} (\SSigma_{t_0} \imm{m} + I_d)
+ ( \bm F_{t_0+1} \imm{m}) ^\top +  (\sigma^{2}_{t_0+1})\imm{m} ),
+	\end{align*}
+	where $\bm F_{t_0+1}$, $\bm m_{t_0}$ and $\SSigma_{t_0}$ are defined as above.
+\end{enumerate}
+
+The \pkg{shrinkTVP} package provides a way to calculate the LPDSs using the function \code{shrinkTVP}. When \code{LPDS} is set to \code{TRUE}, the data provided via \code{data} or the formula interface are assumed to contain the covariates and response up to time $t_0$. The values of $\bm x_{t_0+1}$ are then supplied through \code{x_test}, while $y_{t_0 + 1}$ is passed to \code{y_test}, as shown in the following snippet of code.
+
+\begin{CodeChunk}
+\begin{CodeInput}
+R> y_test <- data$y[nrow(data)]
+R> x_test <- data[nrow(data), c("x1", "x2")]
+R> res_LPDS <- shrinkTVP(y ~ x1 + x2, data = data[1:(nrow(data) - 1),],
++    LPDS = TRUE, y_test = y_test, x_test = x_test,
++    display_progress = FALSE)
+R> res_LPDS$LPDS
+\end{CodeInput}
+\begin{CodeOutput}
+	[,1]
+[1,] -1.398314
+attr(,"type")
+[1] "stat"
+\end{CodeOutput}
+\end{CodeChunk}
+
+This leads to an additional output in the resulting \code{shrinkTVP_res} object called \code{LPDS}, which contains the calculated log predictive density score. For an example on how to calculate LPDSs for $k$ points in time, please see~Section \ref{sec:usmacro}.
+
+\section{Predictive exercise: usmacro dataset}
+\label{sec:usmacro}
+
+
+
+In the following, we provide a brief demonstration on how to use the \pkg{shrinkTVP} package on real data and compare different prior specifications via LPDSs. Specifically, we consider the \code{usmacro.update} dataset from the \pkg{bvarsv} package \citep{kru:bva}. The dataset \code{usmacro.update} contains the inflation rate, unemployment rate and treasury bill interest rate for the United States, from 1953:Q1 to 2015:Q2, \comment{that is $T=250$}. The same dataset up to 2001:Q3 was used by \cite{pri:tim}. The response variable is the inflation rate \code{inf}, while the predictors are the lagged inflation rate \code{inf_lag}, the lagged unemployed rate \code{une_lag} and the lagged treasury bill interest \code{tbi_lag}. We construct our dataset as follows:
+
+\begin{CodeChunk}
+\begin{CodeInput}
+R> library(bvarsv)
+R> data("usmacro.update")
+R> # Create matrix of lags and create final data set
+R> lags <- usmacro.update[1:(nrow(usmacro.update) - 1), ]
+R> colnames(lags) <- paste0(colnames(lags), "_lag")
+R> us_data <- data.frame(inf = usmacro.update[2:nrow(usmacro.update), "inf"],
++    lags)
+
+\end{CodeInput}
+\end{CodeChunk}
+
+
+In the snippet of code below, we run the default \comment{TVP model  with the full hierarchical shrinkage prior} %full hierarchical model
+for $60000$ iterations, with a thinning of $10$ and a burn-in of $10000$, hence keeping $5000$ posterior draws.
+
+\begin{CodeChunk}
+\begin{CodeInput}
+R> us_res <- shrinkTVP(inf ~ inf_lag + une_lag + tbi_lag, us_data,
++    niter = 60000, nburn = 10000, nthin = 10,
++    display_progress = FALSE)
+\end{CodeInput}
+\end{CodeChunk}
+
+
+Once we have fit the model, we can perform posterior inference by using the \code{summary} and \code{plot} methods. The summary is shown below, while Figure~\ref{fig:beta_us} shows the paths of $\bm \beta_t$ evolving over time, and Figure \ref{fig:theta_us} displays the trace plots (left column) and posterior densities (right column) of $\sqrt{\theta_1}, \ldots, \sqrt{\theta_4}$ obtained via the \code{plot} method.
+
+\begin{CodeChunk}
+\begin{CodeInput}
+R> summary(us_res, showprior = FALSE)
+\end{CodeInput}
+\begin{CodeOutput}
+Summary of 50000 MCMC draws after burn-in of 10000.
+
+Statistics of posterior draws of parameters (thinning = 10):
+
+param                   mean    sd        median HPD 2.5% HPD 97.5% ESS
+sigma2                  0.019   0.006     0.018  0.008    0.03      1732.763
+
+abs(theta_sr_Intercept) 0.141   0.024     0.142  0.092    0.186     716.452
+abs(theta_sr_inf_lag)   0.043   0.006     0.043  0.03     0.056     2173.311
+abs(theta_sr_une_lag)   0.004   0.006     0.001  0        0.016     80.178
+abs(theta_sr_tbi_lag)   0.001   0.002     0      0        0.006     423.844
+
+beta_mean_Intercept     0.352   0.411     0.196  -0.109   1.183     545.061
+beta_mean_inf_lag       0.746   0.181     0.756  0.361    1.072     1072.752
+beta_mean_une_lag       -0.127  0.07      -0.138 -0.233   0.004     102.591
+beta_mean_tbi_lag       0.009   0.022     0      -0.023   0.067     590.672
+
+xi2_Intercept           1.785   53.178    0.03   0.001    0.962     5000
+xi2_inf_lag             0.238   3.953     0.005  0        0.216     5000
+xi2_une_lag             0.018   0.427     0      0        0.007     5000
+xi2_tbi_lag             0.024   1.126     0      0        0.001     5000
+
+a_xi                    0.094   0.041     0.089  0.022    0.172     548.879
+
+tau2_Intercept          225.777 12323.864 0.081  0        10.82     5000
+tau2_inf_lag            18.332  377.616   0.765  0        20.478    5000
+tau2_une_lag            2.08    31.701    0.037  0        3.022     5000
+tau2_tbi_lag            0.084   1.113     0      0        0.066     5000
+
+a_tau                   0.1     0.044     0.094  0.026    0.183     754.434
+
+kappa2                  118.658 252.723   21.335 0        576.182   4745.271
+
+lambda2                 8.363   28.274    1.025  0        36.827    5000
+
+C0                      0.133   0.062     0.121  0.028    0.254     3119.826
+\end{CodeOutput}
+\end{CodeChunk}
+
+
+It appears clear by looking at Figure~\ref{fig:beta_us} that the intercept and the parameter associated with the lagged inflation rate are time-varying, while  the parameters associated with the lagged treasury bill interest rate and the lagged unemployment rate are relatively constant. This can be confirmed by looking at the posterior distributions of the corresponding standard deviations, displayed in Figure~\ref{fig:theta_us}. The posterior densities of the standard deviations associated with the intercept and the lagged inflation are bimodal, with very little mass around zero. This bimodality results from the non-identifiability of the sign of the standard deviation. As a convenient side effect, noticeable bimodality in the density plots of the posterior distribution
+  \comment{$p(\sqrt{\theta}_j|\ym)$ of the standard deviations  $\sqrt{\theta}_j$}   % of the standard deviations
+  is a strong indication of time variability in the associated parameter  \comment{$\bct{j}{t}$.} % over time $t$.}
+  Conversely, the posterior densities of the standard deviations associated with the lagged unemployment and the lagged treasury bill interest rate have a pronounced spike at zero, indicating strong model evidence in favor of constant parameters. Moreover, the path of the parameter of the treasury bill interest rate is centered at zero, indicating that this parameter is neither time-varying nor significant.
+
+
+
+
+
+In order to compare the predictive performances of different shrinkage priors, we calculate one step ahead LPDSs for the last 50 points in time for five different prior choices: (1) the full hierarchical \comment{shrinkage} prior, (2) the hierarchical normal-gamma \comment{prior}  with fixed $a^\xi = a^\tau = 0.1$, (3) the normal-gamma \comment{prior} with $a^\xi = a^\tau = 0.1$ and $\kappa^2 = \lambda^2 = 20$, (4) the hierarchical Bayesian Lasso, and (5) the Bayesian Lasso with $\kappa^2 = \lambda^2 = 20$. Figure \ref{fig:LPDS} shows the cumulative LPDSs for the last 50 quarters of the \code{usmacro.update} dataset. The default prior, that is the fully hierarchical \comment{shrinkage}  prior on both the $\beta_j$'s and the \comment{$\sqrt{\theta_j}$'s}, performs the best in terms of prediction amongst the five fitted models. In Appendix \ref{sec:multicore} we show how to obtain LPDSs for different models and points in time, using the packages \pkg{foreach} \citep{wes:for} and \pkg{doParallel} \citep{wes:doP}.
+
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=\linewidth]{./figs/plot_usmacro_beta.pdf}
+	\caption{Visualization of the evolution of  \comment{the time-varying  parameter  $\bm{\beta}_j=(\bct{j}{0}, \ldots, \bct{j}{T})$ over time  $t=0,\ldots,T$  for $j=1, \ldots, 4$} %$\bm \beta_t$ over time
+for the \code{usmacro.update} dataset. The median is displayed as a black line, and the red dotted lines indicate the  \comment{pointwise} 2.5\%, 25\%, 75\% and 97.5\% quantiles.}
+	\label{fig:beta_us}
+\end{figure}
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=\linewidth]{./figs/plot_usmacro_theta.pdf}
+	\caption{\comment{Trace plots (left column) and kernel density estimates of the posterior density (right column) for the parameters} $\sqrt{\theta_1}, \ldots, \sqrt{\theta_4}$ for the \code{usmacro.update} dataset.}
+	\label{fig:theta_us}
+\end{figure}
+
+
+\section{Conclusions}
+\label{sec:conclusions}
+
+The goal of this  paper was to introduce the reader to the functionality of the \proglang{R} package \pkg{shrinkTVP} \citep{kna-etal:shr}. This \proglang{R} package provides a fully Bayesian approach for statistical inference in TVP models with shrinkage priors.
+\comment{On the one hand, the package provides an easy entry point for users
+who %aim at applying TVP models and
+want  to pass on only their data in a first step of exploring  TVP models for  their specific application context.
+Running the function  \code{shrinkTVP} under  the default model with a fully hierarchical shrinkage prior with predefined hyperparameters,  estimation of a TVP model becomes as easy  as using the well-known function \code{lm} for a standard linear regression model.
+  On the other hand, exploiting numerous advanced options of the package,
+  the more experienced user can also explore alternative model specifications such as the Bayesian Lasso and use log-predictive density scores to compare
+  various model specifications.}
+
+\clearpage
+
+Various examples of the usage of \pkg{shrinkTVP} were given, and the \code{summary} and \code{plot} methods for
+straightforward posterior inference were illustrated.
+Furthermore, a predictive exercise with the dataset \code{usmacro.updade} from the package \pkg{bvarsv} was performed, with a focus on the calculation of LPDSs using \code{shrinkTVP}. The default model in \pkg{shrinkTVP} showed better performance than its competitors in terms of cumulative LPDSs.
+\comment{While these  examples  were confined to univariate responses,  the package can also be applied in a multivariate context, for instance to the
+sparse TVP Cholesky SV model considered in \citet{bit-fru:ach}, exploiting a representation of this model as a system of independent  TVP models
+with univariate responses.}
+
+\comment{A plan for further versions of the package is to implement additional shrinkage priors for TVP models such as the well-known horseshoe prior
+\citep{bha-etal:las}}.
+
+
+
+\begin{figure}[t]
+	\centering
+	\includegraphics[width=\linewidth]{./figs/LPDS_macro.pdf}
+	\captionof{figure}{Cumulative LPDSs scores for the last 50 quarters of the \code{usmacro.update} dataset, for five different shrinkage priors: (1) the full hierarchical \comment{shrinkage} prior, (2) the hierarchical normal-gamma \comment{prior} with fixed $a^\xi = a^\tau = 0.1$, (3) the normal-gamma
+ \comment{prior}  with $a^\xi = a^\tau = 0.1$ and $\kappa^2 = \lambda^2 = 20$, (4) the hierarchical Bayesian Lasso, and (5) the Bayesian Lasso with $\kappa^2 = \lambda^2 = 20$.}
+	\label{fig:LPDS}
+\end{figure}
+
+
+\newpage
+\appendix
+
+
+\section{Appendix: Full conditional distribution of the latent states}
+\label{sec:mccau}
+Let $y^\star_t = y_t - \bm x_t \betav$  and  $\Fm_t=\bm x_{t}\Diag{\sqrt{\theta_{1}},\dots,\sqrt{\theta_{d}}}$ for $t=1,\dots,T$. Conditional on all other variables,  the joint density for the state process
+   $ \tilde \betav =( \tilde \betav_0, \tilde \betav_1, \dots, \tilde \betav_T)$ is multivariate normal.
+This distribution can be written in
+   terms of the tri-diagonal precision matrix $\OOmega$  and the mean vector $\cm$ \citep{mcc-etal:sim}:
+\begin{eqnarray} \label{postbetav}
+    \tilde \betav  | \betav, \QQ ,  \sigma^2_1, \ldots,  \sigma^2_T, y^\star_1, \ldots  y^\star_T
+   \sim \Normult{(T+1)  d }{\OOmega^{-1}\cm,\OOmega^{-1} }
+\end{eqnarray}
+   where:
+   \begin{equation*}
+\OOmega  =   \begin{bmatrix}
+\OOmega_{00}&\OOmega_{01}  & 0 & & \\
+\OOmega^{\top}_{01} &  \OOmega_{11}&\OOmega_{12} &0&0&\\
+0 &  \OOmega^{\top}_{12}&\OOmega_{22}&\OOmega_{23}&\ddots&\vdots\\
+&  0&\OOmega^{\top}_{23}&\ddots&\ddots&0 \\
+&  \vdots & \ddots & \ddots &\OOmega_{T-1,T-1}&\OOmega_{T-1,T} \\
+&  0&\ldots &0 &\OOmega^{\top}_{T-1,T}&\OOmega_{TT} \\
+  \end{bmatrix},  \quad
+ \cm  =  \begin{bmatrix}
+  \cm_0\\
+  \cm_1\\
+ \cm_2 \\
+  \vdots \\
+  \cm_T
+  \end{bmatrix} .
+\end{equation*}
+In this representation, each submatrix $\OOmega_{ts}$ is a matrix of dimension $d \times d$  defined as
+\begin{eqnarray*}
+ \OOmega_{00} &=&  2 I_d,\\
+%  \OOmega_{11} &\equiv& \mathbf{v}^{\top}_1 A_{1}  \mathbf{v}_1 + I_d + P^{-1}_0,\\
+  \OOmega_{tt} &=& \Fm^{\top}_t   \Fm _t /\sigma^2_t +   2 I_d,\quad t= 1,\dots, T-1,\\
+%  \OOmega_{tt} &\equiv& \mathbf{v}^{\top}_t  A_{11,t} \mathbf{v}_t +  A_{22,t} + A_{22,t-1},\quad t= 1,\dots, T-1,\\
+   % \OOmega_{TT} &\equiv& \mathbf{v}^{\top}_T  A_{11,T}   \mathbf{v}_T  + A_{22,T},\\
+      \OOmega_{TT} &=& \Fm^{\top}_T   \Fm_T /\sigma^2_T  + I_d,\\
+   \OOmega_{t-1,t} &=& -  I_d, \quad t=1, \dots, T,
+\end{eqnarray*}
+where $I_d$ is the $d\times d$ identity matrix and
+ $\cm_{t}$ is a  column vector of  dimension $d \times 1$, defined as
+\begin{eqnarray*}
+\cm_{0}  =  \bfz, \qquad
+   \cm_{t}  =  (\Fm^{\top}_t /\sigma^2_t) y_t^{\star},	\quad t = 1,\dots, T .
+\end{eqnarray*}
+In the homoscedastic case, $\sigma^2_1=\ldots = \sigma^2_T=\sigma^2$.
+
+
+
+
+\section{Multicore LPDS calculation}
+\label{sec:multicore}
+
+In the code below, the following \citep{R} packages are used:
+\pkg{doParallel} \citep{wes:doP}, \pkg{foreach} \citep{wes:for},
+\pkg{zoo} \citep{zei:zoo}, and \pkg{RhpcBLASctl} \citep{Nak:Rhp}.
+
+%\textcolor{green}{ABN: i have not found a zoo manual to cite?}
+
+
+\begin{CodeChunk}
+\begin{CodeInput}
+R> # Calculate LPDS in multicore
+R> # Load libraries for multicore computations
+R> library(doParallel)
+R> library(foreach)
+R>
+R> # For manipulating dates
+R> library(zoo)
+R>
+R> # Load library for controlling number of BLAS threads
+R> library(RhpcBLASctl)
+R>
+R> # Define how many periods to calculate LPDS for
+R> Tmax <- nrow(us_data) - 1
+R> T0 <- Tmax - 49
+R>
+R> # Determine number of cores to be used and register parallel backend
+R> ncores <- 4
+R> cl <- makeCluster(ncores)
+R> registerDoParallel(cl)
+R>
+R> lpds <- foreach(t = T0:Tmax, .combine = "cbind",
++    .packages = c("RhpcBLASctl", "shrinkTVP")) %dopar% {
++
++    # Set number of BLAS threads, so they dont interfere with each other
++    blas_set_num_threads(1)
++
++    # Create data_t from all data up to time t and
++    # y_test and x_test from data at time t+1
++    y_test <- us_data[t+1, "inf"]
++    x_test <- us_data[t+1, c("inf_lag", "une_lag", "tbi_lag")]
++    data_t <- us_data[1:t,]
++
++    # Run MCMC to calculate all LPDS
++    res_base <- shrinkTVP(inf ~ inf_lag + une_lag + tbi_lag, data = data_t,
++      LPDS = TRUE, y_test = y_test, x_test = x_test,
++      niter = 60000, nburn = 10000, nthin = 10,
++      hyperprior_param = list(nu_tau = 1, nu_xi = 1))
++
++    res_las_hier <- shrinkTVP(inf ~ inf_lag + une_lag + tbi_lag, data = data_t,
++      LPDS = TRUE, y_test = y_test, x_test = x_test,
++      niter = 60000, nburn = 10000, nthin = 10,
++      learn_a_xi = FALSE, learn_a_tau = FALSE,
++      a_xi = 1, a_tau = 1)
++
++    res_las <- shrinkTVP(inf ~ inf_lag + une_lag + tbi_lag, data = data_t,
++      LPDS = TRUE, y_test = y_test, x_test = x_test,
++      niter = 60000, nburn = 10000, nthin = 10,
++      learn_a_xi = FALSE, learn_a_tau = FALSE,
++      a_xi = 1, a_tau = 1,
++      learn_kappa2 = FALSE, learn_lambda2 = FALSE,
++      kappa2 = 20, lambda2 = 20)
++
++      res_ng_hier <- shrinkTVP(inf ~ inf_lag + une_lag + tbi_lag, data = data_t,
++        LPDS = TRUE, y_test = y_test, x_test = x_test,
++        niter = 60000, nburn = 10000, nthin = 10,
++        learn_a_xi = FALSE, learn_a_tau = FALSE,
++        a_xi = 0.1, a_tau = 0.1)
++
++      res_ng <- shrinkTVP(inf ~ inf_lag + une_lag + tbi_lag, data = data_t,
++        LPDS = TRUE, y_test = y_test, x_test = x_test,
++        niter = 60000, nburn = 10000, nthin = 10,
++        learn_a_xi = FALSE, learn_a_tau = FALSE,
++        a_xi = 0.1, a_tau = 0.1,
++        learn_kappa2 = FALSE, learn_lambda2 = FALSE)
++
++      lpds_res <- c(res_base$LPDS, res_ng_hier$LPDS, res_ng$LPDS,
++        res_las_hier$LPDS, res_las$LPDS)
++
++      rm("res_base", "res_ng", "res_ng_hier", "res_las_hier", "res_las")
++
++      return(lpds_res)
++  }
+R> stopCluster(cl)
+R>
+R> cumu_lpds <- apply(lpds, 1, cumsum)
+R> # Plot results
+R> par(mar=c(6,4,1,1))
+R> colnames(cumu_lpds) <- c("Default", "Hierarchical Normal Gamma",
++    "Non-hierarchical Normal Gamma", "Hierarchical Lasso",
++    "Non-hierarchical Lasso")
+R>
+R> matplot(cumu_lpds, type = "l", ylab = "Cumulative LPDS", xaxt = "n", xlab = "")
+R>
+R> # Extraxt labels from time series
+R> labs = as.yearmon(time(usmacro.update))[T0:Tmax + 1][c(FALSE, TRUE)]
+R>
+R> # Create custom axis labels
+R> axis(1, at = (1:length(T0:Tmax))[c(FALSE, TRUE)], labels = FALSE)
+R> text(x=(1:length(T0:Tmax))[c(FALSE, TRUE)],
++    y=par()$usr[3]-0.05*(par()$usr[4]-par()$usr[3]),
++    labels=labs, srt=45, adj=1, xpd=TRUE)
+R>
+R> # Add legend
+R> legend("topright", colnames(cumu_lpds), col=1:5, lty = 1:5, bty = "n", cex = 0.8)
+\end{CodeInput}
+\end{CodeChunk}
+
+
+\bibliography{shrinkTVP}
+%% -----------------------------------------------------------------------------
+
+\end{document}
