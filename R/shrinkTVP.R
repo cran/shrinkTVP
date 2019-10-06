@@ -6,7 +6,7 @@
 #'
 #' For details concerning the algorithm please refer to the paper by Bitto and Frühwirth-Schnatter (2019).
 #'
-#' @param formula an object of class "formula": a symbolic representation of the model, as in the
+#' @param formula object of class "formula": a symbolic representation of the model, as in the
 #' function \code{lm}. For details, see \code{\link{formula}}.
 #' @param data \emph{optional} data frame containing the response variable and the covariates. If not found in \code{data},
 #' the variables are taken from \code{environment(formula)}, typically the environment from which \code{shrinkTVP}
@@ -75,16 +75,8 @@
 #' \item \code{bmu}: real number. The default value is 0.
 #' \item \code{Bmu}: real number. larger than 0. The default value is 1.
 #' }
-#' @param LPDS logical value indicating whether the one step ahead log predictive density score should be returned.
-#' If \code{LPDS} is \code{TRUE}, both \code{x_test} and \code{y_test} have to be supplied. The default value is \code{FALSE}.
-#' @param y_test \emph{optional} real number. If \code{LPDS} is \code{TRUE} this value will be taken to be the true one step
-#' ahead value and will be used to calculate the log predictive density score. Ignored if \code{LPDS} is \code{FALSE}.
-#' @param x_test \emph{optional} object that can be coerced to a 1 x d data frame containing the covariates for the
-#' calculation of the one step ahead log predictive density score. The column names have to exactly match the
-#' names of the covariates provided in the formula or an error will be thrown. An intercept will be added to
-#' \code{x_test} if an intercept was added to the covariates by the formula interface. Ignored if \code{LPDS} is \code{FALSE}.
 #'
-#' @return The value returned is a list object of class \code{shrinkTVP_res} containing
+#' @return The value returned is a list object of class \code{shrinkTVP} containing
 #' \item{\code{sigma2}}{\code{mcmc} object containing the parameter draws from the posterior distribution of \code{sigma2}.
 #' If \code{sv} is \code{TRUE}, \code{sigma2} is additionally an \code{mcmc.tvp} object.}
 #' \item{\code{theta_sr}}{an \code{mcmc} object containing the parameter draws from the posterior distribution of the square root of theta.}
@@ -119,13 +111,13 @@
 #' \item{\code{priorvals}}{\code{list} object containing hyperparameter values of the prior distributions, as specified by the user.}
 #' \item{\code{model}}{\code{list} object containing the model matrix and model response used.}
 #' \item{\code{summaries}}{\code{list} object containing a collection of summary statistics of the posterior draws.}
-#' \item{\code{LPDS}}{\emph{(optional)} value of the log predictive density score, calculated with \code{y_test} and \code{x_test}.}
+#' \item{\code{LPDS_comp}}{\code{list} object containg two arrays that are required for calculating the LPDS.}
 #' To display the output, use \code{plot} and \code{summary}. The \code{summary} method displays the specified prior values stored in
 #' \code{priorvals} and the posterior summaries stored in \code{summaries}, while the \code{plot} method calls \code{coda}'s \code{plot.mcmc}
 #' or the \code{plot.mcmc.tvp} method. Furthermore, all functions that can be applied to \code{coda::mcmc} objects
 #' (e.g. \code{coda::acfplot}) can be applied to all output elements that are \code{coda} compatible.
 #' @author Peter Knaus \email{peter.knaus@@wu.ac.at}
-#' @seealso \code{\link{plot.shrinkTVP_res}}, \code{\link{plot.mcmc.tvp}}
+#' @seealso \code{\link{plot.shrinkTVP}}, \code{\link{plot.mcmc.tvp}}
 #' @references Bitto, A., & Frühwirth-Schnatter, S. (2019). "Achieving shrinkage in a time-varying parameter model framework."
 #' \emph{Journal of Econometrics}, 210(1), 75-97. <doi:10.1016/j.jeconom.2018.11.006>
 #' @examples
@@ -185,10 +177,7 @@ shrinkTVP <- function(formula,
                       display_progress = TRUE,
                       ret_beta_nc = FALSE,
                       sv = FALSE,
-                      sv_param,
-                      LPDS  = FALSE,
-                      y_test,
-                      x_test){
+                      sv_param){
 
 
   # Input checking ----------------------------------------------------------
@@ -336,7 +325,6 @@ shrinkTVP <- function(formula,
                        learn_a_tau = learn_a_tau,
                        display_progress = display_progress,
                        sv = sv,
-                       LPDS  = LPDS,
                        ret_beta_nc = ret_beta_nc)
 
   bad_bool_inp <- sapply(to_test_bool, bool_input_bad)
@@ -388,78 +376,6 @@ shrinkTVP <- function(formula,
   a0 <- rep(0, 2 * d)
   store_burn <- FALSE
 
-  # Check y_test and x_test
-
-  if (LPDS == TRUE){
-    if (missing(x_test)){
-      stop("x_test is missing")
-    }
-    if (missing(y_test)){
-      stop("y_test is missing")
-    }
-
-  }
-
-  if (missing(y_test)){
-    y_test <- NA
-  } else {
-    if (LPDS == TRUE) {
-      if(is.scalar(y_test) == FALSE | is.numeric(y_test) == FALSE){
-        stop("y_test has to be a single number")
-      }
-    } else {
-      y_test <- NA
-    }
-  }
-
-  if (missing(x_test)){
-    x_test <- NA
-  } else {
-    if (LPDS == TRUE){
-
-
-      x_test <- tryCatch(as.data.frame(x_test),
-                         error = function(e) stop("x_test could not be coerced to data frame"))
-
-      # Check that x_test only has one row
-      if (nrow(x_test) > 1){
-        stop("The coerced x_test data frame had more than one row")
-      }
-
-      # Check that all colnames (except 'Intercept') are present in x_test
-      missing <- colnames(x)[!colnames(x) %in% colnames(x_test) & colnames(x) != "Intercept"]
-      if (length(missing) > 0){
-        missing_names <- paste(missing, collapse = ", ")
-        stop(paste0(missing_names,
-                    ifelse(length(missing_names) == 1, " has", " have"),
-                    " to be present in x_test"))
-      }
-
-      # Throw warning if user misnamed columns
-      misnamed <- colnames(x_test)[!colnames(x_test) %in% colnames(x)]
-      if (length(misnamed) > 0){
-        misnamed_x_test <- paste(misnamed, collapse = ", ")
-        warning(paste0(misnamed_x_test,
-                       ifelse(length(misnamed) > 1, " have", " has"),
-                       " been incorrectly named in x_test and will be ignored"),
-                immediate. = TRUE)
-      }
-
-      # Bring variables into correct order
-      x_test <- x_test[,colnames(x)[colnames(x) != "Intercept"]]
-
-      # Turn into matrix, as this is what the C++ code expects
-      x_test <- as.matrix(x_test)
-
-      # Add Intercept if the formula added one
-      if ("Intercept" %in% colnames(x)) {
-        x_test <- cbind(1, x_test)
-      }
-
-    } else {
-      x_test <- NA
-    }
-  }
 
 
   # Run sampler -------------------------------------------------------------
@@ -502,10 +418,7 @@ shrinkTVP <- function(formula,
                           sv_param$a0_sv,
                           sv_param$b0_sv,
                           sv_param$bmu,
-                          sv_param$Bmu,
-                          y_test,
-                          x_test,
-                          LPDS)
+                          sv_param$Bmu)
     })
   })
 
@@ -571,9 +484,6 @@ shrinkTVP <- function(formula,
     res[["a_tau_acceptance"]] <- NULL
   }
 
-  if (LPDS == FALSE){
-    res[["LPDS"]] <- NULL
-  }
 
   # Create object to hold prior values
   priorvals <- c()
@@ -626,6 +536,7 @@ shrinkTVP <- function(formula,
   res[["model"]] <- list()
   res$model$x <- x
   res$model$y <- y
+  res$model$formula <- formula
 
   res$summaries <- list()
 
@@ -671,17 +582,23 @@ shrinkTVP <- function(formula,
           class(res[[i]][[j]]) <- c("mcmc.tvp", "mcmc")
 
           attr(res[[i]][[j]], "type") <- "sample"
+
+          # Imbue each mcmc.tvp object with index
+          attr(res[[i]][[j]], "index") <- zoo::index(y)
         }
 
         if (length(res[[i]]) == 1){
           res[[i]] <- res[[i]][[j]]
+          attr(res[[i]][[j]], "index") <- zoo::index(y)
         }
 
         # Make it of type 'sample' again
         attr(res[[i]], "type") <- "sample"
 
         # Rename
-        names(res[[i]]) <- colnames(dat)
+        if (dim(dat)[2] > 1){
+          names(res[[i]]) <- colnames(dat)
+        }
 
 
       } else {
@@ -693,7 +610,7 @@ shrinkTVP <- function(formula,
 
     # Create summary of posterior
     if (is.list(res[[i]]) == FALSE & attr(res[[i]], "type") == "sample"){
-      if (i != "theta_sr" & !(i == "sigma2" & sv == TRUE)){
+      if (i != "theta_sr" & !(i == "sigma2" & sv == TRUE) & i != "beta"){
         res$summaries[[i]] <- t(apply(res[[i]], 2, function(x){
           obj <- as.mcmc(x, start = niter - nburn, end = niter, thin = nthin)
           return(c("mean" = mean(obj),
@@ -721,7 +638,7 @@ shrinkTVP <- function(formula,
   }
 
   # add some attributes for the methods and plotting
-  attr(res, "class") <- "shrinkTVP_res"
+  attr(res, "class") <- "shrinkTVP"
   attr(res, "learn_a_xi") <- learn_a_xi
   attr(res, "learn_a_tau") <- learn_a_tau
   attr(res, "learn_kappa2") <- learn_kappa2
@@ -731,6 +648,7 @@ shrinkTVP <- function(formula,
   attr(res, "nthin") <- nthin
   attr(res, "sv") <- sv
   attr(res, "colnames") <-  colnames(x)
+  attr(res, "index") <- zoo::index(y)
 
 
 

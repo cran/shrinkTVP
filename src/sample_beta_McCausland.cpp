@@ -101,7 +101,7 @@ void sample_beta_McCausland(arma::mat& beta_nc_samp, arma::vec& y, arma::mat& x,
 
   if (LPDS == true){
     m_N = m_list.slice(N);
-    chol_C_N_inv = L_lower_list.slice(N) * L_upper_list.slice(N);
+    chol_C_N_inv = L_lower_list.slice(N);
   }
 
 }

@@ -4,14 +4,70 @@
 \alias{plot.mcmc.tvp}
 \title{Graphical summary of posterior distribution for a time-varying parameter}
 \usage{
-\method{plot}{mcmc.tvp}(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975), ...)
+\method{plot}{mcmc.tvp}(x, probs = c(0.025, 0.25, 0.75, 0.975),
+  shaded = TRUE, quantlines = FALSE, shadecol = "skyblue",
+  shadealpha = 0.5, quantlty = 2, quantcol = "black",
+  quantlwd = 0.5, drawzero = TRUE, zerolty = 2, zerolwd = 1,
+  zerocol = "grey", ...)
 }
 \arguments{
-\item{x}{a mcmc.tvp object}
+\item{x}{\code{mcmc.tvp} object}
 
-\item{probs}{numeric vector of quantiles to plot for each point in time, with values in [0,1].
-The value 0.5 is added to \code{probs} if the user does not include it.
-The default value is \code{c(0.025, 0.25, 0.5, 0.75, 0.975)}.}
+\item{probs}{vector of boundaries for credible intervals to plot for each point in time, with values in [0,1].
+The largest and smallest value form the outermost credible interval, the second smallest and second largest the second outermost and so forth.
+The default value is \code{c(0.025, 0.25, 0.75, 0.975)}. Note that there have to be the same number of probs
+< 0.5 as there are > 0.5.}
+
+\item{shaded}{single logical value or a vector of logical values, indicating whether or not to shade the area between the pointwise
+credible intervals. If a vector is given, the first value given is used to determine if the area between the outermost credible interval
+is shaded, the second for the second outermost and so forth. Recycled in the usual fashion if the vector is shorter than the
+number of quantile pairs. The default value is \code{TRUE}.}
+
+\item{quantlines}{single logical value or a vector of logical values, indicating whether or not to draw borders along the pointwise
+credible intervals. If a vector is given, the first value given is used to determine whether the outermost credible interval
+is marked by lines, the second for the second outermost and so forth. Recycled in the usual fashion if the vector is shorter than the
+number of credible intervals. The defualt value is \code{FALSE}.}
+
+\item{shadecol}{single character string or a vector of character strings. Determines the color of the shaded areas that represent
+the credible intervals. If a vector is given, the first color given is used for the outermost area,
+the second for the second outermost and so forth. Recycled in the usual fashion if the vector is shorter than the number
+of shaded areas. Has no effect if \code{shaded = FALSE}. The default value is \code{"skyblue"}.}
+
+\item{shadealpha}{real number between 0 and 1 or a vector of real numbers between 0 and 1.
+Determines the level of transparency of the shaded areas that represent
+the credible intervals. If a vector is given, the first value
+given is used for the outermost area, the second for the second outermost and so forth. Recycled in the usual fashion
+if the vector is shorter than the number of shaded areas. Has no effect if \code{shaded = FALSE}.
+The default value is \code{0.5}.}
+
+\item{quantlty}{either a single integer in [0,6] or one of the character strings \code{"blank",
+"solid", "dashed", "dotted", "dotdash", "longdash", "twodash"} or a vector containing these. Determines the line type of the borders
+drawn around the shaded areas that represent the credible intervals. Note that if a vector is supplied the elements have to either
+be all integers or all character strings. If a vector is given, the first value given is used for the outermost area, the second for
+the second outermost and so forth. Recycled in the usual fashion if the vector is shorter than the number of shaded areas.
+Has no effect if \code{quantlines = FALSE}. The default value is \code{2}.}
+
+\item{quantcol}{single character string or a vector of character strings. Determines the color of the borders drawn around the shaded
+areas that represent the credible intervals. If a vector is given, the first color given is used for borders of the outermost area,
+the second for the second outermost and so forth. Recycled in the usual fashion if the vector is shorter than the number
+of shaded areas. Has no effect if \code{quantlines = FALSE}. The default value is \code{"red"}.}
+
+\item{quantlwd}{single real, positive number or a vector of real, positive numbers. Determines the line width of the borders
+drawn around the shaded areas that represent the credible intervals. If a vector is given, the first number given is used for
+the borders of the outermost area, the second for the second outermost and so forth. Recycled in the usual fashion if the vector
+is shorter than the number of shaded areas. Has no effect if \code{quantlines = FALSE}. The default value is \code{1}.}
+
+\item{drawzero}{single logical value determining whether to draw a horizontal line at zero or not. The default value is \code{TRUE}.}
+
+\item{zerolty}{single integer in [0,6] or one of the character strings \code{"blank",
+"solid", "dashed", "dotted", "dotdash", "longdash", "twodash"}. Determines the line type of the horizontal line at zero. Has no effect
+if \code{drawzero = FALSE}. The default value is \code{2}.}
+
+\item{zerolwd}{single real, positive number. Determines the line width of the horizontal line at zero. Has no effect
+if \code{drawzero = FALSE}. The default value is \code{1}.}
+
+\item{zerocol}{single character string. Determines the color of the horizontal line at zero. Has no effect if \code{drawzero = FALSE}.
+The default value is \code{"grey"}.}
 
 \item{...}{further arguments to be passed to \code{plot}.}
 }
@@ -27,7 +83,10 @@ set.seed(123)
 sim <- simTVP(theta = c(0.2, 0, 0), beta_mean = c(1.5, -0.3, 0))
 data <- sim$data
 
-output <- shrinkTVP(y ~ x1 + x2, data)
-plot(output$beta$beta_x1)
+res <- shrinkTVP(y ~ x1 + x2, data)
+plot(res$beta$beta_x1)
 }
+}
+\author{
+Peter Knaus \email{peter.knaus@wu.ac.at}
 }

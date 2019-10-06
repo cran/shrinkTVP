@@ -9,10 +9,10 @@ shrinkTVP(formula, data, niter = 10000, nburn = round(niter/2),
   a_tau = 0.1, learn_kappa2 = TRUE, learn_lambda2 = TRUE,
   kappa2 = 20, lambda2 = 20, hyperprior_param, c_tuning_par_xi = 1,
   c_tuning_par_tau = 1, display_progress = TRUE, ret_beta_nc = FALSE,
-  sv = FALSE, sv_param, LPDS = FALSE, y_test, x_test)
+  sv = FALSE, sv_param)
 }
 \arguments{
-\item{formula}{an object of class "formula": a symbolic representation of the model, as in the
+\item{formula}{object of class "formula": a symbolic representation of the model, as in the
 function \code{lm}. For details, see \code{\link{formula}}.}
 
 \item{data}{\emph{optional} data frame containing the response variable and the covariates. If not found in \code{data},
@@ -100,20 +100,9 @@ Any list elements that are misnamed will be ignored and a warning will be thrown
 \item \code{bmu}: real number. The default value is 0.
 \item \code{Bmu}: real number. larger than 0. The default value is 1.
 }}
-
-\item{LPDS}{logical value indicating whether the one step ahead log predictive density score should be returned.
-If \code{LPDS} is \code{TRUE}, both \code{x_test} and \code{y_test} have to be supplied. The default value is \code{FALSE}.}
-
-\item{y_test}{\emph{optional} real number. If \code{LPDS} is \code{TRUE} this value will be taken to be the true one step
-ahead value and will be used to calculate the log predictive density score. Ignored if \code{LPDS} is \code{FALSE}.}
-
-\item{x_test}{\emph{optional} object that can be coerced to a 1 x d data frame containing the covariates for the
-calculation of the one step ahead log predictive density score. The column names have to exactly match the
-names of the covariates provided in the formula or an error will be thrown. An intercept will be added to
-\code{x_test} if an intercept was added to the covariates by the formula interface. Ignored if \code{LPDS} is \code{FALSE}.}
 }
 \value{
-The value returned is a list object of class \code{shrinkTVP_res} containing
+The value returned is a list object of class \code{shrinkTVP} containing
 \item{\code{sigma2}}{\code{mcmc} object containing the parameter draws from the posterior distribution of \code{sigma2}.
 If \code{sv} is \code{TRUE}, \code{sigma2} is additionally an \code{mcmc.tvp} object.}
 \item{\code{theta_sr}}{an \code{mcmc} object containing the parameter draws from the posterior distribution of the square root of theta.}
@@ -148,7 +137,7 @@ parameter for the stochastic volatility model on the errors. Not returned if \co
 \item{\code{priorvals}}{\code{list} object containing hyperparameter values of the prior distributions, as specified by the user.}
 \item{\code{model}}{\code{list} object containing the model matrix and model response used.}
 \item{\code{summaries}}{\code{list} object containing a collection of summary statistics of the posterior draws.}
-\item{\code{LPDS}}{\emph{(optional)} value of the log predictive density score, calculated with \code{y_test} and \code{x_test}.}
+\item{\code{LPDS_comp}}{\code{list} object containg two arrays that are required for calculating the LPDS.}
 To display the output, use \code{plot} and \code{summary}. The \code{summary} method displays the specified prior values stored in
 \code{priorvals} and the posterior summaries stored in \code{summaries}, while the \code{plot} method calls \code{coda}'s \code{plot.mcmc}
 or the \code{plot.mcmc.tvp} method. Furthermore, all functions that can be applied to \code{coda::mcmc} objects
@@ -204,7 +193,7 @@ Bitto, A., & Frühwirth-Schnatter, S. (2019). "Achieving shrinkage in a time-var
 \emph{Journal of Econometrics}, 210(1), 75-97. <doi:10.1016/j.jeconom.2018.11.006>
 }
 \seealso{
-\code{\link{plot.shrinkTVP_res}}, \code{\link{plot.mcmc.tvp}}
+\code{\link{plot.shrinkTVP}}, \code{\link{plot.mcmc.tvp}}
 }
 \author{
 Peter Knaus \email{peter.knaus@wu.ac.at}

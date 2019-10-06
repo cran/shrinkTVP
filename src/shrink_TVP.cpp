@@ -44,10 +44,7 @@ List do_shrinkTVP(arma::vec y,
                   double a0_sv,
                   double b0_sv,
                   double bmu,
-                  double Bmu,
-                  double y_test,
-                  arma::vec x_test,
-                  bool LPDS) {
+                  double Bmu) {
 
   // progress bar setup
   arma::vec prog_rep_points = arma::round(arma::linspace(0, niter, 50));
@@ -176,14 +173,10 @@ List do_shrinkTVP(arma::vec y,
   double priorlatent0 = -1;
 
   // Values for LPDS
+  arma::cube m_N_save(d, 1, nsave);
+  arma::cube chol_C_N_inv_save(d, d, nsave);
   arma::vec m_N_samp;
   arma::mat chol_C_N_inv_samp;
-  double sum_pred_y = 0;
-  arma::vec F;
-  arma::vec LF;
-  double S;
-  double y_hat;
-  double sig2_pred;
 
   // Override inital values with user specified fixed values
   if (learn_kappa2 == false){
@@ -214,7 +207,7 @@ List do_shrinkTVP(arma::vec y,
     // step a)
     // sample time varying beta.tilde parameters (NC parametrization)
     try {
-      sample_beta_McCausland(beta_nc_samp, y, x, theta_sr_samp, sig2_samp, beta_mean_samp, m_N_samp, chol_C_N_inv_samp, LPDS, N, d, Rchol);
+      sample_beta_McCausland(beta_nc_samp, y, x, theta_sr_samp, sig2_samp, beta_mean_samp, m_N_samp, chol_C_N_inv_samp, true, N, d, Rchol);
     } catch (...){
       beta_nc_samp.fill(nanl(""));
       if (succesful == true){
@@ -415,22 +408,6 @@ List do_shrinkTVP(arma::vec y,
       nburn_new = 0;
     }
 
-    // Calculate predicted value and add to sum for LPDS
-    if((LPDS == true) && (j % nthin == 0) && (j >= nburn)){
-
-      if (sv == false){
-        sig2_pred = sig2_samp(0);
-      } else {
-        sig2_pred = std::exp(R::rnorm(sv_para(0) + sv_para(1) * (std::log(sig2_samp(N-1)) - sv_para(0)), std::sqrt(sv_para(2))));
-      }
-
-      F = x_test % theta_sr_samp;
-      LF = arma::solve(arma::trimatl(chol_C_N_inv_samp), F);
-      S = arma::as_scalar(LF.t() * LF + F.t() * F + sig2_pred);
-      y_hat = arma::as_scalar(x_test.t() * beta_mean_samp + F.t() * m_N_samp);
-      sum_pred_y += R::dnorm(y_test, y_hat, std::sqrt(S), 0);
-    }
-
 
     // Increment index i if burn-in period is over
     if (j > nburn_new){
@@ -449,6 +426,8 @@ List do_shrinkTVP(arma::vec y,
       beta_save.slice((post_j-1)/nthin) = beta.t();
       xi2_save.col((post_j-1)/nthin) = xi2_samp;
       tau2_save.col((post_j-1)/nthin) = tau2_samp;
+      m_N_save.slice((post_j-1)/nthin) = m_N_samp;
+      chol_C_N_inv_save.slice((post_j-1)/nthin) = chol_C_N_inv_samp;
 
       //conditional storing
       if (ret_beta_nc){
@@ -502,9 +481,6 @@ List do_shrinkTVP(arma::vec y,
     }
   }
 
-  arma::mat LPDS_res(1,1);
-  LPDS_res(0,0) = std::log(sum_pred_y/std::floor((niter - nburn)/nthin));
-
   // return everything as a nested list (due to size restrictions on Rcpp::Lists)
   return List::create(_["sigma2"] = sig2_save,
                       _["theta_sr"] = theta_sr_save.t(),
@@ -529,7 +505,9 @@ List do_shrinkTVP(arma::vec y,
                       _["sv_mu"] = sv_mu_save,
                       _["sv_phi"] = sv_phi_save,
                       _["sv_sigma2"] = sv_sigma2_save,
-                      _["LPDS"] = LPDS_res,
+                      _["LPDS_comp"] = List::create(
+                        _["m_N"] = m_N_save,
+                        _["chol_C_N_inv"] = chol_C_N_inv_save),
                       _["success_vals"] = List::create(
                         _["success"] = succesful,
                         _["fail"] = fail,

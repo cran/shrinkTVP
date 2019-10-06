@@ -53,3 +53,6 @@ data <- res$data
 # Now with stochastic volatility
 res_sv <- simTVP(N = 300, sv = TRUE)
 }
+\author{
+Peter Knaus \email{peter.knaus@wu.ac.at}
+}

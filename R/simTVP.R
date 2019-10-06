@@ -38,6 +38,7 @@
 #'
 #' # Now with stochastic volatility
 #' res_sv <- simTVP(N = 300, sv = TRUE)
+#' @author Peter Knaus \email{peter.knaus@@wu.ac.at}
 #' @export
 simTVP <- function(N = 200, d = 3, sv = FALSE, sigma2 = 1, theta, beta_mean){
 

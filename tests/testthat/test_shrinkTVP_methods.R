@@ -15,5 +15,6 @@ test_that("shrinkTVP methods function", {
   expect_invisible(plot(res))
   expect_visible(summary(res))
   expect_invisible(plot(res$beta[[1]]))
+  expect_visible(res)
 })
 
