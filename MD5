@@ -1,6 +1,6 @@
-42f638a717016d0c6a9c49e9abff08ee *DESCRIPTION
+0119de93a2f712ee6ffb63466bc71d64 *DESCRIPTION
 3a7cce11f94b567dede1e51af82007fa *NAMESPACE
-d7e1312ec7b5aadf88da2bec98a1cae0 *NEWS.md
+842242d7023098db3a1c1aae14c21bb4 *NEWS.md
 b5269e9242ca8d722e3beb2611bfe131 *R/Imports.R
 9b95e6dc2e7a08cbd1de55748c96792f *R/RcppExports.R
 2ad6efa7b8b6a163a4bfadd81813010d *R/pred_funs.R
@@ -9,8 +9,8 @@ b5269e9242ca8d722e3beb2611bfe131 *R/Imports.R
 6349c338eaa398279ba9ca8b4c917228 *R/simTVP.R
 c7e1e603e65d347f912000db4aa43175 *R/utilities_shrink_TVP_res.R
 c3f3c7fcd70f3322e5c49e1013c40abb *build/vignette.rds
-c79bd6ae48882276661f388718c8d189 *inst/doc/shrinkTVP.ltx
-6ee3ce93c8c9d23f0f276c1677f61a4b *inst/doc/shrinkTVP.pdf
+7f173191724fc18a5f8eed712ef08aa9 *inst/doc/shrinkTVP.ltx
+148c5dc53e89d78772c58e8c192813d6 *inst/doc/shrinkTVP.pdf
 a9959341490dc8dfb6d39edac5186eaf *man/LPDS.Rd
 e30835a9ee0ae591a130a2858de3704d *man/eval_pred_dens.Rd
 f315c3e8ec8035fc072faf03483092c2 *man/plot.mcmc.tvp.Rd
@@ -48,5 +48,5 @@ f8dced90777e33434ab11cf2302eb090 *vignettes/figs/plot_sigma2.pdf
 10d38141184255de7a14f8309cfc04d7 *vignettes/figs/plot_theta.pdf
 6c965139480232066a3cef16836590b0 *vignettes/figs/plot_usmacro_beta.pdf
 1f13b853e96c4220a19bd84a25e50029 *vignettes/figs/plot_usmacro_theta.pdf
-449047661c04eb53818554a890ddcdd8 *vignettes/shrinkTVP.bib
-c79bd6ae48882276661f388718c8d189 *vignettes/shrinkTVP.ltx
+9d8f0cfe2e4a3b7d50f6e3e28d208e7b *vignettes/shrinkTVP.bib
+7f173191724fc18a5f8eed712ef08aa9 *vignettes/shrinkTVP.ltx
