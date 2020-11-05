@@ -2,7 +2,7 @@ Package: shrinkTVP
 Type: Package
 Title: Efficient Bayesian Inference for Time-Varying Parameter Models
         with Shrinkage
-Version: 1.1.1
+Version: 2.0
 Authors@R: c(
   person("Peter", "Knaus", email = "peter.knaus@wu.ac.at",
     role = c("aut", "cre"), comment = c(ORCID = "0000-0001-6498-7084")),
@@ -13,18 +13,19 @@ Authors@R: c(
     role = "aut", comment = c(ORCID = "0000-0003-0516-5552")),
   person("Daniel", "Winkler", email = "daniel.winkler@wu.ac.at", role = "ctb"),
   person("Kemal", "Dingic", role = "ctb"))
-Description: Efficient Markov chain Monte Carlo (MCMC) algorithms for fully Bayesian estimation of time-varying parameter models with shrinkage priors. Details on the algorithms used are provided in Bitto and Frühwirth-Schnatter (2019) <doi:10.1016/j.jeconom.2018.11.006>.
+Description: Efficient Markov chain Monte Carlo (MCMC) algorithms for fully Bayesian estimation of time-varying parameter models with shrinkage priors. Details on the algorithms used are provided in Bitto and Frühwirth-Schnatter (2019) <doi:10.1016/j.jeconom.2018.11.006> and  
+  Cadonna et al. (2020) <doi:10.3390/econometrics8020020>.
 License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true
 Depends: R (>= 3.3.0)
 Imports: Rcpp, GIGrvg, stochvol, coda, methods, utils, zoo
 LinkingTo: Rcpp, RcppArmadillo, GIGrvg, RcppProgress, stochvol
-RoxygenNote: 6.1.1
+RoxygenNote: 7.1.1
 Suggests: testthat, knitr, rmarkdown, R.rsp
 VignetteBuilder: R.rsp
 NeedsCompilation: yes
-Packaged: 2019-10-06 14:42:29 UTC; pknaus
+Packaged: 2020-10-23 14:42:50 UTC; pknaus
 Author: Peter Knaus [aut, cre] (<https://orcid.org/0000-0001-6498-7084>),
   Angela Bitto-Nemling [aut],
   Annalisa Cadonna [aut] (<https://orcid.org/0000-0003-0360-7628>),
@@ -34,4 +35,4 @@ Author: Peter Knaus [aut, cre] (<https://orcid.org/0000-0001-6498-7084>),
   Kemal Dingic [ctb]
 Maintainer: Peter Knaus <peter.knaus@wu.ac.at>
 Repository: CRAN
-Date/Publication: 2019-10-06 16:00:02 UTC
+Date/Publication: 2020-11-05 17:30:03 UTC

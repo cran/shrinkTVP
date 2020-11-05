@@ -9,18 +9,24 @@
 #' The default value is 3.
 #' @param sv logical value. If set to \code{TRUE}, the data will be generated with
 #' stochastic volatility for the errors of the observation equation using \code{\link{svsim}}. The default value is FALSE.
-#' @param sigma2 positive real number. Determines the variance on the errors of the observation
+#' @param sigma2 positive real number. Determines the variance of the errors of the observation
 #' equation. Ignored if sv is \code{TRUE}. The default value is 1.
 #' @param theta \emph{(optional)} vector containing positive real numbers. If supplied, these determine the variances of the
-#' innovations of the state equation. Otherwise, the elements of \code{theta} are generated from a ChiSq(1) distribution.
+#' innovations of the state equation. Otherwise, the elements of \code{theta} are generated from a X^2(1) distribution.
 #' Has to be of length \code{d} or an error will be thrown.
 #' @param beta_mean \emph{(optional)} vector containing real numbers. If supplied, these determine the mean of the
 #' initial value of the state equation. Otherwise, the elements of \code{beta_mean} are generated from a Normal(0,1) distribution.
 #' Has to be of length \code{d} or an error will be thrown.
+#' @param sv_mu real number. Determines the mean of the logarithm of the volatility. Ignored if \code{sv} is \code{FALSE}.
+#' The default value is 0.
+#' @param sv_phi real number between -1 and 1. Determines the persistence of the SV process. Ignored if \code{sv} is \code{FALSE}.
+#' The default value is 0.98.
+#' @param sv_sigma2 positive, real number. Determines the variance of the innovations of the logarithm of the volatility.
+#' Ignored if \code{sv} is \code{FALSE}. The default value is 0.2.
 #'
 #' @return The value returned is a list object containing:
-#' \item{\code{data}}{a data frame that holds the simulated data.}
-#' \item{\code{true_vals}}{a list object containing:
+#' \item{\code{data}}{data frame that holds the simulated data.}
+#' \item{\code{true_vals}}{list object containing:
 #'   \itemize{
 #'   \item \code{theta}: the values of theta used in the data generating process.
 #'   \item \code{beta_mean}: the values of beta_mean used in the data generating process.
@@ -40,7 +46,7 @@
 #' res_sv <- simTVP(N = 300, sv = TRUE)
 #' @author Peter Knaus \email{peter.knaus@@wu.ac.at}
 #' @export
-simTVP <- function(N = 200, d = 3, sv = FALSE, sigma2 = 1, theta, beta_mean){
+simTVP <- function(N = 200, d = 3, sv = FALSE, sigma2 = 1, theta, beta_mean, sv_mu = 0, sv_phi = 0.98, sv_sigma2 = 0.2){
 
   # Check all inputs
   if (int_input_bad(N)){
@@ -65,9 +71,22 @@ simTVP <- function(N = 200, d = 3, sv = FALSE, sigma2 = 1, theta, beta_mean){
 
   if (sv == FALSE){
     if (numeric_input_bad(sigma2)){
-      stop("sigma2 has to be a positive scalar")
+      stop("sigma2 has to be a positive real number")
     }
   }
+
+  if (numeric_input_bad_(sv_mu)) {
+    stop("sv_mu has to be a real number")
+  }
+
+  if (numeric_input_bad_(sv_phi) || abs(sv_phi) >= 1 ) {
+    stop("sv_phi has to be a real number between -1 and 1")
+  }
+
+  if (numeric_input_bad(sv_sigma2)) {
+    stop("sv_sigma2 has to be a positive real number")
+  }
+
 
 
   # Generate matrix x
@@ -131,7 +150,7 @@ simTVP <- function(N = 200, d = 3, sv = FALSE, sigma2 = 1, theta, beta_mean){
 
   # Create noise depending on sv input, use svsim from stochvol
   if (sv){
-    sigma2 <- stochvol::svsim(N, mu = 0)$vol
+    sigma2 <- stochvol::svsim(N, mu = sv_mu, phi = sv_phi, sigma = sqrt(sv_sigma2))$vol^2
   }
   err <- rnorm(N, 0, sqrt(sigma2))
 

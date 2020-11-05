@@ -1,15 +1,20 @@
-// [[Rcpp::depends(RcppArmadillo)]]
 #include <RcppArmadillo.h>
-#include <progress.hpp>
 #include <math.h>
 using namespace Rcpp;
 
-//[[Rcpp::export]]
-arma::vec pred_dens_mix_approx(arma::vec x_test, arma::vec y_test,
-                               arma::mat theta_sr, arma::mat beta_mean, arma::vec sig2_samp,
-                               bool sv, arma::vec sv_phi, arma::vec sv_mu, arma::vec sv_sigma2,
-                               arma::cube chol_C_N_inv_samp, arma::cube m_N_samp,
-                               int M, bool log){
+arma::vec pred_dens_mix_approx(arma::vec x_test,
+                               arma::vec y_test,
+                               arma::mat theta_sr,
+                               arma::mat beta_mean,
+                               arma::vec sig2_samp,
+                               bool sv,
+                               arma::vec sv_phi,
+                               arma::vec sv_mu,
+                               arma::vec sv_sigma2,
+                               arma::cube chol_C_N_inv_samp,
+                               arma::cube m_N_samp,
+                               int M,
+                               bool log){
 
 
   int nobs = y_test.n_elem;
@@ -39,9 +44,6 @@ arma::vec pred_dens_mix_approx(arma::vec x_test, arma::vec y_test,
   for (int j = 0; j < nobs; j++){
     for (int m = 0; m < M; m++){
 
-
-
-
       // Create mean and sd
       F = x_test % (theta_sr.row(m)).t();
       LF = arma::solve(arma::trimatl(chol_C_N_inv_samp.slice(m)), F);
@@ -67,4 +69,37 @@ arma::vec pred_dens_mix_approx(arma::vec x_test, arma::vec y_test,
 
 
 }
-//sum_pred_y += R::dnorm(y_test, mu, std::sqrt(S), 0);
+
+
+arma::mat calc_fitted_cpp(arma::vec y,
+                          arma::mat x,
+                          Rcpp::List beta){
+
+  int d = beta.length();
+  int T = y.n_elem;
+  int nsave = as<arma::mat>(beta[0]).n_rows;
+
+  arma::mat res(nsave, T, arma::fill::zeros);
+  arma::mat curr_beta(nsave, T, arma::fill::none);
+
+  // Loop over number of covariates
+  for (int j = 0; j < d; j++){
+
+    curr_beta = as<arma::mat>(beta[j]);
+
+    // Loop over time
+    for (int t = 0; t < T; t++){
+
+      // Loop over number of MCMC draws
+      for (int m = 0; m < nsave; m++){
+
+        // Create sum_{j = 1}^d of x_{j,t}^{(m)} * beta_{j,t}^{(m)} for all iterations
+        res(m, t) += x(t, j) * curr_beta(m, t + 1);
+
+      }
+    }
+  }
+
+  return(res);
+
+}

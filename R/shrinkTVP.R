@@ -4,35 +4,56 @@
 #' \code{shrinkTVP} samples from the joint posterior distribution of the parameters of a time-varying
 #' parameter model with shrinkage, potentially including stochastic volatility (SV), and returns the MCMC draws.
 #'
-#' For details concerning the algorithm please refer to the paper by Bitto and Frühwirth-Schnatter (2019).
+#' For details concerning the algorithms please refer to the papers by Bitto and Frühwirth-Schnatter (2019) and Cadonna et al. (2020).
 #'
 #' @param formula object of class "formula": a symbolic representation of the model, as in the
 #' function \code{lm}. For details, see \code{\link{formula}}.
 #' @param data \emph{optional} data frame containing the response variable and the covariates. If not found in \code{data},
 #' the variables are taken from \code{environment(formula)}, typically the environment from which \code{shrinkTVP}
 #' is called. No \code{NA}s are allowed in the response variable and the covariates.
+#' @param mod_type character string that reads either \code{"triple"}, \code{"double"} or \code{"ridge"}.
+#' Determines whether the triple gamma, double gamma or ridge prior are used for \code{theta_sr} and \code{beta_mean}.
+#' The default is "double".
 #' @param niter positive integer, indicating the number of MCMC iterations
 #' to perform, including the burn-in. Has to be larger than or equal to \code{nburn} + 2. The default value is 10000.
 #' @param nburn non-negative integer, indicating the number of iterations discarded
 #' as burn-in. Has to be smaller than or equal to \code{niter} - 2. The default value is \code{round(niter / 2)}.
 #' @param nthin positive integer, indicating the degree of thinning to be performed. Every \code{nthin} draw is kept and returned.
 #' The default value is 1, implying that every draw is kept.
-#' @param learn_a_xi logical value indicating whether to learn a_xi, the local adaptation parameter of the state variances.
-#' The default value is \code{TRUE}.
-#' @param learn_a_tau logical value indicating whether to learn a_tau, the local adaptation parameter of the mean of the
-#' initial values of the states. The default value is \code{TRUE}.
+#' @param learn_a_xi logical value indicating whether to learn a_xi, the spike parameter of the state variances.
+#' Ignored if \code{mod_type} is set to \code{"ridge"}. The default value is \code{TRUE}.
+#' @param learn_a_tau logical value indicating whether to learn a_tau, the spike parameter of the mean of the
+#' initial values of the states. Ignored if \code{mod_type} is set to \code{"ridge"}. The default value is \code{TRUE}.
 #' @param a_xi positive, real number, indicating the (fixed) value for a_xi. Ignored if
-#' \code{learn_a_xi} is \code{TRUE}. The default value is 0.1.
+#' \code{learn_a_xi} is \code{TRUE} or \code{mod_type} is set to \code{"ridge"}. The default value is 0.1.
 #' @param a_tau positive, real number, indicating the (fixed) value for a_tau. Ignored if
-#' \code{learn_a_tau} is \code{TRUE}. The default value is 0.1.
-#' @param learn_kappa2 logical value indicating whether to learn kappa2, the global level of shrinkage for
+#' \code{learn_a_tau} is \code{TRUE} or \code{mod_type} is set to \code{"ridge"}. The default value is 0.1.
+#' @param learn_c_xi logical value indicating whether to learn c_xi, the tail parameter of the state variances.
+#' Ignored if \code{mod_type} is not set to \code{"triple"} or \code{a_eq_c_xi} is set to \code{TRUE}.
+#' The default value is \code{TRUE}.
+#' @param learn_c_tau logical value indicating whether to learn c_tau, the tail parameter of the mean of the
+#' initial values of the states. Ignored if \code{mod_type} is not set to \code{"triple"} or \code{a_eq_c_tau} is set to \code{TRUE}.
+#' The default value is \code{TRUE}.
+#' @param c_xi positive, real number, indicating the (fixed) value for c_xi. Ignored if
+#' \code{learn_c_xi} is \code{TRUE}, \code{mod_type} is not set to \code{"triple"} or \code{a_eq_c_xi} is set to \code{TRUE}.
+#' The default value is 0.1.
+#' @param c_tau positive, real number, indicating the (fixed) value for c_tau. Ignored if
+#' \code{learn_c_xi} is \code{TRUE}, \code{mod_type} is not set to \code{"triple"}  or \code{a_eq_c_tau} is set to \code{TRUE}.
+#' The default value is 0.1.
+#' @param a_eq_c_xi logical value indicating whether to force \code{a_xi} and \code{c_xi} to be equal.
+#' If set to \code{TRUE}, \code{beta_a_xi} and \code{alpha_a_xi} are used as the hyperparameters and \code{beta_c_xi} and \code{alpha_c_xi} are ignored.
+#' Ignored if \code{mod_type} is not set to \code{"triple"}. The default value is \code{FALSE}.
+#' @param a_eq_c_tau logical value indicating whether to force \code{a_tau} and \code{c_tau} to be equal.
+#' If set to \code{TRUE}, \code{beta_a_tau} and \code{alpha_a_tau} are used as the hyperparameters and \code{beta_c_tau} and \code{alpha_c_tau} are ignored.
+#' Ignored if \code{mod_type} is not set to \code{"triple"}. The default value is \code{FALSE}.
+#' @param learn_kappa2_B logical value indicating whether to learn kappa2_B, the global level of shrinkage for
 #' the state variances. The default value is \code{TRUE}.
-#' @param learn_lambda2 logical value indicating whether to learn the lambda^2 parameter,
+#' @param learn_lambda2_B logical value indicating whether to learn the lambda2_B parameter,
 #' the global level of shrinkage for the mean of the initial values of the states. The default value is \code{TRUE}.
-#' @param kappa2 positive, real number, indicating the (fixed) value for kappa2. Ignored if
-#' \code{learn_kappa2} is \code{TRUE}. The default value is 20.
-#' @param lambda2 positive, real number, indicating the (fixed) value for lambda2. Ignored if
-#' \code{learn_lambda2} is \code{TRUE}. The default value is 20.
+#' @param kappa2_B positive, real number, indicating the (fixed) value for kappa2_B. Ignored if
+#' \code{learn_kappa2_B} is \code{TRUE}. The default value is 20.
+#' @param lambda2_B positive, real number, indicating the (fixed) value for lambda2_B. Ignored if
+#' \code{learn_lambda2_B} is \code{TRUE}. The default value is 20.
 #' @param hyperprior_param \emph{optional} named list containing hyperparameter values.
 #' Not all have to be supplied, with those missing being replaced by the default values.
 #' Any list elements that are misnamed will be ignored and a warning will be thrown.
@@ -46,21 +67,17 @@
 #' \item \code{e2}: The default value is 0.001.
 #' \item \code{d1}: The default value is 0.001.
 #' \item \code{d2}: The default value is 0.001.
-#' \item \code{b_xi}: The default value is 10.
-#' \item \code{b_tau}: The default value is 10.
-#' \item \code{nu_xi}: The default value is 5.
-#' \item \code{nu_tau}: The default value is 5.
+#' \item \code{alpha_a_xi}: The default value is 5.
+#' \item \code{alpha_a_tau}: The default value is 5.
+#' \item \code{beta_a_xi}: The default value is 10.
+#' \item \code{beta_a_tau}: The default value is 10.
+#' \item \code{alpha_c_xi}: The defalut value is 5.
+#' \item \code{alpha_c_tau}: The defalut value is 5.
+#' \item \code{beta_c_xi}: The default value is 2.
+#' \item \code{beta_c_tau}: The default value is 2.
 #' }
-#' @param c_tuning_par_xi positive, real number. Determines the standard deviation of the proposal
-#' distribution for the Metropolis Hastings step for a_xi. Ignored if \code{learn_a_xi} is \code{FALSE}. The default
-#' value is 1.
-#' @param c_tuning_par_tau positive, real number. Determines the standard deviation of the proposal
-#' distribution for the Metropolis Hastings step for a_tau. Ignored if \code{learn_a_tau} is \code{FALSE}. The default
-#' value is 1.
 #' @param display_progress logical value indicating whether the progress bar and other informative output should be
 #' displayed. The default value is \code{TRUE}.
-#' @param ret_beta_nc logical value indicating whether to output the non-centered states in addition to the centered ones.
-#' The default value is \code{FALSE}.
 #' @param sv logical value indicating whether to use stochastic volatility for the error of the observation
 #' equation. For details please see \code{\link{stochvol}}, in particular \code{\link{svsample}}. The default value is
 #' \code{FALSE}.
@@ -75,31 +92,89 @@
 #' \item \code{bmu}: real number. The default value is 0.
 #' \item \code{Bmu}: real number. larger than 0. The default value is 1.
 #' }
-#'
+#' @param MH_tuning \emph{optional} named list containing values used to tune the MH steps for \code{a_xi}, \code{a_tau},
+#' \code{c_xi} and \code{c_tau}. Not all have to be supplied, with those missing being replaced by the default values.
+#' Any list elements that are misnamed will be ignored and a warning will be thrown.
+#' The arguments for \code{a_xi}(\code{a_tau}) are only used if \code{learn_a_xi}(\code{learn_a_tau})
+#' is set to \code{TRUE} and \code{mod_type} is not equal to \code{"ridge"}. The arguments for \code{c_xi}(\code{c_tau}) are only
+#' used if \code{learn_c_xi}(\code{learn_c_tau}) is set to \code{TRUE} and \code{mod_type} is equal to \code{"triple"}. Arguments ending in "adaptive" are
+#' logical values indicating whether or not to make the MH step for the respective parameter adaptive. Arguments ending in "tuning_par" serve two different purposes.
+#' If the respective MH step is not set to be adaptive, it acts as the standard deviation of the proposal distribution. If the respective MH step
+#' is set to be adaptive, it acts as the initial standard deviation. Arguments ending in "target_rate" define the acceptance rate the algorithm aims to achieve.
+#' Arguments ending in "max_adapt" set the maximum value by which the logarithm of the standard deviation of the proposal distribution is adjusted. Finally,
+#' arguments ending in "batch_size" set the batch size after which the standard deviation of the proposal distribution is adjusted.
+#' The following elements can be supplied:
+#' \itemize{
+#' \item \code{a_xi_adaptive}: logical value. The default is \code{TRUE}.
+#' \item \code{a_xi_tuning_par}: positive, real number. The default value is 1.
+#' \item \code{a_xi_target_rate}: positive, real number, between 0 and 1. The default value is 0.44.
+#' \item \code{a_xi_max_adapt}: positive, real number. The default value is 0.01.
+#' \item \code{a_xi_batch_size}: positive integer. The default value is 50.
+#' \item \code{a_tau_adaptive}: logical value. The default is \code{TRUE}.
+#' \item \code{a_tau_tuning_par}: positive, real number. The default value is 1.
+#' \item \code{a_tau_target_rate}: positive, real number, between 0 and 1. The default value is 0.44.
+#' \item \code{a_tau_max_adapt}: positive, real number. The default value is 0.01.
+#' \item \code{a_tau_batch_size}: positive integer. The default value is 50.
+#' \item \code{c_xi_adaptive}: logical value. The default is \code{TRUE}.
+#' \item \code{c_xi_tuning_par}: positive, real number. The default value is 1.
+#' \item \code{c_xi_target_rate}: positive, real number, between 0 and 1. The default value is 0.44.
+#' \item \code{c_xi_max_adapt}: positive, real number. The default value is 0.01.
+#' \item \code{c_xi_batch_size}: positive integer. The default value is 50.
+#' \item \code{c_tau_adaptive}: logical value. The default is \code{TRUE}.
+#' \item \code{c_tau_tuning_par}: positive, real number. The default value is 1.
+#' \item \code{c_tau_target_rate}: positive, real number, between 0 and 1. The default value is 0.44.
+#' \item \code{c_tau_max_adapt}: positive, real number. The default value is 0.01.
+#' \item \code{c_tau_batch_size}: positive integer. The default value is 50.
+#' }
+#' @param starting_vals \emph{optional} named list containing the values at which the MCMC algorithm will be initialized. In the
+#' following \code{d} refers to the number of covariates, including the intercept and expanded factors.
+#' Not all have to be supplied, with those missing being replaced by the default values.
+#' Any list elements that are misnamed will be ignored and a warning will be thrown. The following elements can be supplied:
+#' \itemize{
+#' \item \code{beta_mean_st}: vector of length \code{d} containing single numbers. The default is \code{rep(0, d)}.
+#' \item \code{theta_sr_st}: vector of length \code{d} containing single, positive numbers. The default is \code{rep(1, d)}.
+#' \item \code{tau2_st}: vector of length \code{d} containing single, positive numbers. The default is \code{rep(1, d)}.
+#' \item \code{xi2_st}: vector of length \code{d} containing single, positive numbers. The default is \code{rep(1, d)}.
+#' \item \code{kappa2_st}: vector of length \code{d} containing single, positive numbers. The default is \code{rep(1, d)}.
+#' \item \code{lambda2_st}: vector of length \code{d} containing single, positive numbers. The default is \code{rep(1, d)}.
+#' \item \code{kappa2_B_st}: positive, real number. The default value is 20.
+#' \item \code{lambda2_B_st}: positive, real number. The default value is 20.
+#' \item \code{a_xi_st}: positive, real number. The default value is 0.1.
+#' \item \code{a_tau_st}: positive, real number. The default value is 0.1.
+#' \item \code{c_xi_st}: positive, real number. The default value is 0.1. Note that the prior for \code{c_xi} is restricted to (0, 0.5).
+#' \item \code{c_tau_st}: positive, real number. The default value is 0.1. Note that the prior for \code{c_tau} is restricted to (0, 0.5).
+#' \item \code{sv_mu_st}: real number. The default value is -10.
+#' \item \code{sv_phi_st}: positive, real number between -1 and 1. The default value is 0.5.
+#' \item \code{sv_sigma2_st }: positive, real number. The default value is 1.
+#' \item \code{C0_st}: positive, real number. The default value is 1.
+#' \item \code{sigma2_st}: positive, real number if \code{sv} is \code{FALSE}, otherwise a vector of positive, real numbers of length \code{N}. The default value is 1 or a vector thereof.
+#' \item \code{h0_st}: real number. The default value is 0.
+#' }
 #' @return The value returned is a list object of class \code{shrinkTVP} containing
-#' \item{\code{sigma2}}{\code{mcmc} object containing the parameter draws from the posterior distribution of \code{sigma2}.
-#' If \code{sv} is \code{TRUE}, \code{sigma2} is additionally an \code{mcmc.tvp} object.}
-#' \item{\code{theta_sr}}{an \code{mcmc} object containing the parameter draws from the posterior distribution of the square root of theta.}
-#' \item{\code{beta_mean}}{an \code{mcmc} object containing the parameter draws from the posterior distribution of beta_mean.}
-#' \item{\code{beta_nc}}{\emph{(optional)} \code{list} object containing an \code{mcmc.tvp} object for the parameter draws from the posterior
-#' distribution of the non-centered states, one for each covariate. In the case that there is only one covariate, this becomes just
-#' a single \code{mcmc.tvp} object. Not returned if \code{ret_beta_nc} is \code{FALSE}.}
 #' \item{\code{beta}}{\code{list} object containing an \code{mcmc.tvp} object for the parameter draws from the posterior distribution of the centered
 #' states, one for each covariate. In the case that there is only one covariate, this becomes just a single \code{mcmc.tvp} object.}
-#' \item{\code{xi2}}{\code{mcmc} object containing the parameter draws from the posterior distribution of xi2.}
-#' \item{\code{a_xi}}{\emph{(optional)} \code{mcmc} object containing the parameter draws from the posterior distribution of a_xi.
-#' Not returned if \code{learn_a_xi} is \code{FALSE}.}
-#' \item{\code{a_xi_acceptance}}{\emph{(optional)} \code{list} object containing acceptance statistics for the Metropolis Hastings algorithm for
-#' a_xi. Not returned if \code{learn_a_xi} is \code{FALSE}.}
+#' \item{\code{beta_mean}}{\code{mcmc} object containing the parameter draws from the posterior distribution of beta_mean.}
+#' \item{\code{theta_sr}}{\code{mcmc} object containing the parameter draws from the posterior distribution of the square root of theta.}
 #' \item{\code{tau2}}{\code{mcmc} object containing the parameter draws from the posterior distribution of tau2.}
-#' \item{\code{a_tau}}{\emph{(optional)} \code{mcmc} object containing the parameter draws from the posterior distribution of a_tau.
-#' Not returned if \code{learn_a_tau} is \code{FALSE}.}
-#' \item{\code{a_tau_acceptance}}{\emph{(optional)} \code{list} containing acceptance statistics for the Metropolis Hastings algorithm for
-#' a_tau. Not returned if \code{learn_a_tau} is \code{FALSE}.}
-#' \item{\code{kappa2}}{\emph{(optional)} \code{mcmc} object containing the parameter draws from the posterior distribution of kappa2.
-#' Not returned if \code{learn_kappa2} is \code{FALSE}.}
+#' \item{\code{xi2}}{\code{mcmc} object containing the parameter draws from the posterior distribution of xi2.}
 #' \item{\code{lambda2}}{\emph{(optional)} \code{mcmc} object containing the parameter draws from the posterior distribution of lambda2.
-#' Not returned if \code{learn_lambda2} is \code{FALSE}.}
+#' Not returned if \code{mod_type} is not \code{"triple"}.}
+#' \item{\code{kappa2}}{\emph{(optional)} \code{mcmc} object containing the parameter draws from the posterior distribution of kappa2.
+#' Not returned if \code{mod_type} is not \code{"triple"}.}
+#' \item{\code{a_xi}}{\emph{(optional)} \code{mcmc} object containing the parameter draws from the posterior distribution of a_xi.
+#' Not returned if \code{learn_a_xi} is \code{FALSE} or \code{mod_type} is \code{"ridge"}.}
+#' \item{\code{a_tau}}{\emph{(optional)} \code{mcmc} object containing the parameter draws from the posterior distribution of a_tau.
+#' Not returned if \code{learn_a_tau} is \code{FALSE} or \code{mod_type} is \code{"ridge"}.}
+#' \item{\code{c_xi}}{\emph{(optional)} \code{mcmc} object containing the parameter draws from the posterior distribution of c_xi.
+#' Not returned if \code{learn_c_xi} is \code{FALSE} or \code{mod_type} is not \code{"triple"}.}
+#' \item{\code{c_tau}}{\emph{(optional)} \code{mcmc} object containing the parameter draws from the posterior distribution of c_tau.
+#' Not returned if \code{learn_c_tau} is \code{FALSE} or \code{mod_type} is not \code{"triple"}.}
+#' \item{\code{lambda2_B}}{\emph{(optional)} \code{mcmc} object containing the parameter draws from the posterior distribution of lambda2_B.
+#' Not returned if \code{learn_lambda2_B} is \code{FALSE} or \code{mod_type} is \code{"ridge"}.}
+#' \item{\code{kappa2_B}}{\emph{(optional)} \code{mcmc} object containing the parameter draws from the posterior distribution of kappa2_B.
+#' Not returned if \code{learn_kappa2_B} is \code{FALSE} or \code{mod_type} is \code{"ridge"}.}
+#' \item{\code{sigma2}}{\code{mcmc} object containing the parameter draws from the posterior distribution of \code{sigma2}.
+#' If \code{sv} is \code{TRUE}, \code{sigma2} is additionally an \code{mcmc.tvp} object.}
 #' \item{\code{C0}}{\emph{(optional)} \code{mcmc} object containing the parameter draws from the posterior distribution of C0.
 #' Not returned if \code{sv} is \code{TRUE}.}
 #' \item{\code{sv_mu}}{\emph{(optional)} \code{mcmc} object containing the parameter draws from the posterior distribution of the mu
@@ -108,18 +183,26 @@
 #' parameter for the stochastic volatility model on the errors. Not returned if \code{sv} is \code{FALSE}.}
 #' \item{\code{sv_sigma2}}{\emph{(optional)} \code{mcmc} object containing the parameter draws from the posterior distribution of the sigma2
 #' parameter for the stochastic volatility model on the errors. Not returned if \code{sv} is \code{FALSE}.}
+#' \item{\code{MH_diag}}{\emph{(optional)} named list containing statistics for assessing MH performance. Not returned if no MH steps are required
+#' or none of them are specified to be adaptive.}
+#' \item{\code{internals}}{\code{list} object containg two arrays that are required for calculating the LPDS.}
 #' \item{\code{priorvals}}{\code{list} object containing hyperparameter values of the prior distributions, as specified by the user.}
-#' \item{\code{model}}{\code{list} object containing the model matrix and model response used.}
+#' \item{\code{model}}{\code{list} object containing the model matrix, model response and formula used.}
 #' \item{\code{summaries}}{\code{list} object containing a collection of summary statistics of the posterior draws.}
-#' \item{\code{LPDS_comp}}{\code{list} object containg two arrays that are required for calculating the LPDS.}
+#'
 #' To display the output, use \code{plot} and \code{summary}. The \code{summary} method displays the specified prior values stored in
 #' \code{priorvals} and the posterior summaries stored in \code{summaries}, while the \code{plot} method calls \code{coda}'s \code{plot.mcmc}
 #' or the \code{plot.mcmc.tvp} method. Furthermore, all functions that can be applied to \code{coda::mcmc} objects
 #' (e.g. \code{coda::acfplot}) can be applied to all output elements that are \code{coda} compatible.
+#'
 #' @author Peter Knaus \email{peter.knaus@@wu.ac.at}
+#'
 #' @seealso \code{\link{plot.shrinkTVP}}, \code{\link{plot.mcmc.tvp}}
 #' @references Bitto, A., & Frühwirth-Schnatter, S. (2019). "Achieving shrinkage in a time-varying parameter model framework."
 #' \emph{Journal of Econometrics}, 210(1), 75-97. <doi:10.1016/j.jeconom.2018.11.006>
+#'
+#' Cadonna, A., Frühwirth-Schnatter, S., & Knaus, P. (2020). "Triple the Gamma—A Unifying Shrinkage Prior for Variance and Variable Selection in Sparse State Space and TVP Models."
+#' \emph{Econometrics}, 8(2), 20. <doi:10.3390/econometrics8020020>
 #' @examples
 #' \donttest{
 #'
@@ -153,13 +236,18 @@
 #'
 #' ## Example 4, changing some of the default hyperparameters
 #' res <- shrinkTVP(y ~ x1 + x2, data = data,
-#'                 hyperprior_param = list(b_xi = 5,
-#'                                         nu_xi = 10))
+#'                 hyperprior_param = list(beta_a_xi = 5,
+#'                                         alpha_a_xi = 10))
+#'
+#' ## Example 5, using the triple gamma prior
+#' res <- shrinkTVP(y ~ x1 + x2, data = data,
+#'                 mod_type = "triple")
 #' }
 #'
 #' @export
 shrinkTVP <- function(formula,
                       data,
+                      mod_type = "double",
                       niter = 10000,
                       nburn = round(niter / 2),
                       nthin = 1,
@@ -167,68 +255,90 @@ shrinkTVP <- function(formula,
                       learn_a_tau = TRUE,
                       a_xi = 0.1,
                       a_tau = 0.1,
-                      learn_kappa2 = TRUE,
-                      learn_lambda2 = TRUE,
-                      kappa2 = 20,
-                      lambda2 = 20,
+                      learn_c_xi = TRUE,
+                      learn_c_tau = TRUE,
+                      c_xi = 0.1,
+                      c_tau = 0.1,
+                      a_eq_c_xi = FALSE,
+                      a_eq_c_tau = FALSE,
+                      learn_kappa2_B = TRUE,
+                      learn_lambda2_B = TRUE,
+                      kappa2_B = 20,
+                      lambda2_B = 20,
                       hyperprior_param,
-                      c_tuning_par_xi = 1,
-                      c_tuning_par_tau = 1,
                       display_progress = TRUE,
-                      ret_beta_nc = FALSE,
                       sv = FALSE,
-                      sv_param){
+                      sv_param,
+                      MH_tuning,
+                      starting_vals){
 
 
   # Input checking ----------------------------------------------------------
 
+  # check that mod_type was specified correctly
+  if (!mod_type %in% c("triple", "double", "ridge")) {
+    stop("mod_type has to be a string equal to 'triple', 'double' or 'ridge'")
+  }
 
   # default hyperparameter values
   default_hyper <- list(c0 = 2.5,
-                         g0 = 5,
-                         G0 = 5 / (2.5 - 1),
-                         e1 = 0.001,
-                         e2 = 0.001,
-                         d1 = 0.001,
-                         d2 = 0.001,
-                         b_xi = 10,
-                         b_tau = 10,
-                         nu_xi = 5,
-                         nu_tau = 5)
+                        g0 = 5,
+                        G0 = 5 / (2.5 - 1),
+                        e1 = 0.001,
+                        e2 = 0.001,
+                        d1 = 0.001,
+                        d2 = 0.001,
+                        beta_a_xi = 10,
+                        beta_a_tau = 10,
+                        alpha_a_xi = 5,
+                        alpha_a_tau = 5,
+                        beta_c_xi = 2,
+                        beta_c_tau = 2,
+                        alpha_c_xi = 5,
+                        alpha_c_tau = 5)
 
   # default sv params
   default_hyper_sv <- list(Bsigma_sv = 1,
-                            a0_sv = 5,
-                            b0_sv = 1.5,
-                            bmu = 0,
-                            Bmu = 1)
+                           a0_sv = 5,
+                           b0_sv = 1.5,
+                           bmu = 0,
+                           Bmu = 1)
+
+  # default tuning parameters
+  default_tuning_par <- list(a_xi_adaptive = TRUE,
+                             a_xi_tuning_par = 1,
+                             a_xi_target_rate = 0.44,
+                             a_xi_max_adapt = 0.01,
+                             a_xi_batch_size = 50,
+                             a_tau_adaptive = TRUE,
+                             a_tau_tuning_par = 1,
+                             a_tau_target_rate = 0.44,
+                             a_tau_max_adapt = 0.01,
+                             a_tau_batch_size = 50,
+                             c_xi_adaptive = TRUE,
+                             c_xi_tuning_par = 1,
+                             c_xi_target_rate = 0.44,
+                             c_xi_max_adapt = 0.01,
+                             c_xi_batch_size = 50,
+                             c_tau_adaptive = TRUE,
+                             c_tau_tuning_par = 1,
+                             c_tau_target_rate = 0.44,
+                             c_tau_max_adapt = 0.01,
+                             c_tau_batch_size = 50)
+
+  # Change tuning parameter values if user overwrites them
+  if (missing(MH_tuning)){
+    MH_tuning <- default_tuning_par
+  } else {
+    MH_tuning <- list_merger(default_tuning_par, MH_tuning)
+  }
+
 
   # Change hyperprior values if user overwrites them
   if (missing(hyperprior_param)){
     hyperprior_param <- default_hyper
   } else {
-
-    # Check that hyperprior_param and sv_param are a list
-    if (is.list(hyperprior_param) == FALSE | is.data.frame(hyperprior_param)){
-      stop("hyperprior_param has to be a list")
-    }
-
-    stand_nam <- names(default_hyper)
-    user_nam <- names(hyperprior_param)
-
-    # Give out warning if an element of the parameter list is misnamed
-    if (any(!user_nam %in% stand_nam)){
-      wrong_nam <- user_nam[!user_nam %in% stand_nam]
-      warning(paste0(paste(wrong_nam, collapse = ", "),
-                     ifelse(length(wrong_nam) == 1, " has", " have"),
-                     " been incorrectly named in hyperprior_param and will be ignored"),
-              immediate. = TRUE)
-    }
-
-    # Merge users' and default values and ignore all misnamed values
-    missing_param <- stand_nam[!stand_nam %in% user_nam]
-    hyperprior_param[missing_param] <- default_hyper[missing_param]
-    hyperprior_param <- hyperprior_param[stand_nam]
+    hyperprior_param <- list_merger(default_hyper, hyperprior_param)
   }
 
 
@@ -236,36 +346,17 @@ shrinkTVP <- function(formula,
   if (missing(sv_param) | sv == FALSE){
     sv_param <- default_hyper_sv
   } else {
-
-    if (is.list(sv_param) == FALSE | is.data.frame(sv_param)){
-      stop("sv_param has to be a list")
-    }
-
-    stand_sv_nam <- names(default_hyper_sv)
-    user_sv_nam <- names(sv_param)
-
-    # Give out warning if an element of the parameter list is misnamed
-    if (any(!user_sv_nam %in% stand_sv_nam)){
-      wrong_nam <- user_sv_nam[!user_sv_nam %in% stand_sv_nam]
-      warning(paste0(paste(wrong_nam, collapse = ", "),
-                     ifelse(length(wrong_nam) == 1, " has", " have"),
-                     " been incorrectly named in sv_param and will be ignored"),
-              immediate. = TRUE)
-    }
-
-    # Merge users' and default values and ignore all misnamed values
-    missing_sv_param <- stand_sv_nam[!stand_sv_nam %in% user_sv_nam]
-    sv_param[missing_sv_param] <- default_hyper_sv[missing_sv_param]
-    sv_param <- sv_param[stand_sv_nam]
+    sv_param <- list_merger(default_hyper_sv, sv_param)
   }
 
   # Check if all numeric inputs are correct
-  to_test_num <- list(lambda2 = lambda2,
-                   kappa2 = kappa2,
-                   a_xi = a_xi,
-                   a_tau = a_tau,
-                   c_tuning_par_xi = c_tuning_par_xi,
-                   c_tuning_par_tau = c_tuning_par_tau)
+  to_test_num <- list(lambda2_B = lambda2_B,
+                      kappa2_B = kappa2_B,
+                      a_xi = a_xi,
+                      a_tau = a_tau,
+                      c_xi = c_xi,
+                      c_tau = c_tau)
+
 
   if (missing(hyperprior_param) == FALSE){
     to_test_num <- c(to_test_num, hyperprior_param)
@@ -275,27 +366,39 @@ shrinkTVP <- function(formula,
     to_test_num <- c(to_test_num, sv_param[names(sv_param) != "bmu"])
   }
 
+  if (missing(MH_tuning) == FALSE){
+    to_test_num <- c(to_test_num, MH_tuning[!grepl("(batch|adaptive)", names(MH_tuning))])
+  }
+
   bad_inp <- sapply(to_test_num, numeric_input_bad)
 
 
   if (any(bad_inp)){
-    stand_names <- c(names(default_hyper), names(default_hyper_sv), "lambda2", "kappa2", "a_xi", "a_tau", "c_tuning_par_xi", "c_tuning_par_tau")
+    stand_names <- c(names(default_hyper), names(default_hyper_sv), "lambda2_B", "kappa2_B", "a_xi", "a_tau", "c_xi", "c_tau")
     bad_inp_names <- names(to_test_num)[bad_inp]
     bad_inp_names <- bad_inp_names[bad_inp_names %in% stand_names]
     stop(paste0(paste(bad_inp_names, collapse = ", "),
                 ifelse(length(bad_inp_names) == 1, " has", " have"),
-                " to be a single, positive number"))
+                " to be a real, positive number"))
   }
 
   # Check bmu seperately
   if (!is.numeric(sv_param$bmu) | !is.scalar(sv_param$bmu)){
-    stop("bmu has to be a single number")
+    stop("bmu has to be a real number")
+  }
+
+  # Check the adapt_rates seperately
+  if (any(0 > MH_tuning[grepl("rate", names(MH_tuning))] | MH_tuning[grepl("rate", names(MH_tuning))] > 1)) {
+    stop("all target_rate parameters in MH_tuning have to be > 0 and < 1")
   }
 
   # Check if all integer inputs are correct
-  to_test_int <- list(niter = niter,
+  to_test_int <- c(niter = niter,
                    nburn = nburn,
-                   nthin = nthin)
+                   nthin = nthin,
+                   #p = p,
+                   MH_tuning[grepl("batch", names(MH_tuning))])
+
   bad_int_inp <- sapply(to_test_int, int_input_bad)
 
   if (any(bad_int_inp)){
@@ -319,19 +422,19 @@ shrinkTVP <- function(formula,
   }
 
   # Check if all boolean inputs are correct
-  to_test_bool <- list(learn_lambda2 = learn_lambda2,
-                       learn_kappa2 = learn_kappa2,
-                       learn_a_xi = learn_a_xi,
-                       learn_a_tau = learn_a_tau,
-                       display_progress = display_progress,
-                       sv = sv,
-                       ret_beta_nc = ret_beta_nc)
+  to_test_bool <- c(learn_lambda2_B = learn_lambda2_B,
+                    learn_kappa2_B = learn_kappa2_B,
+                    learn_a_xi = learn_a_xi,
+                    learn_a_tau = learn_a_tau,
+                    display_progress = display_progress,
+                    sv = sv,
+                    MH_tuning[grepl("adaptive", names(MH_tuning))])
 
   bad_bool_inp <- sapply(to_test_bool, bool_input_bad)
 
   if (any(bad_bool_inp)){
-    bad_inp_names <- paste(names(to_test_bool)[bad_bool_inp], collapse = ", ")
-    stop(paste0(bad_inp_names,
+    bad_inp_names <- names(to_test_bool)[bad_bool_inp]
+    stop(paste0(paste(bad_inp_names, collapse = ", "),
                 ifelse(length(bad_inp_names) == 1, " has", " have"),
                 " to be a single logical value"))
 
@@ -370,12 +473,146 @@ shrinkTVP <- function(formula,
     stop("No NA values are allowed in covariates")
   }
 
+  # Get the index
+  if (missing(data)){
+    index <- zoo::index(y)
+  } else {
+    index <- zoo::index(data)
+  }
+
+  p <- 0
+  # Create lagged values of y and add to list of regressors
+  if (p != 0){
+
+    # Create new x matrix with added in lagged values
+    x <- cbind(x, mlag(y, p))[(p + 1):nrow(x), ]
+
+    # Rename newly added columns to ar1...arp
+    colnames(x)[(ncol(x) - p + 1):ncol(x)] <- paste0("ar", 1:p)
+
+    # Cut y length to appropriate length
+    y <- y[(p + 1):length(y)]
+
+    index <- index[(p + 1):length(index)]
+
+  }
+
   colnames(x)[colnames(x) == "(Intercept)"] <- "Intercept"
-
   d <- dim(x)[2]
-  a0 <- rep(0, 2 * d)
-  store_burn <- FALSE
 
+  # Fuse user starting vals with standard ones
+  default_starting_vals <- list(beta_mean_st = rep(0, d),
+                                theta_sr_st = rep(1, d),
+                                tau2_st = rep(1, d),
+                                xi2_st = rep(1, d),
+                                kappa2_st = rep(1, d),
+                                lambda2_st = rep(1, d),
+                                kappa2_B_st = 20,
+                                lambda2_B_st = 20,
+                                a_xi_st = 0.1,
+                                a_tau_st = 0.1,
+                                c_xi_st = 0.1,
+                                c_tau_st = 0.1,
+                                sv_mu_st = -10,
+                                sv_phi_st = 0.5,
+                                sv_sigma2_st = 1,
+                                C0_st = 1,
+                                sigma2_st = 1,
+                                h0_st = 0)
+
+  if (sv == TRUE){
+    default_starting_vals$sigma2_st <- rep(1, length(y))
+  }
+
+
+  # Change starting values of MCMC algorithm if user overwrites them
+  if (missing(starting_vals)){
+    starting_vals <- default_starting_vals
+  } else {
+    starting_vals <- list_merger(default_starting_vals, starting_vals)
+  }
+
+  # Input check starting vals
+  # Check length of vectors
+  vec_valued <- c("beta_mean_st",
+                  "theta_sr_st",
+                  "tau2_st",
+                  "xi2_st",
+                  "kappa2_st",
+                  "lambda2_st")
+  bad_length <- sapply(starting_vals[vec_valued], function(x) length(x) != d)
+
+  if (any(bad_length)){
+    bad_length_names <- vec_valued[bad_length]
+    stop(paste0(paste(bad_length_names, collapse = ", "),
+                ifelse(length(bad_length_names) == 1, " has", " have"),
+                " to be of length ", d))
+
+  }
+
+  # check sigma2_st seperately
+  if (sv == TRUE) {
+    if (length(starting_vals$sigma2_st) != length(y)) {
+      stop("sigma2_st has to be the same length as y if sv is TRUE")
+    }
+
+    num_input_bad <- sapply(starting_vals$sigma2_st, numeric_input_bad)
+
+    if (any(num_input_bad)) {
+      stop("sigma2_st may only contain real, positive numbers")
+    }
+  } else if (numeric_input_bad(starting_vals$sigma2_st)) {
+    stop("sigma2_st has to be a real, positive number")
+  }
+
+  # Check content of vectors
+  vec_valued_pos <- vec_valued[vec_valued != "beta_mean_st"]
+  bad_content <- sapply(starting_vals[vec_valued_pos], function(x) any(sapply(x, numeric_input_bad)))
+
+  if (any(bad_content)) {
+    bad_content_names <- vec_valued_pos[bad_content]
+    stop(paste0(paste(bad_content_names, collapse = ", "), " may only contain real, positive numbers"))
+
+  }
+
+  # Check beta_mean_st seperately
+  if (any(sapply(starting_vals$beta_mean_st, numeric_input_bad_))) {
+    stop("beta_mean_st may only contain real numbers")
+  }
+
+  # Check single values
+  to_check_num_st <- names(starting_vals)[!names(starting_vals) %in% c(vec_valued, "h0_st", "sv_mu_st", "sigma2_st")]
+  bad_num_st <- sapply(starting_vals[to_check_num_st], numeric_input_bad)
+
+  if (any(bad_num_st)) {
+    bad_num_names <- to_check_num_st[bad_num_st]
+    stop(paste0(paste(bad_num_names, collapse = ", "),
+                ifelse(length(bad_num_names) == 1, " has", " have"),
+                " to be a real, positive number"))
+
+  }
+
+  # Check h0_st and sv_mu_st seperately
+  if (numeric_input_bad_(starting_vals$h0_st)) {
+    stop("h0_st has to be a real number")
+  }
+
+  if (numeric_input_bad_(starting_vals$sv_mu_st)) {
+    stop("sv_mu_st has to be a real number")
+  }
+
+  # Check that sv_phi_st falls between -1 and 1
+  if (abs(starting_vals$sv_phi_st) >= 1) {
+    stop("sv_phi_st has to be between -1 and 1")
+  }
+
+  # Warn user if c_xi/c_tau outside the range of (0, 0.5)
+  if (starting_vals$c_xi_st >= 0.5) {
+    warning("c_xi_st is >= 0.5, which means the algorithm will not move away from the starting value", immediate. = TRUE)
+  }
+  if (starting_vals$c_tau_st >= 0.5) {
+    warning("c_tau_st is >= 0.5, which means the algorithm will not move away from the starting value", immediate. = TRUE)
+  }
 
 
   # Run sampler -------------------------------------------------------------
@@ -383,59 +620,74 @@ shrinkTVP <- function(formula,
 
   runtime <- system.time({
     suppressWarnings({
-      res <- do_shrinkTVP(y,
-                          x,
-                          a0,
-                          niter,
-                          nburn,
-                          nthin,
-                          hyperprior_param$c0,
-                          hyperprior_param$g0,
-                          hyperprior_param$G0,
-                          hyperprior_param$d1,
-                          hyperprior_param$d2,
-                          hyperprior_param$e1,
-                          hyperprior_param$e2,
-                          learn_lambda2,
-                          learn_kappa2,
-                          lambda2,
-                          kappa2,
-                          learn_a_xi,
-                          learn_a_tau,
-                          a_xi,
-                          a_tau,
-                          c_tuning_par_xi,
-                          c_tuning_par_tau,
-                          hyperprior_param$b_xi,
-                          hyperprior_param$b_tau,
-                          hyperprior_param$nu_xi,
-                          hyperprior_param$nu_tau,
-                          display_progress,
-                          ret_beta_nc,
-                          store_burn,
-                          sv,
-                          sv_param$Bsigma_sv,
-                          sv_param$a0_sv,
-                          sv_param$b0_sv,
-                          sv_param$bmu,
-                          sv_param$Bmu)
+      res <- shrinkTVP_cpp(y,
+                           x,
+                           mod_type,
+                           niter,
+                           nburn,
+                           nthin,
+                           hyperprior_param$c0,
+                           hyperprior_param$g0,
+                           hyperprior_param$G0,
+                           hyperprior_param$d1,
+                           hyperprior_param$d2,
+                           hyperprior_param$e1,
+                           hyperprior_param$e2,
+                           learn_lambda2_B,
+                           learn_kappa2_B,
+                           lambda2_B,
+                           kappa2_B,
+                           learn_a_xi,
+                           learn_a_tau,
+                           a_xi,
+                           a_tau,
+                           learn_c_xi,
+                           learn_c_tau,
+                           c_xi,
+                           c_tau,
+                           a_eq_c_xi,
+                           a_eq_c_tau,
+                           MH_tuning$a_xi_tuning_par,
+                           MH_tuning$a_tau_tuning_par,
+                           MH_tuning$c_xi_tuning_par,
+                           MH_tuning$c_tau_tuning_par,
+                           hyperprior_param$beta_a_xi,
+                           hyperprior_param$beta_a_tau,
+                           hyperprior_param$alpha_a_xi,
+                           hyperprior_param$alpha_a_tau,
+                           hyperprior_param$beta_c_xi,
+                           hyperprior_param$beta_c_tau,
+                           hyperprior_param$alpha_c_xi,
+                           hyperprior_param$alpha_c_tau,
+                           display_progress,
+                           sv,
+                           sv_param$Bsigma_sv,
+                           sv_param$a0_sv,
+                           sv_param$b0_sv,
+                           sv_param$bmu,
+                           sv_param$Bmu,
+                           unlist(MH_tuning[grep("adaptive", names(MH_tuning))]),
+                           unlist(MH_tuning[grep("target", names(MH_tuning))]),
+                           unlist(MH_tuning[grep("max", names(MH_tuning))]),
+                           unlist(MH_tuning[grep("size", names(MH_tuning))]),
+                           starting_vals)
     })
   })
 
+
   # Throw an error if the sampler failed
-  if (res$success_vals$success == FALSE){
+  if (res$internals$success_vals$success == FALSE){
     stop(paste0("The sampler failed at iteration ",
-                res$success_vals$fail_iter,
+                res$internals$success_vals$fail_iter,
                 " while trying to ",
-                res$success_vals$fail, ". ",
+                res$internals$success_vals$fail, ". ",
                 "Try rerunning the model. ",
                 "If the sampler fails again, try changing the prior to be more informative. ",
                 "If the problem still persists, please contact the maintainer: ",
                 maintainer("shrinkTVP")))
   } else {
-    res$success_vals <- NULL
+    res$internals$success_vals <- NULL
   }
-
 
   # Post process sampler results --------------------------------------------
 
@@ -454,94 +706,40 @@ shrinkTVP <- function(formula,
   }
 
   # Remove empty storage elements
-  if (ret_beta_nc == FALSE){
-    res[["beta_nc"]] <- NULL
+  res[sapply(res, function(x) 0 %in% dim(x))] <- NULL
+  res$MH_diag[sapply(res$MH_diag, function(x) 0 %in% dim(x))] <- NULL
+
+  if (a_eq_c_tau == TRUE) {
+    res$c_tau <- NULL
   }
 
-  if (sv == TRUE){
-    res[["C0"]] <- NULL
-  } else {
-    res[["sv_mu"]] <- NULL
-    res[["sv_phi"]] <- NULL
-    res[["sv_sigma2"]] <- NULL
-  }
-
-  if (learn_kappa2 == FALSE){
-    res[["kappa2"]] <- NULL
-  }
-
-  if (learn_lambda2 == FALSE){
-    res[["lambda2"]] <- NULL
-  }
-
-  if (learn_a_xi == FALSE){
-    res[["a_xi"]] <- NULL
-    res[["a_xi_acceptance"]] <- NULL
-  }
-
-  if (learn_a_tau == FALSE){
-    res[["a_tau"]] <- NULL
-    res[["a_tau_acceptance"]] <- NULL
+  if (a_eq_c_xi == TRUE) {
+    res$c_xi <- NULL
   }
 
 
   # Create object to hold prior values
-  priorvals <- c()
-
-
-  if (learn_a_tau == TRUE){
-    priorvals["b_tau"] <- hyperprior_param$b_tau
-    priorvals["nu_tau"] <- hyperprior_param$nu_tau
-  } else {
-    priorvals["a_tau"] <- a_tau
-  }
-
-  if (learn_a_xi == TRUE){
-    priorvals["b_xi"] <- hyperprior_param$b_xi
-    priorvals["nu_xi"] <- hyperprior_param$nu_xi
-  } else {
-    priorvals["a_xi"] <- a_xi
-  }
-
-
-  if (learn_lambda2 == TRUE){
-    priorvals["e1"] <- hyperprior_param$e1
-    priorvals["e2"] <- hyperprior_param$e2
-  } else {
-    priorvals["lambda2"] <- lambda2
-  }
-
-  if (learn_kappa2 == TRUE){
-    priorvals["d1"] <- hyperprior_param$d1
-    priorvals["d2"] <- hyperprior_param$d2
-  } else {
-    priorvals["kappa2"] <- kappa2
-  }
-
-  if (sv == TRUE){
-    priorvals["Bsigma_sv"] <- sv_param$Bsigma_sv
-    priorvals["a0_sv"] <- sv_param$a0_sv
-    priorvals["b0_sv"] <- sv_param$b0_sv
-    priorvals["bmu"] <- sv_param$bmu
-    priorvals["Bmu"] <- sv_param$Bmu
-  } else {
-    priorvals["g0"] <- hyperprior_param$g0
-    priorvals["G0"] <- hyperprior_param$G0
-    priorvals["c0"] <- hyperprior_param$c0
-  }
-
-  res$priorvals <- priorvals
+  res$priorvals <- c(hyperprior_param,
+                     sv_param,
+                     a_xi = a_xi,
+                     a_tau = a_tau,
+                     c_xi = c_xi,
+                     c_tau = c_tau,
+                     lambda2_B = lambda2_B,
+                     kappa2_B = kappa2_B)
 
   # Add data to output
   res[["model"]] <- list()
   res$model$x <- x
   res$model$y <- y
   res$model$formula <- formula
+  res$model$xlevels <- .getXlevels(mt, mf)
+  res$model$terms <- mt
 
   res$summaries <- list()
 
-  # add attributes to the individual if they are distributions or individual statistics
-  nsave <- ifelse(store_burn, floor(niter/nthin), floor((niter - nburn)/nthin))
+  # add attributes to the individual objects if they are distributions or individual statistics
+  nsave <- floor((niter - nburn)/nthin)
   for (i in names(res)){
 
     attr(res[[i]], "type") <- ifelse(nsave %in% dim(res[[i]]), "sample", "stat")
@@ -584,12 +782,12 @@ shrinkTVP <- function(formula,
           attr(res[[i]][[j]], "type") <- "sample"
 
           # Imbue each mcmc.tvp object with index
-          attr(res[[i]][[j]], "index") <- zoo::index(y)
+          attr(res[[i]][[j]], "index") <- index
         }
 
         if (length(res[[i]]) == 1){
           res[[i]] <- res[[i]][[j]]
-          attr(res[[i]][[j]], "index") <- zoo::index(y)
+          attr(res[[i]][[j]], "index") <- index
         }
 
         # Make it of type 'sample' again
@@ -609,24 +807,38 @@ shrinkTVP <- function(formula,
     }
 
     # Create summary of posterior
-    if (is.list(res[[i]]) == FALSE & attr(res[[i]], "type") == "sample"){
-      if (i != "theta_sr" & !(i == "sigma2" & sv == TRUE) & i != "beta"){
+    if (is.list(res[[i]]) == FALSE & attr(res[[i]], "type") == "sample") {
+      if (i != "theta_sr" & !(i == "sigma2" & sv == TRUE) & i != "beta") {
         res$summaries[[i]] <- t(apply(res[[i]], 2, function(x){
+
           obj <- as.mcmc(x, start = niter - nburn, end = niter, thin = nthin)
+          ESS <- tryCatch(coda::effectiveSize(obj),
+                          error = function(err) {
+                            warning("Calculation of effective sample size failed for one or more variable(s). This can happen if the prior placed on the model induces extreme shrinkage.")
+                            return(NA)
+                          }, silent = TRUE)
+
           return(c("mean" = mean(obj),
                    "sd" = sd(obj),
                    "median" = median(obj),
                    "HPD" = HPDinterval(obj)[c(1, 2)],
-                   "ESS" = effectiveSize(obj)))
+                   "ESS" = round(ESS)))
         }))
-      } else if (i == "theta_sr"){
+      } else if (i == "theta_sr") {
         res$summaries[[i]] <- t(apply(res[[i]], 2, function(x){
+
           obj <- as.mcmc(abs(x), start = niter - nburn, end = niter, thin = nthin)
+          ESS <- tryCatch(coda::effectiveSize(obj),
+                          error = function(err) {
+                            warning("Calculation of effective sample size failed for one or more variable(s). This can happen if the prior placed on the model induces extreme shrinkage.")
+                            return(NA)
+                          }, silent = TRUE)
+
           return(c("mean" = mean(obj),
                    "sd" = sd(obj),
                    "median" = median(obj),
                    "HPD" = HPDinterval(obj)[c(1, 2)],
-                   "ESS" = effectiveSize(obj)))
+                   "ESS" = round(ESS)))
         }))
       }
     }
@@ -641,16 +853,377 @@ shrinkTVP <- function(formula,
   attr(res, "class") <- "shrinkTVP"
   attr(res, "learn_a_xi") <- learn_a_xi
   attr(res, "learn_a_tau") <- learn_a_tau
-  attr(res, "learn_kappa2") <- learn_kappa2
-  attr(res, "learn_lambda2") <- learn_lambda2
+  attr(res, "learn_c_xi") <- learn_c_xi
+  attr(res, "learn_c_tau") <- learn_c_tau
+  attr(res, "learn_kappa2_B") <- learn_kappa2_B
+  attr(res, "learn_lambda2_B") <- learn_lambda2_B
+  attr(res, "a_eq_c_xi") <- a_eq_c_xi
+  attr(res, "a_eq_c_tau") <- a_eq_c_tau
   attr(res, "niter") <- niter
   attr(res, "nburn") <- nburn
   attr(res, "nthin") <- nthin
   attr(res, "sv") <- sv
   attr(res, "colnames") <-  colnames(x)
-  attr(res, "index") <- zoo::index(y)
+  attr(res, "index") <- index
+  attr(res, "p") <- p
+  attr(res, "mod_type") <- mod_type
 
 
+
+  return(res)
+}
+
+
+#' One step update version of \code{\link{shrinkTVP}} with minimal overhead
+#'
+#' \code{updateTVP} draws a single sample from the joint posterior distribution of the parameters of a time-varying
+#' parameter model with shrinkage potentially including stochastic volatility (SV). It performs \bold{no input checks} and must
+#' therefore be used with caution. It is designed to be used in a modular fashion within other samplers, where speed is important.
+#' As such, no draws are saved and must be stored manually if the user wants to analyze them further.
+#'
+#' @param y vector of length N containing the response variable.
+#' @param x matrix of dimension Nxd containing the covariates.
+#' @param curr_draws named list containing all the current draws from the joint posterior of the parameters.
+#' Not all values are required for all model setups. The following elements can be supplied:
+#' \itemize{
+#' \item \code{beta_mean_st}: vector of length \code{d} containing single numbers.
+#' \item \code{theta_sr_st}: vector of length \code{d} containing single, positive numbers.
+#' \item \code{tau2_st}: \emph{optional} vector of length \code{d} containing single, positive numbers. Not required if \code{mod_type} is \code{"ridge"}.
+#' \item \code{xi2_st}: \emph{optional} vector of length \code{d} containing single, positive numbers. Not required if \code{mod_type} is \code{"ridge"}.
+#' \item \code{kappa2_st}: \emph{optional} vector of length \code{d} containing single, positive numbers. Only required if \code{mod_type} is \code{"triple"}.
+#' \item \code{lambda2_st}: \emph{optional} vector of length \code{d} containing single, positive numbers. Only required if \code{mod_type} is \code{"triple"}.
+#' \item \code{kappa2_B_st}: \emph{optional} positive, real number. Not required if \code{mod_type} is \code{"ridge"} or \code{learn_kappa2_B} is \code{FALSE}.
+#' \item \code{lambda2_B_st}: \emph{optional} positive, real number. Not required if \code{mod_type} is \code{"ridge"} or \code{learn_lambda2_B} is \code{FALSE}.
+#' \item \code{a_xi_st}: \emph{optional} positive, real number. Not required if \code{mod_type} is \code{"ridge"} or \code{learn_a_xi} is \code{FALSE}.
+#' \item \code{a_tau_st}: \emph{optional} positive, real number. Not required if \code{mod_type} is \code{"ridge"} or \code{learn_a_tau} is \code{FALSE}.
+#' \item \code{c_xi_st}: \emph{optional} positive, real number. Note that the prior for \code{c_xi} is restricted to (0, 0.5).
+#' Not required if \code{mod_type} is not \code{"triple"} or \code{learn_c_xi} is \code{FALSE}.
+#' \item \code{c_tau_st}: \emph{optional} positive, real number.  Note that the prior for \code{c_tau} is restricted to (0, 0.5).
+#' Not required if \code{mod_type} is not \code{"triple"} or \code{learn_c_tau} is \code{FALSE}.
+#' \item \code{sv_mu_st}: \emph{optional} real number. Not required if \code{sv} is \code{FALSE}.
+#' \item \code{sv_phi_st}: \emph{optional} positive, real number between -1 and 1. Not required if \code{sv} is \code{FALSE}.
+#' \item \code{sv_sigma2_st }: \emph{optional} positive, real number. Not required if \code{sv} is \code{FALSE}.
+#' \item \code{C0_st}: \emph{optional} positive, real number. Not required if \code{sv} is \code{TRUE}.
+#' \item \code{sigma2_st}: positive, real number if \code{sv} is \code{FALSE}, otherwise a vector of positive, real numbers of length \code{N}. The default value is 1 or a vector thereof.
+#' \item \code{h0_st}: \emph{optional} real number. The default value is 0. Not required if \code{sv} is \code{FALSE}.
+#' }
+#' @param mod_type character string that reads either \code{"triple"}, \code{"double"} or \code{"ridge"}.
+#' Determines whether the triple gamma, double gamma or ridge prior are used for \code{theta_sr} and \code{beta_mean}.
+#' The default is "double".
+#' @param learn_a_xi logical value indicating whether to learn a_xi, the spike parameter of the state variances.
+#' Ignored if \code{mod_type} is set to \code{"ridge"}. The default value is \code{TRUE}.
+#' @param learn_a_tau logical value indicating whether to learn a_tau, the spike parameter of the mean of the
+#' initial values of the states. Ignored if \code{mod_type} is set to \code{"ridge"}. The default value is \code{TRUE}.
+#' @param a_xi positive, real number, indicating the (fixed) value for a_xi. Ignored if
+#' \code{learn_a_xi} is \code{TRUE} or \code{mod_type} is set to \code{"ridge"}. The default value is 0.1.
+#' @param a_tau positive, real number, indicating the (fixed) value for a_tau. Ignored if
+#' \code{learn_a_tau} is \code{TRUE} or \code{mod_type} is set to \code{"ridge"}. The default value is 0.1.
+#' @param learn_c_xi logical value indicating whether to learn c_xi, the tail parameter of the state variances.
+#' Ignored if \code{mod_type} is not set to \code{"triple"}. The default value is \code{TRUE}.
+#' @param learn_c_tau logical value indicating whether to learn c_tau, the tail parameter of the mean of the
+#' initial values of the states. Ignored if \code{mod_type} is not set to \code{"triple"}. The default value is \code{TRUE}.
+#' @param c_xi positive, real number, indicating the (fixed) value for c_xi. Ignored if
+#' \code{learn_c_xi} is \code{TRUE} or \code{mod_type} is not set to \code{"triple"}. The default value is 0.1.
+#' @param c_tau positive, real number, indicating the (fixed) value for c_tau. Ignored if
+#' \code{learn_c_xi} is \code{TRUE} or \code{mod_type} is not set to \code{"triple"}. The default value is 0.1.
+#' @param a_eq_c_xi logical value indicating whether to force \code{a_xi} and \code{c_xi} to be equal.
+#' Ignored if \code{mod_type} is not set to \code{"triple"}. The default value is \code{FALSE}.
+#' @param a_eq_c_tau logical value indicating whether to force \code{a_tau} and \code{c_tau} to be equal.
+#' Ignored if \code{mod_type} is not set to \code{"triple"}. The default value is \code{FALSE}.
+#' @param learn_kappa2_B logical value indicating whether to learn kappa2_B, the global level of shrinkage for
+#' the state variances. The default value is \code{TRUE}.
+#' @param learn_lambda2_B logical value indicating whether to learn the lambda2_B parameter,
+#' the global level of shrinkage for the mean of the initial values of the states. The default value is \code{TRUE}.
+#' @param kappa2_B positive, real number, indicating the (fixed) value for kappa2_B. Ignored if
+#' \code{learn_kappa2_B} is \code{TRUE}. The default value is 20.
+#' @param lambda2_B positive, real number, indicating the (fixed) value for lambda2_B. Ignored if
+#' \code{learn_lambda2_B} is \code{TRUE}. The default value is 20.
+#' @param hyperprior_param \emph{optional} named list containing hyperparameter values.
+#' Not all have to be supplied, with those missing being replaced by the default values.
+#' Any list elements that are misnamed will be ignored and a warning will be thrown.
+#' All hyperparameter values have to be positive, real numbers. The following hyperparameters can be
+#' supplied:
+#' \itemize{
+#' \item \code{c0}: The default value is 2.5.
+#' \item \code{g0}: The default value is 5.
+#' \item \code{G0}: The default value is 5 / (2.5 - 1).
+#' \item \code{e1}: The default value is 0.001.
+#' \item \code{e2}: The default value is 0.001.
+#' \item \code{d1}: The default value is 0.001.
+#' \item \code{d2}: The default value is 0.001.
+#' \item \code{beta_a_xi}: The default value is 10.
+#' \item \code{beta_a_tau}: The default value is 10.
+#' \item \code{alpha_a_xi}: The default value is 5.
+#' \item \code{alpha_a_tau}: The default value is 5.
+#' \item \code{beta_c_xi}: The default value is 2.
+#' \item \code{alpha_c_xi}: The defalut value is 5.
+#' \item \code{beta_c_tau}: The default value is 2.
+#' \item \code{alpha_c_tau}: The defalut value is 5.
+#' }
+#' @param sv logical value indicating whether to use stochastic volatility for the error of the observation
+#' equation. For details please see \code{\link{stochvol}}, in particular \code{\link{svsample}}. The default value is
+#' \code{FALSE}.
+#' @param sv_param \emph{optional} named list containing hyperparameter values for the stochastic volatility
+#' parameters. Not all have to be supplied, with those missing being replaced by the default values.
+#' Any list elements that are misnamed will be ignored and a warning will be thrown. Ignored if
+#' \code{sv} is \code{FALSE}. The following elements can be supplied:
+#' \itemize{
+#' \item \code{Bsigma_sv}: positive, real number. The default value is 1.
+#' \item \code{a0_sv}: positive, real number. The default value is 5.
+#' \item \code{b0_sv}: positive, real number. The default value is 1.5.
+#' \item \code{bmu}: real number. The default value is 0.
+#' \item \code{Bmu}: real number. larger than 0. The default value is 1.
+#' }
+#' @param MH_tuning \emph{optional} named list containing values used to tune the MH steps for \code{a_xi}, \code{a_tau},
+#' \code{c_xi} and \code{c_tau}. Not all have to be supplied, with those missing being replaced by the default values.
+#' Any list elements that are misnamed will be ignored and a warning will be thrown.
+#' The arguments for \code{a_xi}(\code{a_tau}) are only used if \code{learn_a_xi}(\code{learn_a_tau})
+#' is set to \code{TRUE} and \code{mod_type} is not equal to \code{"ridge"}. The arguments for \code{c_xi}(\code{c_tau}) are only
+#' used if \code{learn_c_xi}(\code{learn_c_tau}) is set to \code{TRUE} and \code{mod_type} is equal to \code{"triple"}. Arguments ending in "adaptive" are
+#' logical values indicating whether or not to make the MH step for the respective parameter adaptive. Arguments ending in "tuning_par" serve two different purposes.
+#' If the respective MH step is not set to be adaptive, it acts as the standard deviation of the proposal distribution. If the respective MH step
+#' is set to be adaptive, it acts as the initial standard deviation. Arguments ending in "target_rate" define the acceptance rate the algorithm aims to achieve.
+#' Arguments ending in "max_adapt" set the maximum value by which the logarithm of the standard deviation of the proposal distribution is adjusted. Finally,
+#' arguments ending in "batch_size" set the batch size after which the standard deviation of the proposal distribution is adjusted.
+#' The following elements can be supplied:
+#' \itemize{
+#' \item \code{a_xi_adaptive}: logical value. The default is \code{TRUE}.
+#' \item \code{a_xi_tuning_par}: positive, real number. The default value is 1.
+#' \item \code{a_xi_target_rate}: positive, real number, between 0 and 1. The default value is 0.44.
+#' \item \code{a_xi_max_adapt}: positive, real number. The default value is 0.01.
+#' \item \code{a_xi_batch_size}: positive integer. The default value is 50.
+#' \item \code{a_tau_adaptive}: logical value. The default is \code{TRUE}.
+#' \item \code{a_tau_tuning_par}: positive, real number. The default value is 1.
+#' \item \code{a_tau_target_rate}: positive, real number, between 0 and 1. The default value is 0.44.
+#' \item \code{a_tau_max_adapt}: positive, real number. The default value is 0.01.
+#' \item \code{a_tau_batch_size}: positive integer. The default value is 50.
+#' \item \code{c_xi_adaptive}: logical value. The default is \code{TRUE}.
+#' \item \code{c_xi_tuning_par}: positive, real number. The default value is 1.
+#' \item \code{c_xi_target_rate}: positive, real number, between 0 and 1. The default value is 0.44.
+#' \item \code{c_xi_max_adapt}: positive, real number. The default value is 0.01.
+#' \item \code{c_xi_batch_size}: positive integer. The default value is 50.
+#' \item \code{c_tau_adaptive}: logical value. The default is \code{TRUE}.
+#' \item \code{c_tau_tuning_par}: positive, real number. The default value is 1.
+#' \item \code{c_tau_target_rate}: positive, real number, between 0 and 1. The default value is 0.44.
+#' \item \code{c_tau_max_adapt}: positive, real number. The default value is 0.01.
+#' \item \code{c_tau_batch_size}: positive integer. The default value is 50.
+#' }
+#' @return The value returned is a named list object which can be immediately used as the \code{curr_draws} argument
+#' for another draw from the posterior with \code{updateTVP}. Note that, depending on the model setup, some elements may be matrices of dimension zero.
+#' It contains the following elements:
+#' \item{\code{beta_st}}{dx(N + 1) matrix containing the current draw from the posterior distribtuion of beta.}
+#' \item{\code{beta_mean_st}}{dx1 matrix containing the current draws from the posterior distribution of beta_mean.}
+#' \item{\code{theta_sr_st}}{dx1 matrix containing the current draws from the posterior distribution of the square root of theta.}
+#' \item{\code{tau2_st}}{dx1 matrix containing the current draws from the posterior distribution of tau2.}
+#' \item{\code{xi2_st}}{dx1 matrix containing the current draws from the posterior distribution of xi2.}
+#' \item{\code{lambda2_st}}{dx1 matrix containing the current draws from the posterior distribution of lambda2.}
+#' \item{\code{kappa2_st}}{dx1 matrix containing the current draws from the posterior distribution of kappa2.}
+#' \item{\code{a_xi_st}}{number representing the current draw from the posterior distribution of a_xi.}
+#' \item{\code{a_tau_st}}{number representing the current draw from the posterior distribution of a_tau.}
+#' \item{\code{c_xi_st}}{number representing the current draw from the posterior distribution of c_xi.}
+#' \item{\code{c_tau_st}}{number representing the current draw from the posterior distribution of c_tau.}
+#' \item{\code{lambda2_B_st}}{number representing the current draw from the posterior distribution of lambda2_B.}
+#' \item{\code{kappa2_B_st}}{\code{mcmc} object containing the parameter draws from the posterior distribution of kappa2_B.}
+#' \item{\code{sigma2_st}}{number if \code{sv} is \code{FALSE}, otherwise a vector of length \code{N} containing the current draws from the posterior distribution of sigma2.}
+#' \item{\code{C0_st}}{number representing the current draw from the posterior distribution of C0.}
+#' \item{\code{sv_mu_st}}{number representing the current draw from the posterior distribution of the mu parameter for the stochastic volatility model on the errors.}
+#' \item{\code{sv_phi_st}}{number representing the current draw from the posterior distribution of the phi parameter for the stochastic volatility model on the errors.}
+#' \item{\code{sv_sigma2_st}}{number representing the current draw from the posterior distribution of the sigma2 parameter for the stochastic volatility model on the errors.}
+#' \item{\code{h0_st}}{number representing the current draw from the posterior distribution of the h0 parmater for the stochastic volatility model on the errors.}
+#' \item{\code{internals}}{\code{list} object containg two arrays that are required for calculating the LPDS and bookkeeping objects required for the adaptive MH algorithm to work.}
+#'
+#' @author Peter Knaus \email{peter.knaus@@wu.ac.at}
+#'
+#' @references Bitto, A., & Frühwirth-Schnatter, S. (2019). "Achieving shrinkage in a time-varying parameter model framework."
+#' \emph{Journal of Econometrics}, 210(1), 75-97. <doi:10.1016/j.jeconom.2018.11.006>
+#'
+#' Cadonna, A., Frühwirth-Schnatter, S., & Knaus, P. (2020). "Triple the Gamma—A Unifying Shrinkage Prior for Variance and Variable Selection in Sparse State Space and TVP Models."
+#' \emph{Econometrics}, 8(2), 20. <doi:10.3390/econometrics8020020>
+#' @examples
+#' \donttest{
+#' # Simulate data
+#' sim <- simTVP()
+#' y <- sim$data$y
+#' x <- as.matrix(sim$data[,2:4])
+#'
+#' # Create starting values
+#' d <- ncol(x)
+#' curr_draws <- list(beta_mean_st = rep(0, d),
+#'                    theta_sr_st = rep(1, d),
+#'                    tau2_st = rep(1, d),
+#'                    xi2_st = rep(1, d),
+#'                    lambda2_st = rep(1, d),
+#'                    kappa2_B_st = 20,
+#'                    lambda2_B_st = 20,
+#'                    a_xi_st = 0.1,
+#'                    a_tau_st = 0.1,
+#'                    c_tau_st = 0.1,
+#'                    sv_mu_st = -10,
+#'                    sv_phi_st = 0.5,
+#'                    sv_sigma2_st = 1,
+#'                    C0_st = 1,
+#'                    sigma2_st = 1,
+#'                    h0_st = 0)
+#'
+#' # Run the algorithm for 1000 iterations
+#' # Note that curr_draws is always re-written and immediately re-used
+#' for (i in 1:1000){
+#'   curr_draws <- updateTVP(y, x, curr_draws)
+#' }
+#'}
+#'
+#' @export
+updateTVP <- function(y,
+                      x,
+                      curr_draws,
+                      mod_type = "double",
+                      learn_a_xi = TRUE,
+                      learn_a_tau = TRUE,
+                      a_xi = 0.1,
+                      a_tau = 0.1,
+                      learn_c_xi = TRUE,
+                      learn_c_tau = TRUE,
+                      c_xi = 0.1,
+                      c_tau = 0.1,
+                      a_eq_c_xi = FALSE,
+                      a_eq_c_tau = FALSE,
+                      learn_kappa2_B = TRUE,
+                      learn_lambda2_B = TRUE,
+                      kappa2_B = 20,
+                      lambda2_B = 20,
+                      hyperprior_param,
+                      sv = FALSE,
+                      sv_param,
+                      MH_tuning){
+
+  # default hyperparameter values
+  default_hyper <- list(c0 = 2.5,
+                        g0 = 5,
+                        G0 = 5 / (2.5 - 1),
+                        e1 = 0.001,
+                        e2 = 0.001,
+                        d1 = 0.001,
+                        d2 = 0.001,
+                        beta_a_xi = 10,
+                        beta_a_tau = 10,
+                        alpha_a_xi = 5,
+                        alpha_a_tau = 5,
+                        beta_c_xi = 2,
+                        beta_c_tau = 2,
+                        alpha_c_xi = 5,
+                        alpha_c_tau = 5)
+
+  # default sv params
+  default_hyper_sv <- list(Bsigma_sv = 1,
+                           a0_sv = 5,
+                           b0_sv = 1.5,
+                           bmu = 0,
+                           Bmu = 1)
+
+  # default tuning parameters
+  default_tuning_par <- list(a_xi_adaptive = TRUE,
+                             a_xi_tuning_par = 1,
+                             a_xi_target_rate = 0.44,
+                             a_xi_max_adapt = 0.01,
+                             a_xi_batch_size = 50,
+                             a_tau_adaptive = TRUE,
+                             a_tau_tuning_par = 1,
+                             a_tau_target_rate = 0.44,
+                             a_tau_max_adapt = 0.01,
+                             a_tau_batch_size = 50,
+                             c_xi_adaptive = TRUE,
+                             c_xi_tuning_par = 1,
+                             c_xi_target_rate = 0.44,
+                             c_xi_max_adapt = 0.01,
+                             c_xi_batch_size = 50,
+                             c_tau_adaptive = TRUE,
+                             c_tau_tuning_par = 1,
+                             c_tau_target_rate = 0.44,
+                             c_tau_max_adapt = 0.01,
+                             c_tau_batch_size = 50)
+
+  # Change tuning parameter values if user overwrites them
+  if (missing(MH_tuning)){
+    MH_tuning <- default_tuning_par
+  } else {
+    MH_tuning <- list_merger(default_tuning_par, MH_tuning)
+  }
+
+
+  # Change hyperprior values if user overwrites them
+  if (missing(hyperprior_param)){
+    hyperprior_param <- default_hyper
+  } else {
+    hyperprior_param <- list_merger(default_hyper, hyperprior_param)
+  }
+
+
+  # Same procedure for sv_param
+  if (missing(sv_param) | sv == FALSE){
+    sv_param <- default_hyper_sv
+  } else {
+    sv_param <- list_merger(default_hyper_sv, sv_param)
+  }
+
+
+
+  suppressWarnings({
+    res <- shrinkTVP_cpp(y,
+                         x,
+                         mod_type,
+                         1,
+                         0,
+                         1,
+                         hyperprior_param$c0,
+                         hyperprior_param$g0,
+                         hyperprior_param$G0,
+                         hyperprior_param$d1,
+                         hyperprior_param$d2,
+                         hyperprior_param$e1,
+                         hyperprior_param$e2,
+                         learn_lambda2_B,
+                         learn_kappa2_B,
+                         lambda2_B,
+                         kappa2_B,
+                         learn_a_xi,
+                         learn_a_tau,
+                         a_xi,
+                         a_tau,
+                         learn_c_xi,
+                         learn_c_tau,
+                         c_xi,
+                         c_tau,
+                         a_eq_c_xi,
+                         a_eq_c_tau,
+                         MH_tuning$a_xi_tuning_par,
+                         MH_tuning$a_tau_tuning_par,
+                         MH_tuning$c_xi_tuning_par,
+                         MH_tuning$c_tau_tuning_par,
+                         hyperprior_param$beta_a_xi,
+                         hyperprior_param$beta_a_tau,
+                         hyperprior_param$alpha_a_xi,
+                         hyperprior_param$alpha_a_tau,
+                         hyperprior_param$beta_c_xi,
+                         hyperprior_param$beta_c_tau,
+                         hyperprior_param$alpha_c_xi,
+                         hyperprior_param$alpha_c_tau,
+                         FALSE,
+                         sv,
+                         sv_param$Bsigma_sv,
+                         sv_param$a0_sv,
+                         sv_param$b0_sv,
+                         sv_param$bmu,
+                         sv_param$Bmu,
+                         unlist(MH_tuning[grep("adaptive", names(MH_tuning))]),
+                         unlist(MH_tuning[grep("target", names(MH_tuning))]),
+                         unlist(MH_tuning[grep("max", names(MH_tuning))]),
+                         unlist(MH_tuning[grep("size", names(MH_tuning))]),
+                         curr_draws)
+  })
+
+  if(sv == FALSE){
+    res$sigma2_st <- res$sigma2_st[1]
+  }
 
   return(res)
 }

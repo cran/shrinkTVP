@@ -2,7 +2,7 @@
 % Please edit documentation in R/pred_funs.R
 \name{eval_pred_dens}
 \alias{eval_pred_dens}
-\title{Evaluate the one step ahead predictive density of a fitted TVP model}
+\title{Evaluate the one-step ahead predictive density of a fitted TVP model}
 \usage{
 eval_pred_dens(x, mod, data_test, log = FALSE)
 }
@@ -11,7 +11,7 @@ eval_pred_dens(x, mod, data_test, log = FALSE)
 
 \item{mod}{an object of class \code{shrinkTVP}, containing the fitted model for which the predictive density should be evaluated.}
 
-\item{data_test}{a data frame with one row, containing the one step ahead covariates. The names of the covariates have to match the
+\item{data_test}{a data frame with one row, containing the one-step ahead covariates. The names of the covariates have to match the
 names of the covariates used during model estimation in the call to \code{shrinkTVP}.}
 
 \item{log}{a single logical value detrmining whether the density should be evaluated on the log scale or not.}
@@ -42,10 +42,19 @@ x_vals <- seq(0, 12, by = 0.1)
 dens <- eval_pred_dens(x_vals, res, data[200, ])
 plot(x_vals, dens, type = "l")
 
-# Add vertical line where true value of the one step ahead y lies
+# Add vertical line where true value of the one-step ahead y lies
 abline(v = data$y[200])
 }
+}
+\seealso{
+Other prediction functions: 
+\code{\link{LPDS}()},
+\code{\link{fitted.shrinkTVP}()},
+\code{\link{forecast_shrinkTVP}()},
+\code{\link{predict.shrinkTVP}()},
+\code{\link{residuals.shrinkTVP}()}
 }
 \author{
 Peter Knaus \email{peter.knaus@wu.ac.at}
 }
+\concept{prediction functions}

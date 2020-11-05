@@ -1,149 +1,3 @@
-
-#' Nicer printing of shrinkTVP objects
-#'
-#' @param x A \code{shrinkTVP} object
-#' @param ... Currently ignored.
-#'
-#' @return Called for its side effects and returns invisibly.
-#' @export
-print.shrinkTVP <- function(x, ...){
-  ind <- attr(x, "index")
-  cat(paste0("Object containing a fitted TVP model ", ifelse(attr(x, "sv"), "with stochastic volatility ", ""), "with:\n",
-             " - ", formatC(length(attr(x, "colnames")), width = 7), " covariates\n",
-             " - ", formatC(length(x$model$y), width = 7), " timepoints, running from ", min(ind), " to ", max(ind), "\n",
-             " - ", formatC(attr(x, "niter"), width = 7), " MCMC draws\n",
-             " - ", formatC(attr(x, "nburn"), width = 7), " burn-n\n",
-             " - ", formatC(attr(x, "nthin"), width = 7), " thinning"))
-  invisible(x)
-}
-
-#' @export
-summary.shrinkTVP <- function(object, digits = 3, showprior = TRUE, ...) {
-
-  # Check if digits is scalar, integer and positive
-  if (is.scalar(digits) == FALSE |
-      is.numeric(digits) == FALSE |
-      digits %% 1 != 0 |
-      digits < 0){
-    stop("digits has to be a single, positive integer")
-  }
-
-  # Check if showprior is a logical
-  if (bool_input_bad(showprior)){
-    stop("showprior has to be a single logical value")
-  }
-
-  ret <- attributes(object)
-  class(ret) <- c("summary.shrinkTVP")
-  ret$priorvals <- object$priorvals
-  ret$summaries <- object$summaries
-  ret$types <- lapply(object, function(x) return(attr(x, "type")))
-  ret$digits <- digits
-  ret$showprior <- showprior
-  ret
-}
-
-#' @method print summary.shrinkTVP
-#' @export
-print.summary.shrinkTVP <- function(x, ...) {
-  cat("\nSummary of ", (x$niter - x$nburn), " MCMC draws after burn-in of ", x$nburn, ".\n", sep = "")
-
-  if(x$showprior == TRUE){
-    cat("\nPrior distributions:\n\n")
-
-    # Print prior distributions for beta that react to user choices
-    cat(" \u03b2\u2c7c|\u03c4\u00b2\u2c7c \t ~ Normal(0, \u03c4\u00b2\u2c7c)\n")
-    cat(" \u03c4\u00b2\u2c7c|a^\u03c4,\u03bb\u00b2 \t ~ Gamma(",
-        ifelse(x$learn_a_tau, "a^\u03c4, ", paste0(x$priorvals["a_tau"], ", ")),
-        ifelse(x$learn_lambda2,
-               ifelse(x$learn_a_tau,
-                      "a^\u03c4 \u03bb\u00b2/2",
-                      paste0("\u03bb\u00b2", x$priorvals["a_tau"] / 2)),
-               ifelse(x$learn_a_tau,
-                      paste0( x$priorvals["lambda2"] / 2, "a^\u03c4"),
-                      x$priorvals["lambda2"] * x$priorvals["a_tau"] / 2)),
-        ")\n",
-        sep = "")
-    if (x$learn_a_tau == TRUE){
-      cat(" a^\u03c4 \t \t ~ Gamma(", x$priorvals["nu_tau"], ", ", x$priorvals["nu_tau"] * x$priorvals["b_tau"], ")\n", sep = "")
-    }
-    if (x$learn_lambda2 == TRUE){
-      cat(" \u03bb\u00b2 \t \t ~ Gamma(", x$priorvals["e1"], ", ", x$priorvals["e2"], ")\n", sep = "")
-    }
-
-    cat("\n")
-
-    # Print prior distributions for theta that react to user choices
-    cat(" \u221a\u03b8\u2c7c|\u03be\u00b2\u2c7c \t ~ Normal(0, \u03be\u00b2\u2c7c)\n")
-    cat(" \u03be\u00b2\u2c7c|a^\u03be,\u03ba\u00b2 \t ~ Gamma(",
-        ifelse(x$learn_a_xi, "a^\u03be, ", paste0(x$priorvals["a_xi"], ", ")),
-        ifelse(x$learn_kappa2,
-               ifelse(x$learn_a_xi,
-                      "a^\u03be \u03ba\u00b2/2",
-                      paste0(x$priorvals["a_xi"] / 2, "\u03ba\u00b2")),
-               ifelse(x$learn_a_xi,
-                      paste0(x$priorvals["kappa2"] / 2, "a^\u03be"),
-                      x$priorvals["kappa2"] * x$priorvals["a_xi"] / 2)),
-        ")\n",
-        sep = "")
-    if (x$learn_a_xi == TRUE){
-      cat(" a^\u03be \t \t ~ Gamma(", x$priorvals["nu_xi"], ", ", x$priorvals["nu_xi"] * x$priorvals["b_xi"], ")\n", sep = "")
-    }
-    if (x$learn_kappa2 == TRUE){
-      cat(" \u03ba\u00b2 \t \t ~ Gamma(", x$priorvals["d1"], ", ", x$priorvals["d2"], ")\n", sep = "")
-    }
-
-    # Prior distributions for sigma2
-    if (x$sv == TRUE){
-      cat("\nPrior distributions on stochastic volatility parameters:\n")
-      cat(" \u03bc \t \t ~ Normal(", x$priorvals["bmu"], ", ", sqrt(x$priorvals["Bmu"]), ")\n", sep = "")
-      cat(" (\u03c6 + 1)/2 \t ~ Beta(", x$priorvals["a0_sv"], ", ", x$priorvals["b0_sv"], ")\n", sep = "")
-      cat(" \u03c3\u209b\u00b2 \t \t ~ Gamma(0.5, ", 0.5 * x$priorvals["Bsigma_sv"], ")\n", sep = "")
-    } else {
-      cat("\n")
-      cat(" \u03c3\u00b2|C\u2080 \t \t ~ InvGamma(", x$priorvals["c0"], ", ", "C\u2080)\n", sep = "")
-      cat(" C\u2080 \t \t ~ Gamma(", x$priorvals["g0"], ", ", x$priorvals["G0"], ")\n", sep = "")
-    }
-
-    cat("\n")
-
-  }
-
-  # Posterior summaries
-  cat("\nStatistics of posterior draws of parameters (thinning = ", x$nthin, "):\n\n", sep = "")
-
-  # The posterior summaries are printed by printing a dataframe where all NA values are
-  # set to "", thereby not showing up in the console. This is done to make sure everything
-  # is nicely aligned
-  ind <- 1
-  for (i in x$summaries){
-    if (ind == 1){
-      post_sum <- rbind(round(i, x$digits), matrix(NA, ncol = ncol(i), nrow = 1))
-    } else {
-      post_sum <- rbind(post_sum, round(i, x$digits), matrix(NA, ncol = ncol(i), nrow = 1))
-    }
-
-    ind <- ind + 1
-  }
-  post_sum <- as.data.frame(cbind(rownames(post_sum), post_sum), stringsAsFactors = FALSE, row.names = FALSE)
-  post_sum[is.na(post_sum)] <- ""
-
-  # Adjust column names
-  colnames(post_sum) <- c("param", "mean", "sd", "median", "HPD 2.5%", "HPD 97.5%", "ESS")
-
-  # Remove all automatically generated row names (X.1, X.2, etc.)
-  # post_sum$param[grep("X\\.\\d", rownames(post_sum))] <- ""
-
-  # The summaries of theta_sr are based on the absolute value, this has to be reflected in the param name
-  post_sum$param <- ifelse(grepl("theta_sr", post_sum$param), paste0("abs(", post_sum$param, ")"), post_sum$param)
-
-  # Finally print it
-  print(post_sum, row.names = FALSE, right = FALSE)
-
-  invisible(x)
-}
-
-
 #' Graphical summary of posterior distribution for a time-varying parameter
 #'
 #' \code{plot.mcmc.tvp} plots empirical posterior quantiles for a time-varying parameter.
@@ -206,6 +60,7 @@ print.summary.shrinkTVP <- function(x, ...) {
 #' plot(res$beta$beta_x1)
 #' }
 #' @author Peter Knaus \email{peter.knaus@@wu.ac.at}
+#' @family plotting functions
 #' @export
 plot.mcmc.tvp <- function(x, probs = c(0.025, 0.25, 0.75, 0.975),
                           shaded = TRUE, quantlines = FALSE,
@@ -307,7 +162,12 @@ plot.mcmc.tvp <- function(x, probs = c(0.025, 0.25, 0.75, 0.975),
   }
 
   # Create x_vec for plotting
-  x_vec <- attr(x, "index")
+  if (!is.null(attr(x, "index"))) {
+    x_vec <- attr(x, "index")
+  } else {
+    x_vec <- 1:ncol(x)
+  }
+
 
   startpoint <- ifelse(length(x_vec) == ncol(x), 1, 2)
   quants <- apply(x[, startpoint:ncol(x)], 2, quantile, probs)
@@ -371,8 +231,12 @@ plot.mcmc.tvp <- function(x, probs = c(0.025, 0.25, 0.75, 0.975),
 #' The default is \code{c("beta")}.
 #' @param nplot positive integer that indicates the number of tvp plots to display on a single
 #' page before a new page is generated. The default value is 3.
-#' @param mar A numerical vector of the form \code{c(bottom, left, top, right)} which gives the number of lines of margin to be
-#' specified on the four sides of the plot, as in \code{\link{par}}. The default is c(2, 4, 1, 2) + 0.1.
+#' @param h_borders single real, positive number smaller than 0.5 or a vector containing two such numbers. Determines
+#' the relative amount of space (the total amount summing up to 1) left blank on the left and right of the plot, in that order.
+#' The default is \code{c(0.05, 0.05)}.
+#' @param w_borders single real, positive number smaller than 0.5 or a vector containing two such numbers. Determines
+#' the relative amount of space (the total amount summing up to 1) left blank at the top and bottom of the plot, in that order.
+#' The default is \code{c(0.02, 0.02)}.
 #' @param ... further arguments to be passed to the respective plotting functions.
 #' @return Called for its side effects and returns invisibly.
 #' @examples
@@ -391,8 +255,9 @@ plot.mcmc.tvp <- function(x, probs = c(0.025, 0.25, 0.75, 0.975),
 #' }
 #'
 #' @author Peter Knaus \email{peter.knaus@@wu.ac.at}
+#' @family plotting functions
 #' @export
-plot.shrinkTVP <- function(x, pars = c("beta"), nplot = 3, mar = c(2, 4, 1, 2) + 0.1, ...){
+plot.shrinkTVP <- function(x, pars = c("beta"), nplot = 3, h_borders = c(0.05, 0.05), w_borders = c(0.02, 0.02), ...){
 
 
   # Check that any pars are specified
@@ -420,16 +285,31 @@ plot.shrinkTVP <- function(x, pars = c("beta"), nplot = 3, mar = c(2, 4, 1, 2) +
     stop("nplot cant be 0")
   }
 
+  if (any(sapply(h_borders, numeric_input_bad_zer)) | sum(h_borders) >= 1 | length(h_borders) > 2 |
+      (length(h_borders) == 1 & h_borders > 0.5)[1]) {
+    stop("h_borders has to be vector of length 2 containing numbers that sum up to less than 1 or a single number that is smaller than 0.5")
+  }
 
-  # Save mfrow and mar value so that it can be restored after plotting
-  prev_mfrow <- par()$mfrow
-  prev_mar <- par()$mar
+  if (any(sapply(w_borders, numeric_input_bad_zer)) | sum(w_borders) >= 1 | length(w_borders) > 2 |
+      (length(w_borders) == 1 & w_borders > 0.5)[1]) {
+    stop("h_borders has to be vector of length 2 containing numbers that sum up to less than 1 or a single number that is smaller than 0.5")
+  }
 
+  if (length(h_borders) == 1){
+    h_borders <- rep(h_borders, 2)
+  }
+
+  if (length(w_borders) == 1){
+    w_borders <- rep(w_borders, 2)
+  }
 
   # Create sublist containing only parameters specified in par and copy attributes
   obj <- x[pars]
   mostattributes(obj) <- attributes(x)
   names(obj) <- names(x[pars])
+
+  # Save previous user defined par attributes
+  prev_par <- par(no.readonly = TRUE)
 
   # Idea: loop over all list elements and apply plot method specific to that object (mcmc or mcmc.tvp)
   for (i in 1:length(obj)){
@@ -437,105 +317,64 @@ plot.shrinkTVP <- function(x, pars = c("beta"), nplot = 3, mar = c(2, 4, 1, 2) +
     # TVP parameters will be a list, so we differentiate between TVP and non-TVP this way
     if (is.list(obj[[i]]) == TRUE){
 
-      # Plot a max of nplot objects per plot
-      if (length(obj[[i]]) > nplot){
+      curr_nplot <- min(length(obj[[i]]), nplot)
+      p_left <- length(obj[[i]])
 
-        # Change mfrow and mar
-        par(mfrow = c(nplot, 1))
+      w_cut <- sum(w_borders)
+      h_cut <- sum(h_borders)
 
-        currpage <- 1
-        p_left <- length(obj[[i]])
+      layout(rbind(0,
+                   cbind(0, 1:curr_nplot, 0),
+                   0),
+             heights = c(h_borders[1], rep((1-h_cut)/curr_nplot, curr_nplot), h_borders[2]),
+             widths = c(w_borders[1], 1 - w_cut, w_borders[2]))
 
-        # Apply plotting method in a loop
-        for (j in 1:length(obj[[i]])){
+      # Apply plotting method in a loop
+      for (j in 1:length(obj[[i]])){
 
-          if ((j-1) %% nplot == 0){
-            # The first plot on a new page
-            currmar <- c(0, 1, 1, 1) * mar
-            xaxt <- "n"
-          } else if ((j-1) %% nplot == (nplot - 1)){
-            # The last plot on a page
-            currmar <- c(1, 1, 0, 1) * mar
-            xaxt <- "s"
-          } else if (p_left < nplot & j == length(obj[[i]])){
-            # The last plot on the last page
-            currmar <- c(1, 1, 0, 1) * mar
-            xaxt <- "s"
-          } else {
-            # Any plot in between two others
-            currmar <- c(0, 1, 0, 1) * mar
-            xaxt <- "n"
-          }
-          par(mar = currmar)
-
-          # Extract all user specified args
-          args <- list(...)
-          # Augment user specified arguments with standard ones
-          standard_args <- list(ylab = paste(names(obj)[i], "of", attr(obj, "colnames")[j]), xaxt = xaxt)
-          missing_args <- names(standard_args)[!names(standard_args) %in% names(args)]
-          args[missing_args] <- standard_args[missing_args]
-
-          # Add object to be plotted to args list
-          args$x <- obj[[i]][[j]]
-
-          # Plot
-          do.call(plot, args)
-
-          # Wait for user to move on
-          if (j %% nplot == 0 & j != length(obj[[i]])){
-            readline("Hit <Return> to see next plot: ")
-          }
-
-          p_left <- p_left - currpage * nplot
-          currpage <- currpage + 1
+        if ((j-1) %% nplot == 0){
+          # The first plot on a new page
+          xaxt <- "n"
+          curr_pos <- 0
+        } else if ((j-1) %% nplot == (nplot - 1)){
+          # The last plot on a page
+          xaxt <- "s"
+        } else if (p_left < nplot & j == length(obj[[i]])){
+          # The last plot on the last page
+          xaxt <- "s"
+        } else {
+          # Any plot in between two others
+          xaxt <- "n"
         }
+        par(mar = c(0, 2.6, 0, 0), mgp = c(1.6, .6, 0))
 
-        # Move to next series of plots if current parameter has been thoroughly plotted
-        if (i < length(obj)){
+        # Extract all user specified args
+        args <- list(...)
+        # Augment user specified arguments with standard ones
+        standard_args <- list(ylab = paste(names(obj)[i], "of", attr(obj, "colnames")[j]), xaxt = xaxt)
+        missing_args <- names(standard_args)[!names(standard_args) %in% names(args)]
+        args[missing_args] <- standard_args[missing_args]
+
+        # Add object to be plotted to args list
+        args$x <- obj[[i]][[j]]
+
+        # Plot
+        do.call(plot, args)
+
+        # Wait for user to move on
+        if (j %% nplot == 0 & j != length(obj[[i]])){
           readline("Hit <Return> to see next plot: ")
         }
 
-      } else {
-
-        # If there are less than nplot parameters to plot, adjust mfrow to nr of parameters
-        par(mfrow = c(nplot, 1))
-
-        for (j in 1:length(obj[[i]])){
-
-          # Adjust mar
-          if (j == 1){
-            currmar <- c(0, 1, 1, 1) * mar
-            xaxt <- "n"
-          } else if (j == length(obj[[i]])) {
-            currmar <- c(1, 1, 0, 1) * mar
-            xaxt <- "s"
-          } else {
-            currmar <- c(0, 1, 0, 1) * mar
-            xaxt <- "n"
-          }
-          par(mar = currmar)
-
-
-          # Extract all user specified args
-          args <- list(...)
-          # Augment user specified arguments with standard ones
-          standard_args <- list(ylab = paste(names(obj)[i], "of", attr(obj, "colnames")[j]), xaxt = xaxt)
-          missing_args <- names(standard_args)[!names(standard_args) %in% names(args)]
-          args[missing_args] <- standard_args[missing_args]
-
-          # Add object to be plotted to args list
-          args$x <- obj[[i]][[j]]
-
-          # Plot
-          do.call(plot, args)
-        }
-
-        if (i < length(obj)){
-          readline("Hit <Return> to see next plot: ")
-        }
+        p_left <- p_left - j * nplot
 
       }
 
+      # Move to next series of plots if current parameter has been thoroughly plotted
+      if (i < length(obj)){
+        readline("Hit <Return> to see next plot: ")
+        par(prev_par)
+      }
 
     } else {
 
@@ -548,71 +387,92 @@ plot.shrinkTVP <- function(x, pars = c("beta"), nplot = 3, mar = c(2, 4, 1, 2) +
     }
   }
 
-  # Reset mfrow
-  par(mfrow = prev_mfrow, mar = prev_mar)
+  # Restore user defined values of par
+  par(prev_par)
 }
 
+#' Graphical summary of posterior predictive density
+#'
+#' \code{plot.shrinkTVP_forc} generates plots visualizing the posterior predictive density generated by \code{forecast_shrinkTVP}.
+#'
+#' @param x a \code{shrinkTVP_forc} object.
+#' @param showgap if \code{showgap = FALSE}, the gap between the historical observations and the forecasts is removed.
+#' The default value is \code{FALSE}.
+#' @param ... further arguments to be passed to \code{plot}.
+#'
+#' @return Called for its side effects and returns invisibly.
+#' @examples
+#' \donttest{
+#' set.seed(123)
+#' sim <- simTVP()
+#'
+#' train <- sim$data[1:190, ]
+#' test <- sim$data[191:200, ]
+#'
+#' res <- shrinkTVP(y ~ x1 + x2, train)
+#'
+#' forecast <- forecast_shrinkTVP(res, test)
+#' plot(forecast)
+#' lines(sim$data$y, col = "forestgreen")
+#'
+#' }
+#' @author Peter Knaus \email{peter.knaus@@wu.ac.at}
+#' @family plotting functions
+#' @export
+plot.shrinkTVP_forc<- function(x, showgap = FALSE, ...){
 
-# Small convenience function to check if something is a scalar
-is.scalar <- function(x) is.atomic(x) && length(x) == 1
+  args <- list(...)
 
-# Small input checkers
-numeric_input_bad <- function(x) {
-  if (is.scalar(x) == TRUE){
-    return(is.na(x) | x <= 0 | is.numeric(x) == FALSE )
-  } else {
-    return(TRUE)
-  }
-}
+  if ("probs" %in% names(args)){
+    probs <- args$probs
 
-numeric_input_bad_zer <- function(x) {
-  if (is.scalar(x) == TRUE){
-    return(is.na(x) | x < 0 | is.numeric(x) == FALSE )
-  } else {
-    return(TRUE)
-  }
-}
+    # Input checking
+    if (length(probs) == 0 || is.vector(probs) == FALSE | is.list(probs) == TRUE ){
+      stop("probs has to be a vector")
+    }
 
-numeric_input_bad_ <- function(x) {
-  if (is.scalar(x) == TRUE){
-    return(is.na(x) | is.numeric(x) == FALSE )
-  } else {
-    return(TRUE)
-  }
-}
+    # Check if all probs are specified correctly
+    if (any(probs > 1) | any(probs < 0) | any(sapply(probs, numeric_input_bad_zer))){
+      stop("all elements of probs have to be numbers between >= 0 and <= 1")
+    }
 
-int_input_bad <- function(x) {
-  if (is.scalar(x) == TRUE){
-    if (is.numeric(x) == TRUE){
-      return(is.na(x) | x < 0 | x %% 1 != 0)
-    } else {
-      return(TRUE)
+    if (length(probs[probs < 0.5]) != length(probs[probs > 0.5])){
+      stop ("There has to be an equal amount of probs above and below 0.5")
     }
   } else {
-    return(TRUE)
+    probs <- c(0.025, 0.25, 0.75, 0.975)
   }
-}
 
-bool_input_bad <- function(x){
-  if (is.scalar(x) == TRUE){
-    return(is.na(x) | is.logical(x) == FALSE)
-  } else {
-    return(TRUE)
-  }
-}
+  prelim_probs <- range(probs)
+  prelim_quants <- apply(x$y_pred, 2, quantile, prelim_probs)
 
-char_input_bad <- function(x){
-  if (is.scalar(x) == TRUE){
-    return(is.na(x) | is.character(x) == FALSE)
-  } else {
-    return(TRUE)
-  }
-}
+  index_old <- attr(x, "index")
+  spacing <- diff(index_old)[1]
 
-lty_input_bad <- function(x){
-  if (is.scalar(x) == TRUE){
-    return((x %in% 0:6 | x %in% c("blank", "solid", "dashed", "dotted", "dotdash", "longdash", "twodash")) == FALSE)
-  } else {
-    return(TRUE)
+  index_new <- seq(from = index_old[length(index_old)] + spacing,
+                   to = index_old[length(index_old)] + ncol(x$y_pred) * spacing,
+                   by = spacing)
+
+  stand_ylim <- c(min(prelim_quants, x$y_orig), max(prelim_quants, x$y_orig))
+  standard_args <- list(ylab = "", xlim = c(index_old[1], index_new[length(index_new)]),
+                        ylim = stand_ylim)
+  missing_args <- names(standard_args)[!names(standard_args) %in% names(args)]
+  args[missing_args] <- standard_args[missing_args]
+
+  pred <- x$y_pred
+  if (showgap == FALSE){
+    index_new <- c(index_new[1] - spacing, index_new)
+    pred <- cbind(x$y_orig[length(x$y_orig)], pred, row.names = NULL)
   }
+
+  args$x <- pred
+  attr(args$x, "index") <- index_new
+
+  # Plot
+  do.call(plot.mcmc.tvp, args)
+  args$y <- x$y_orig
+  args$x <- index_old
+  args$probs <- NULL
+  do.call(lines, args)
+
 }

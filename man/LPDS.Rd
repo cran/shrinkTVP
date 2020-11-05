@@ -9,15 +9,15 @@ LPDS(mod, data_test)
 \arguments{
 \item{mod}{an object of class \code{shrinkTVP}, containing the fitted model for which the LPDS should be calculated.}
 
-\item{data_test}{a data frame with one row, containing the one step ahead covariates and response. The names of the covariates
+\item{data_test}{a data frame with one row, containing the one-step ahead covariates and response. The names of the covariates
 and the response have to match the names used during model estimation in the call to \code{shrinkTVP}.}
 }
 \value{
 A real number equaling the calculated LPDS.
 }
 \description{
-\code{LPDS} calculates the one step ahead Log Predictive Density Score (LPDS) of a fitted TVP model resulting from a call to
-shrinkTVP. For details on the approximation of the one-step ahead predictive density used, see the vignette.
+\code{LPDS} calculates the one-step ahead Log Predictive Density Score (LPDS) of a fitted TVP model resulting from a call to
+\code{shrinkTVP} For details on the approximation of the one-step ahead predictive density used, see the vignette.
 }
 \examples{
 \donttest{
@@ -34,6 +34,15 @@ LPDS(res, data[200,])
 }
 
 }
+\seealso{
+Other prediction functions: 
+\code{\link{eval_pred_dens}()},
+\code{\link{fitted.shrinkTVP}()},
+\code{\link{forecast_shrinkTVP}()},
+\code{\link{predict.shrinkTVP}()},
+\code{\link{residuals.shrinkTVP}()}
+}
 \author{
 Peter Knaus \email{peter.knaus@wu.ac.at}
 }
+\concept{prediction functions}

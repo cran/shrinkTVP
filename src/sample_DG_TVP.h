@@ -1,0 +1,40 @@
+#ifndef SAMPLE_DG_TVP_H
+#define SAMPLE_DG_TVP_H
+
+
+void sample_DG_TVP(const arma::vec& beta_mean,
+                   const arma::vec& theta_sr,
+                   arma::vec& tau2,
+                   arma::vec& xi2,
+                   double& lambda2_B,
+                   double& kappa2_B,
+                   double& a_xi,
+                   double beta_a_xi,
+                   double alpha_a_xi,
+                   double& a_tau,
+                   double beta_a_tau,
+                   double alpha_a_tau,
+                   double d1,
+                   double d2,
+                   double e1,
+                   double e2,
+                   bool learn_kappa2_B,
+                   bool learn_lambda2_B,
+                   bool learn_a_xi,
+                   bool learn_a_tau,
+                   double a_tuning_par_xi,
+                   double a_tuning_par_tau,
+                   const arma::vec& adaptive,
+                   arma::mat& batches,
+                   arma::vec& curr_sds,
+                   const arma::vec& target_rates,
+                   const arma::vec& max_adapts,
+                   arma::ivec& batch_nrs,
+                   const arma::ivec& batch_sizes,
+                   arma::ivec& batch_pos,
+                   int j,
+                   bool& succesful,
+                   std::string& fail,
+                   int& fail_iter);
+
+#endif

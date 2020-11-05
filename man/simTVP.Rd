@@ -4,7 +4,17 @@
 \alias{simTVP}
 \title{Generate synthetic data from a time-varying parameter model}
 \usage{
-simTVP(N = 200, d = 3, sv = FALSE, sigma2 = 1, theta, beta_mean)
+simTVP(
+  N = 200,
+  d = 3,
+  sv = FALSE,
+  sigma2 = 1,
+  theta,
+  beta_mean,
+  sv_mu = 0,
+  sv_phi = 0.98,
+  sv_sigma2 = 0.2
+)
 }
 \arguments{
 \item{N}{integer > 2. Indicates the length of the time series to be
@@ -16,21 +26,30 @@ The default value is 3.}
 \item{sv}{logical value. If set to \code{TRUE}, the data will be generated with
 stochastic volatility for the errors of the observation equation using \code{\link{svsim}}. The default value is FALSE.}
 
-\item{sigma2}{positive real number. Determines the variance on the errors of the observation
+\item{sigma2}{positive real number. Determines the variance of the errors of the observation
 equation. Ignored if sv is \code{TRUE}. The default value is 1.}
 
 \item{theta}{\emph{(optional)} vector containing positive real numbers. If supplied, these determine the variances of the
-innovations of the state equation. Otherwise, the elements of \code{theta} are generated from a ChiSq(1) distribution.
+innovations of the state equation. Otherwise, the elements of \code{theta} are generated from a X^2(1) distribution.
 Has to be of length \code{d} or an error will be thrown.}
 
 \item{beta_mean}{\emph{(optional)} vector containing real numbers. If supplied, these determine the mean of the
 initial value of the state equation. Otherwise, the elements of \code{beta_mean} are generated from a Normal(0,1) distribution.
 Has to be of length \code{d} or an error will be thrown.}
+
+\item{sv_mu}{real number. Determines the mean of the logarithm of the volatility. Ignored if \code{sv} is \code{FALSE}.
+The default value is 0.}
+
+\item{sv_phi}{real number between -1 and 1. Determines the persistence of the SV process. Ignored if \code{sv} is \code{FALSE}.
+The default value is 0.98.}
+
+\item{sv_sigma2}{positive, real number. Determines the variance of the innovations of the logarithm of the volatility.
+Ignored if \code{sv} is \code{FALSE}. The default value is 0.2.}
 }
 \value{
 The value returned is a list object containing:
-\item{\code{data}}{a data frame that holds the simulated data.}
-\item{\code{true_vals}}{a list object containing:
+\item{\code{data}}{data frame that holds the simulated data.}
+\item{\code{true_vals}}{list object containing:
   \itemize{
   \item \code{theta}: the values of theta used in the data generating process.
   \item \code{beta_mean}: the values of beta_mean used in the data generating process.
