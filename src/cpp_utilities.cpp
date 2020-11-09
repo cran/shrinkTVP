@@ -30,7 +30,7 @@ void calc_xi2_tau2(arma::vec& param,
   param = 2.0 * param_til * c / (loc_shrink_til * glob_shrink * a);
 
   if (param.has_inf() | param.has_nan() | !all(param != 0)){
-    param = arma::exp(log(2) + arma::log(param_til) + log(c) - arma::log(loc_shrink_til) - log(glob_shrink) - log(a));
+    param = arma::exp(std::log(2) + arma::log(param_til) + std::log(c) - arma::log(loc_shrink_til) - std::log(glob_shrink) - std::log(a));
   }
 
   std::for_each(param.begin(), param.end(), res_protector);
@@ -146,7 +146,7 @@ double unur_bessel_k_nuasympt(double x,
     eta = sz;
   }
 
-  eta += log(z) - log1p(sz);
+  eta += std::log(z) - log1p(sz);
   u1t = (t * (3. - 5.*t2))/24.;
   u2t = t2 * (81. + t2*(-462. + t2 * 385.))/1152.;
   u3t = t*t2 * (30375. + t2 * (-369603. + t2 * (765765. - t2 * 425425.)))/414720.;
@@ -157,12 +157,12 @@ double unur_bessel_k_nuasympt(double x,
                    + t2 * 185910725.)))) / 39813120.;
                    d = (-u1t + (u2t + (-u3t + u4t/nu)/nu)/nu)/nu;
 
-                   res = log(1.+d) - nu*eta - 0.5*(log(2.*nu*sz) - M_LNPI);
+                   res = std::log(1.+d) - nu*eta - 0.5*(std::log(2.*nu*sz) - M_LNPI);
 
                    if (islog){
                      return res;
                    } else {
-                     return exp(res);
+                     return std::exp(res);
                    }
 }
 

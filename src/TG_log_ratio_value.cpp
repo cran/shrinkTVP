@@ -32,9 +32,9 @@ double TG_log_ratio_value_marginalBFS(double proposal,
 
   // kappa2 part
   double part3 = -(R::lbeta(proposal, c) - R::lbeta(old_val, c)) +
-    (proposal*(std::log(proposal) + log(scale_par/(2.0*c))) - old_val*(std::log(old_val) + log(scale_par/(2.0*c)))) -
-    (std::log(proposal) - std::log(old_val)) - ((proposal + c)*log(1 + proposal*scale_par/(2.0*c)) -
-    (old_val + c)*log(1 + old_val*scale_par/(2.0*c)));
+    (proposal*(std::log(proposal) + std::log(scale_par/(2.0*c))) - old_val*(std::log(old_val) + std::log(scale_par/(2.0*c)))) -
+    (std::log(proposal) - std::log(old_val)) - ((proposal + c)*std::log(1 + proposal*scale_par/(2.0*c)) -
+    (old_val + c)*std::log(1 + old_val*scale_par/(2.0*c)));
 
   // kappa2_til_j part only if a and c are equal
   double parteq;

@@ -24,13 +24,13 @@ double univar_rgig_newapproach1 (double lambda, double lambda_old, double omega,
 
 
 
-  xm = omega / (sqrt((1.-lambda)*(1.-lambda) + omega*omega)+(1.-lambda));
+  xm = omega / (std::sqrt((1.-lambda)*(1.-lambda) + omega*omega)+(1.-lambda));
 
 
   x0 = omega/(1.-lambda);
 
 
-  k0 = exp((lambda-1.)*log(xm) - 0.5*omega*(xm + 1./xm));
+  k0 = std::exp((lambda-1.)*std::log(xm) - 0.5*omega*(xm + 1./xm));
   A[0] = k0 * x0;
 
 
@@ -38,19 +38,19 @@ double univar_rgig_newapproach1 (double lambda, double lambda_old, double omega,
     k1 = 0.;
     A[1] = 0.;
     k2 = pow(x0, lambda-1.);
-    A[2] = k2 * 2. * exp(-omega*x0/2.)/omega;
+    A[2] = k2 * 2. * std::exp(-omega*x0/2.)/omega;
   }
 
   else {
 
-    k1 = exp(-omega);
+    k1 = std::exp(-omega);
     A[1] = (lambda == 0.)
-      ? k1 * log(2./(omega*omega))
-        : k1 / lambda * ( pow(2./omega, lambda) - pow(x0, lambda) );
+      ? k1 * std::log(2./(omega*omega))
+        : k1 / lambda * ( std::pow(2./omega, lambda) - std::pow(x0, lambda) );
 
 
-    k2 = pow(2/omega, lambda-1.);
-    A[2] = k2 * 2 * exp(-1.)/omega;
+    k2 = std::pow(2/omega, lambda-1.);
+    A[2] = k2 * 2 * std::exp(-1.)/omega;
   }
 
 
@@ -75,12 +75,12 @@ double univar_rgig_newapproach1 (double lambda, double lambda_old, double omega,
       V -= A[0];
       if (V <= A[1]) {
         if (lambda == 0.) {
-          X = omega * exp(exp(omega)*V);
+          X = omega * std::exp(std::exp(omega)*V);
           hx = k1 / X;
         }
         else {
-          X = pow(pow(x0, lambda) + (lambda / k1 * V), 1./lambda);
-          hx = k1 * pow(X, lambda-1.);
+          X = std::pow(std::pow(x0, lambda) + (lambda / k1 * V), 1./lambda);
+          hx = k1 * std::pow(X, lambda-1.);
         }
         break;
       }
@@ -88,8 +88,8 @@ double univar_rgig_newapproach1 (double lambda, double lambda_old, double omega,
 
       V -= A[1];
       a = (x0 > 2./omega) ? x0 : 2./omega;
-      X = -2./omega * log(exp(-omega/2. * a) - omega/(2.*k2) * V);
-      hx = k2 * exp(-omega/2. * X);
+      X = -2./omega * std::log(std::exp(-omega/2. * a) - omega/(2.*k2) * V);
+      hx = k2 * std::exp(-omega/2. * X);
       break;
 
     } while(0);
@@ -97,7 +97,7 @@ double univar_rgig_newapproach1 (double lambda, double lambda_old, double omega,
 
     U = R::runif(0, 1) * hx;
 
-    if (log(U) <= (lambda-1.) * log(X) - omega/2. * (X+1./X)) {
+    if (std::log(U) <= (lambda-1.) * std::log(X) - omega/2. * (X+1./X)) {
 
       res = (lambda_old < 0.) ? (alpha / X) : (alpha * X);
       break;

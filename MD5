@@ -1,6 +1,6 @@
-8db32ea29551f6bac476c22350376c1c *DESCRIPTION
+c45c84dcd6935162411f389cc57f8a96 *DESCRIPTION
 becc530241d0dfb2a9e5f476adaf92f4 *NAMESPACE
-c69d8a88e06d105e75742b013cb7cd8f *NEWS.md
+b6e0fc1a96c95fe8e4da6365835711e8 *NEWS.md
 54c80df3b62a617a96ee9b5248ec33ef *R/Imports.R
 15e36a64500f4bddf01c877e8594eba6 *R/exports.R
 8fdaef893e6cfa76cdaca8005996da74 *R/plot_functions.R
@@ -11,7 +11,7 @@ de758964d5af4a0f53e2c23277c0cf7e *R/pred_funs.R
 2b84f204feabc62faedd3232d49faf57 *R/utilities.R
 82fda40b6af8be1f2b5d63510df199ad *build/vignette.rds
 89e801150d9547ba33a41774c709a309 *inst/doc/shrinkTVP.ltx
-cae967e1cf12116763e3f540ae3323f0 *inst/doc/shrinkTVP.pdf
+1cddbb999029c98caa5e6c67bbedce41 *inst/doc/shrinkTVP.pdf
 9c08f5b103d7a9da5d09b05e165b0771 *inst/include/shrinkTVP.h
 39a339f5e9291015c9356bd49b4e9915 *man/LPDS.Rd
 b6f225ee8af97b27af4927204c726ff3 *man/eval_pred_dens.Rd
@@ -37,15 +37,15 @@ c9d6e841ba2ffc881e107fbfeb9aebb2 *src/Makevars.win
 72bba25d2b15045f87be638a5e414f17 *src/R_utilities.cpp
 5662a94555470bd6d03a89b0af9414dc *src/TG_MH_step.cpp
 83ea261f53730be22aa122865a83ab0a *src/TG_MH_step.h
-b537b4ac9ba5622578b6892301398e75 *src/TG_log_ratio_value.cpp
+b627650cdc5b11a0a6acb01b0f7a4148 *src/TG_log_ratio_value.cpp
 ce5693a9f4d95826a30c96d6dfe240c1 *src/TG_log_ratio_value.h
 662249a395a3dd408b796affbfc83049 *src/TG_sampling_functions.cpp
 a382ec3f2013c36f2b0cf3afe1028cd1 *src/TG_sampling_functions.h
 4272292fe60b0f509e827d042c6908de *src/common_sampling_functions.cpp
 6d05762ddad686d075e104e0e243446a *src/common_sampling_functions.h
-120983a3d423017d9a7fa7b0e72025b7 *src/cpp_utilities.cpp
+bdd5b05a67f6dc3edefc1d8867912675 *src/cpp_utilities.cpp
 cf060c12fe37afea679c7db954cac729 *src/cpp_utilities.h
-8ea04fbb5eecc7dbf8f60bd02e47eabc *src/do_rgig1.cpp
+98dfa0d7647e387cacf3a2b33a5522f9 *src/do_rgig1.cpp
 e9ede58eaaf3ef58b28c255f61ab51f2 *src/do_rgig1.h
 c691f7aa892cb753d4c710a0fd94f4a4 *src/exports.cpp
 070458d07914c791897a3b563bb1f069 *src/sample_DG_TVP.cpp

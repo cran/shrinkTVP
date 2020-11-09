@@ -1,3 +1,6 @@
+## Changes in Version 2.1
+  - Fixed an issue on Solaris
+
 ## Changes in Version 2.0
   - Added option to use triple gamma prior 
   - Added one-step update function updateTVP for modular use in other samplers
