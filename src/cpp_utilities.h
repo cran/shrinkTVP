@@ -50,7 +50,8 @@ void sample_lin_reg_rue_homosc(arma::vec& param_vec,
 void sample_lin_reg_bhat(arma::vec& param_vec,
                          const arma::vec& y,
                          const arma::mat& x,
-                         const arma::vec& sigma2,
+                         double sigma2,
                          const arma::vec& prior_var);
+
 
 #endif

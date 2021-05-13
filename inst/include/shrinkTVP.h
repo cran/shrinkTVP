@@ -666,9 +666,9 @@ inline void sample_lin_reg_rue_homosc(arma::vec& param_vec,
 inline void sample_lin_reg_bhat(arma::vec& param_vec,
                                 const arma::vec& y,
                                 const arma::mat& x,
-                                const arma::vec& sigma2,
+                                double sigma2,
                                 const arma::vec& prior_var) {
-  typedef void(*Func)(arma::vec&,const arma::vec&,const arma::mat&,const arma::vec&,const arma::vec&);
+  typedef void(*Func)(arma::vec&,const arma::vec&,const arma::mat&,double,const arma::vec&);
   static Func func = NULL;
   if (func == NULL) {
     func = (Func)R_GetCCallable("shrinkTVP", "sample_lin_reg_bhat");
@@ -765,8 +765,6 @@ inline void sample_TG_TVP(const arma::vec& beta_mean,
                           arma::vec& xi2,
                           arma::vec& tau2_til,
                           arma::vec& xi2_til,
-                          arma::vec& lambda2,
-                          arma::vec& kappa2,
                           arma::vec& lambda2_til,
                           arma::vec& kappa2_til,
                           double& lambda2_B,
@@ -809,7 +807,7 @@ inline void sample_TG_TVP(const arma::vec& beta_mean,
                           bool& succesful,
                           std::string& fail,
                           int& fail_iter) {
-  typedef void(*Func)(const arma::vec&,const arma::vec&,arma::vec&,arma::vec&,arma::vec&,arma::vec&,arma::vec&,arma::vec&,arma::vec&,arma::vec&,double&,double&,double&,double,double,double&,double,double,double&,double&,double&,double&,double,double,double,double,bool,bool,bool,bool,bool,bool,double,double,double,double,bool,bool,const arma::vec&,arma::mat&,arma::vec&,const arma::vec&,const arma::vec&,arma::ivec&,const arma::ivec&,arma::ivec&,int,bool&,std::string&,int&);
+  typedef void(*Func)(const arma::vec&,const arma::vec&,arma::vec&,arma::vec&,arma::vec&,arma::vec&,arma::vec&,arma::vec&,double&,double&,double&,double,double,double&,double,double,double&,double&,double&,double&,double,double,double,double,bool,bool,bool,bool,bool,bool,double,double,double,double,bool,bool,const arma::vec&,arma::mat&,arma::vec&,const arma::vec&,const arma::vec&,arma::ivec&,const arma::ivec&,arma::ivec&,int,bool&,std::string&,int&);
   static Func func = NULL;
   if (func == NULL) {
     func = (Func)R_GetCCallable("shrinkTVP", "sample_TG_TVP");
@@ -821,8 +819,6 @@ inline void sample_TG_TVP(const arma::vec& beta_mean,
          xi2,
          tau2_til,
          xi2_til,
-         lambda2,
-         kappa2,
          lambda2_til,
          kappa2_til,
          lambda2_B,

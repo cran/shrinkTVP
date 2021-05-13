@@ -1,6 +1,6 @@
-c45c84dcd6935162411f389cc57f8a96 *DESCRIPTION
+cb82104d40e502f1ce43850ee85b6099 *DESCRIPTION
 becc530241d0dfb2a9e5f476adaf92f4 *NAMESPACE
-b6e0fc1a96c95fe8e4da6365835711e8 *NEWS.md
+05491cd990ce2e1c03265cd510895b76 *NEWS.md
 54c80df3b62a617a96ee9b5248ec33ef *R/Imports.R
 15e36a64500f4bddf01c877e8594eba6 *R/exports.R
 8fdaef893e6cfa76cdaca8005996da74 *R/plot_functions.R
@@ -9,10 +9,10 @@ de758964d5af4a0f53e2c23277c0cf7e *R/pred_funs.R
 8231c3b22d3c46b63bf1c44c4e41a7c5 *R/shrinkTVP_methods.R
 8fd78106a4bcd97690d721f2ba131cb0 *R/simTVP.R
 2b84f204feabc62faedd3232d49faf57 *R/utilities.R
-82fda40b6af8be1f2b5d63510df199ad *build/vignette.rds
+822b942c7b66dbd0ffd27f1cc1dcd6af *build/vignette.rds
 89e801150d9547ba33a41774c709a309 *inst/doc/shrinkTVP.ltx
-1cddbb999029c98caa5e6c67bbedce41 *inst/doc/shrinkTVP.pdf
-9c08f5b103d7a9da5d09b05e165b0771 *inst/include/shrinkTVP.h
+763fe715a9c5e0c5914ca1242dba8522 *inst/doc/shrinkTVP.pdf
+a60a7c746f0ad331ec1a3341325d8d47 *inst/include/shrinkTVP.h
 39a339f5e9291015c9356bd49b4e9915 *man/LPDS.Rd
 b6f225ee8af97b27af4927204c726ff3 *man/eval_pred_dens.Rd
 4d4d9d48a32b4cf395287265765bf209 *man/fitted.shrinkTVP.Rd
@@ -32,8 +32,8 @@ a7f6fada7274aadd79ed6020ab8c46b0 *src/DG_log_ratio_value.cpp
 8fa6b7bf17b3cf8c880e80a87b0c5751 *src/DG_log_ratio_value.h
 db694e951250cc705dd73ee856e1eb85 *src/DG_sampling_functions.cpp
 0f8af0f66f049b7775078338df548035 *src/DG_sampling_functions.h
-c9d6e841ba2ffc881e107fbfeb9aebb2 *src/Makevars
-c9d6e841ba2ffc881e107fbfeb9aebb2 *src/Makevars.win
+4563526f0bc06adbbe8371137e8a7dda *src/Makevars
+4563526f0bc06adbbe8371137e8a7dda *src/Makevars.win
 72bba25d2b15045f87be638a5e414f17 *src/R_utilities.cpp
 5662a94555470bd6d03a89b0af9414dc *src/TG_MH_step.cpp
 83ea261f53730be22aa122865a83ab0a *src/TG_MH_step.h
@@ -43,9 +43,9 @@ ce5693a9f4d95826a30c96d6dfe240c1 *src/TG_log_ratio_value.h
 a382ec3f2013c36f2b0cf3afe1028cd1 *src/TG_sampling_functions.h
 4272292fe60b0f509e827d042c6908de *src/common_sampling_functions.cpp
 6d05762ddad686d075e104e0e243446a *src/common_sampling_functions.h
-bdd5b05a67f6dc3edefc1d8867912675 *src/cpp_utilities.cpp
-cf060c12fe37afea679c7db954cac729 *src/cpp_utilities.h
-98dfa0d7647e387cacf3a2b33a5522f9 *src/do_rgig1.cpp
+ee2f17500b0e708246407fd8a3914dd9 *src/cpp_utilities.cpp
+0d4ef0ace6b8b7abb5dfa1ebd726612b *src/cpp_utilities.h
+a99c0d6f0df786023135c1d4537aeb41 *src/do_rgig1.cpp
 e9ede58eaaf3ef58b28c255f61ab51f2 *src/do_rgig1.h
 c691f7aa892cb753d4c710a0fd94f4a4 *src/exports.cpp
 070458d07914c791897a3b563bb1f069 *src/sample_DG_TVP.cpp
@@ -54,7 +54,7 @@ a4d05c3bbc76858a28c8fab29427b97a *src/sample_TG_TVP.cpp
 f8a92ead115137c81599fc0095905ee5 *src/sample_TG_TVP.h
 95752d5146d4f853f7d8bae5fc365486 *src/sample_beta_McCausland.cpp
 f437d587a2e142c5b9f7d134d40d7b39 *src/sample_beta_McCausland.h
-1974c37bbe55e9429a9c43bd03af0e98 *src/shrinkTVP.cpp
+884f40c494bdbbb49b58e4229fea6a69 *src/shrinkTVP.cpp
 e0e4d15758796383f831ffc1b7c974d7 *src/shrinkTVP.h
 b7978fe824c9c840578683d2d35c4460 *tests/testthat.R
 349a91a5eb977527665a8d3a3dc7a19c *tests/testthat/test_shrinkTVP.R

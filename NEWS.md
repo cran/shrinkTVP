@@ -1,4 +1,10 @@
-## Changes in Version 2.1
+## Changes in Version 2.0.2
+  - Moved to stochvol 3.0
+  - Fixed an issue with the exported version sample_TG_TVP function
+  - Fixed an issue with the exported Bhattacharya algorithm 
+  - define STRICT_R_HEADERS, include float.h, adjust some constants
+
+## Changes in Version 2.0.1
   - Fixed an issue on Solaris
 
 ## Changes in Version 2.0

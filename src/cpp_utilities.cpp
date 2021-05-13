@@ -1,6 +1,7 @@
 #include <RcppArmadillo.h>
 #include <Rcpp.h>
 #include <math.h>
+#include <float.h>
 using namespace Rcpp;
 
 void res_protector(double& x){
@@ -218,7 +219,7 @@ void sample_lin_reg_rue(arma::vec& param_vec,
   arma::mat XtX = X_til * X;
   arma::vec Xty = X_til * y;
 
-  arma::mat L = robust_chol(XtX + arma::diagmat(1.0/prior_var));
+  arma::mat L = arma::chol(XtX + arma::diagmat(1.0/prior_var), "lower");
   arma::mat v = arma::solve(arma::trimatl(L), Xty);
   arma::vec mu = arma::solve(arma::trimatu(L.t()), v);
 
@@ -238,7 +239,7 @@ void sample_lin_reg_rue_homosc(arma::vec& param_vec,
 
   arma::mat XtX_til = XtX*1.0/sigma2;
 
-  arma::mat L = robust_chol(XtX_til + arma::diagmat(1.0/prior_var));
+  arma::mat L = arma::chol(XtX_til + arma::diagmat(1.0/prior_var), "lower");
   arma::mat v = arma::solve(arma::trimatl(L), Xty/sigma2);
   arma::vec mu = arma::solve(arma::trimatu(L.t()), v);
 
@@ -249,37 +250,41 @@ void sample_lin_reg_rue_homosc(arma::vec& param_vec,
 void sample_lin_reg_bhat(arma::vec& param_vec,
                          const arma::vec& y,
                          const arma::mat& x,
-                         const arma::vec& sigma2,
+                         double sigma2,
                          const arma::vec& prior_var){
 
   //This is the algorithm of Bhattacharya et al. (2016)
   int N = x.n_rows;
   int p = x.n_cols;
 
-  arma::vec sigma_inv = 1.0/arma::sqrt(sigma2);
-  arma::vec y_til = y;
+  double sigma_inv = 1.0/std::sqrt(sigma2);
+  arma::vec y_til = y * sigma_inv;
   arma::mat x_til = x;
-  // This allows for a time varying sigma2
   for (int t = 0; t < N; t++) {
-    y_til *= sigma_inv(t);
-    x_til.row(t) *= sigma_inv(t);
+    x_til.row(t) *= sigma_inv;
   }
 
   arma::vec eps = rnorm(p, 0, 1);
-  arma::vec u = arma::sqrt(prior_var) % eps;
+  arma::vec u = arma::sqrt(prior_var * sigma2) % eps;
   arma::vec delta = Rcpp::rnorm(N, 0, 1);
   arma::vec v = x_til * u + delta;
 
   arma::mat pX = x_til;
-  for (int i = 1; i < p; i++) {
-    pX.col(i) *= prior_var(i);
+
+
+  for (int i = 0; i < p; i++) {
+    pX.col(i) *= prior_var(i) * sigma2;
   }
   pX = pX.t();
 
   arma::mat W = x_til * pX + arma::eye(N, N);
-  arma::mat L = robust_chol(W);
+
+
+  arma::mat L = arma::chol(W, "lower");
   arma::mat vv = arma::solve(arma::trimatl(L), y_til - v);
+
   arma::mat w = arma::solve(arma::trimatu(L.t()), vv);
   // w = arma::solve(W, y_til - v, arma::solve_opts::likely_sympd);
   param_vec = u + pX * w;
 }
+
