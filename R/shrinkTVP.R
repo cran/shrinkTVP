@@ -71,8 +71,8 @@
 #' \item \code{alpha_a_tau}: The default value is 5.
 #' \item \code{beta_a_xi}: The default value is 10.
 #' \item \code{beta_a_tau}: The default value is 10.
-#' \item \code{alpha_c_xi}: The defalut value is 5.
-#' \item \code{alpha_c_tau}: The defalut value is 5.
+#' \item \code{alpha_c_xi}: The default value is 5.
+#' \item \code{alpha_c_tau}: The default value is 5.
 #' \item \code{beta_c_xi}: The default value is 2.
 #' \item \code{beta_c_tau}: The default value is 2.
 #' }
@@ -93,7 +93,7 @@
 #' \item \code{Bmu}: real number. larger than 0. The default value is 1.
 #' }
 #' @param MH_tuning \emph{optional} named list containing values used to tune the MH steps for \code{a_xi}, \code{a_tau},
-#' \code{c_xi} and \code{c_tau}. Not all have to be supplied, with those missing being replaced by the default values.
+#' \code{c_xi}, and \code{c_tau}. Not all have to be supplied, with those missing being replaced by the default values.
 #' Any list elements that are misnamed will be ignored and a warning will be thrown.
 #' The arguments for \code{a_xi}(\code{a_tau}) are only used if \code{learn_a_xi}(\code{learn_a_tau})
 #' is set to \code{TRUE} and \code{mod_type} is not equal to \code{"ridge"}. The arguments for \code{c_xi}(\code{c_tau}) are only
@@ -956,9 +956,9 @@ shrinkTVP <- function(formula,
 #' \item \code{alpha_a_xi}: The default value is 5.
 #' \item \code{alpha_a_tau}: The default value is 5.
 #' \item \code{beta_c_xi}: The default value is 2.
-#' \item \code{alpha_c_xi}: The defalut value is 5.
+#' \item \code{alpha_c_xi}: The default value is 5.
 #' \item \code{beta_c_tau}: The default value is 2.
-#' \item \code{alpha_c_tau}: The defalut value is 5.
+#' \item \code{alpha_c_tau}: The default value is 5.
 #' }
 #' @param sv logical value indicating whether to use stochastic volatility for the error of the observation
 #' equation. For details please see \code{\link{stochvol}}, in particular \code{\link{svsample}}. The default value is

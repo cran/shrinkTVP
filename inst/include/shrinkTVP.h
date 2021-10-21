@@ -118,6 +118,43 @@ inline Rcpp::List shrinkTVP_cpp(arma::vec y,
   }
 }
 
+inline double DG_MH_step(double current_val,
+                         double a_tuning_par,
+                         double scale_par,
+                         const arma::vec& param_vec,
+                         double b,
+                         double nu,
+                         bool adaptive,
+                         arma::vec& batch,
+                         double& curr_sd,
+                         double target_rate,
+                         double max_adapt,
+                         int& batch_nr,
+                         int batch_size,
+                         int& batch_pos) {
+  typedef double(*Func)(double,double,double,const arma::vec&,double,double,bool,arma::vec&,double&,double,double,int&,int,int&);
+  static Func func = NULL;
+  if (func == NULL) {
+    func = (Func)R_GetCCallable("shrinkTVP", "DG_MH_step");
+  }
+  {
+    return func(current_val,
+                a_tuning_par,
+                scale_par,
+                param_vec,
+                b,
+                nu,
+                adaptive,
+                batch,
+                curr_sd,
+                target_rate,
+                max_adapt,
+                batch_nr,
+                batch_size,
+                batch_pos);
+  }
+}
+
 inline double DG_log_ratio_value_marginalBFS(double proposal,
                                              double old_val,
                                              double scale_par,

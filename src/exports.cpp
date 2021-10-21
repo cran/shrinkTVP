@@ -157,6 +157,7 @@ static int _shrinkTVP_RcppExport_validate(const char* sig) {
 // registerCCallable (register entry points for exported C++ functions)
 RcppExport SEXP _shrinkTVP_RcppExport_registerCCallable() {
     R_RegisterCCallable("shrinkTVP", "shrinkTVP_cpp", (DL_FUNC)shrinkTVP_cpp);
+    R_RegisterCCallable("shrinkTVP", "DG_MH_step", (DL_FUNC)DG_MH_step);
     R_RegisterCCallable("shrinkTVP", "DG_log_ratio_value_marginalBFS", (DL_FUNC)DG_log_ratio_value_marginalBFS);
     R_RegisterCCallable("shrinkTVP", "DG_sample_local_shrink", (DL_FUNC)DG_sample_local_shrink);
     R_RegisterCCallable("shrinkTVP", "DG_sample_global_shrink", (DL_FUNC)DG_sample_global_shrink);

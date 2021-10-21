@@ -1,3 +1,10 @@
+## Changes in Version 2.0.3
+  - Fixed a bug in the sampling step for c_xi (Thanks to Tony Chernis for pointing it out)
+  - Fixed a bug in the sampling step for a_tau (Thanks to Wenjie Zhao for pointing it out)
+  - Added DG_MH_step to exported functions
+  - Fixed some typos in the documentation
+  - Added a newline to the print() function
+
 ## Changes in Version 2.0.2
   - Moved to stochvol 3.0
   - Fixed an issue with the exported version sample_TG_TVP function

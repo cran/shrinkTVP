@@ -13,8 +13,8 @@ print.shrinkTVP <- function(x, ...){
              " - ", formatC(length(attr(x, "colnames")), width = 7), " covariates", ifelse(attr(x, "p") > 0, paste0(", of which ", attr(x, "p"), " are AR terms"), ""), "\n",
              " - ", formatC(length(x$model$y), width = 7), " timepoints, running from ", min(ind), " to ", max(ind), "\n",
              " - ", formatC(attr(x, "niter"), width = 7), " MCMC draws\n",
-             " - ", formatC(attr(x, "nburn"), width = 7), " burn-n\n",
-             " - ", formatC(attr(x, "nthin"), width = 7), " thinning"))
+             " - ", formatC(attr(x, "nburn"), width = 7), " burn-in\n",
+             " - ", formatC(attr(x, "nthin"), width = 7), " thinning\n"))
   invisible(x)
 }
 

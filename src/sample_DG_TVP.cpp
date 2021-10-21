@@ -86,7 +86,7 @@ void sample_DG_TVP(const arma::vec& beta_mean,
       }
       a_tau = DG_MH_step(a_tau,
                          a_tuning_par_tau,
-                         kappa2_B,
+                         lambda2_B,
                          beta_mean,
                          beta_a_tau,
                          alpha_a_tau,
