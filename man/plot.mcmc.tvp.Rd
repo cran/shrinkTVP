@@ -37,7 +37,7 @@ number of quantile pairs. The default value is \code{TRUE}.}
 \item{quantlines}{single logical value or a vector of logical values, indicating whether or not to draw borders along the pointwise
 credible intervals. If a vector is given, the first value given is used to determine whether the outermost credible interval
 is marked by lines, the second for the second outermost and so forth. Recycled in the usual fashion if the vector is shorter than the
-number of credible intervals. The defualt value is \code{FALSE}.}
+number of credible intervals. The default value is \code{FALSE}.}
 
 \item{shadecol}{single character string or a vector of character strings. Determines the color of the shaded areas that represent
 the credible intervals. If a vector is given, the first color given is used for the outermost area,
@@ -61,12 +61,12 @@ Has no effect if \code{quantlines = FALSE}. The default value is \code{2}.}
 \item{quantcol}{single character string or a vector of character strings. Determines the color of the borders drawn around the shaded
 areas that represent the credible intervals. If a vector is given, the first color given is used for borders of the outermost area,
 the second for the second outermost and so forth. Recycled in the usual fashion if the vector is shorter than the number
-of shaded areas. Has no effect if \code{quantlines = FALSE}. The default value is \code{"red"}.}
+of shaded areas. Has no effect if \code{quantlines = FALSE}. The default value is \code{"black"}.}
 
 \item{quantlwd}{single real, positive number or a vector of real, positive numbers. Determines the line width of the borders
 drawn around the shaded areas that represent the credible intervals. If a vector is given, the first number given is used for
 the borders of the outermost area, the second for the second outermost and so forth. Recycled in the usual fashion if the vector
-is shorter than the number of shaded areas. Has no effect if \code{quantlines = FALSE}. The default value is \code{1}.}
+is shorter than the number of shaded areas. Has no effect if \code{quantlines = FALSE}. The default value is \code{0.5}.}
 
 \item{drawzero}{single logical value determining whether to draw a horizontal line at zero or not. The default value is \code{TRUE}.}
 

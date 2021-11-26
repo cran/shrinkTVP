@@ -1,3 +1,7 @@
+## Changes in Version 2.0.4
+  - Added CITATION file
+  - Modified DESCRIPTION as well as some documentation files
+
 ## Changes in Version 2.0.3
   - Fixed a bug in the sampling step for c_xi (Thanks to Tony Chernis for pointing it out)
   - Fixed a bug in the sampling step for a_tau (Thanks to Wenjie Zhao for pointing it out)

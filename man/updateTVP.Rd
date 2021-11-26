@@ -123,9 +123,9 @@ supplied:
 \item \code{alpha_a_xi}: The default value is 5.
 \item \code{alpha_a_tau}: The default value is 5.
 \item \code{beta_c_xi}: The default value is 2.
-\item \code{alpha_c_xi}: The defalut value is 5.
+\item \code{alpha_c_xi}: The default value is 5.
 \item \code{beta_c_tau}: The default value is 2.
-\item \code{alpha_c_tau}: The defalut value is 5.
+\item \code{alpha_c_tau}: The default value is 5.
 }}
 
 \item{sv}{logical value indicating whether to use stochastic volatility for the error of the observation
@@ -250,6 +250,9 @@ Bitto, A., & Frühwirth-Schnatter, S. (2019). "Achieving shrinkage in a time-var
 
 Cadonna, A., Frühwirth-Schnatter, S., & Knaus, P. (2020). "Triple the Gamma—A Unifying Shrinkage Prior for Variance and Variable Selection in Sparse State Space and TVP Models."
 \emph{Econometrics}, 8(2), 20. <doi:10.3390/econometrics8020020>
+
+Knaus, P., Bitto-Nemling, A., Cadonna, A., & Frühwirth-Schnatter, S. (2021) "Shrinkage in the Time-Varying Parameter Model Framework Using the \code{R} Package \code{shrinkTVP}."
+\emph{Journal of Statistical Software} 100(13), 1–32.<doi:10.18637/jss.v100.i13>
 }
 \author{
 Peter Knaus \email{peter.knaus@wu.ac.at}

@@ -5,6 +5,7 @@
 #' parameter model with shrinkage, potentially including stochastic volatility (SV), and returns the MCMC draws.
 #'
 #' For details concerning the algorithms please refer to the papers by Bitto and Frühwirth-Schnatter (2019) and Cadonna et al. (2020).
+#' For more details on the package and the usage of the functions, see Knaus et al. (2021).
 #'
 #' @param formula object of class "formula": a symbolic representation of the model, as in the
 #' function \code{lm}. For details, see \code{\link{formula}}.
@@ -203,6 +204,9 @@
 #'
 #' Cadonna, A., Frühwirth-Schnatter, S., & Knaus, P. (2020). "Triple the Gamma—A Unifying Shrinkage Prior for Variance and Variable Selection in Sparse State Space and TVP Models."
 #' \emph{Econometrics}, 8(2), 20. <doi:10.3390/econometrics8020020>
+#'
+#' Knaus, P., Bitto-Nemling, A., Cadonna, A., & Frühwirth-Schnatter, S. (2021) "Shrinkage in the Time-Varying Parameter Model Framework Using the \code{R} Package \code{shrinkTVP}."
+#' \emph{Journal of Statistical Software} 100(13), 1–32. <doi:10.18637/jss.v100.i13>
 #' @examples
 #' \donttest{
 #'
@@ -1039,6 +1043,9 @@ shrinkTVP <- function(formula,
 #'
 #' Cadonna, A., Frühwirth-Schnatter, S., & Knaus, P. (2020). "Triple the Gamma—A Unifying Shrinkage Prior for Variance and Variable Selection in Sparse State Space and TVP Models."
 #' \emph{Econometrics}, 8(2), 20. <doi:10.3390/econometrics8020020>
+#'
+#' Knaus, P., Bitto-Nemling, A., Cadonna, A., & Frühwirth-Schnatter, S. (2021) "Shrinkage in the Time-Varying Parameter Model Framework Using the \code{R} Package \code{shrinkTVP}."
+#' \emph{Journal of Statistical Software} 100(13), 1–32.<doi:10.18637/jss.v100.i13>
 #' @examples
 #' \donttest{
 #' # Simulate data

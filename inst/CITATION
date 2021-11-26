@@ -1,0 +1,20 @@
+bibentry(bibtype = "Article",
+  title        = "Shrinkage in the Time-Varying Parameter Model Framework Using the {R} Package {shrinkTVP}",
+  author       = c(person(given = "Peter",
+                          family = "Knaus",
+                          email = "peter.knaus@wu.ac.at"),
+                   person(given = "Angela",
+                          family = "Bitto-Nemling"),
+                   person(given = "Annalisa",
+                          family = "Cadonna"),
+                   person(given = "Sylvia",
+                          family = "Fr\\\"uhwirth-Schnatter")),
+  journal      = "Journal of Statistical Software",
+  year         = "2021",
+  volume       = "100",
+  number       = "13",
+  pages        = "1--32",
+  doi          = "10.18637/jss.v100.i13",
+  header       = "To cite shrinkTVP in publications use:"
+)
+

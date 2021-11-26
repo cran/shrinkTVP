@@ -119,8 +119,8 @@ supplied:
 \item \code{alpha_a_tau}: The default value is 5.
 \item \code{beta_a_xi}: The default value is 10.
 \item \code{beta_a_tau}: The default value is 10.
-\item \code{alpha_c_xi}: The defalut value is 5.
-\item \code{alpha_c_tau}: The defalut value is 5.
+\item \code{alpha_c_xi}: The default value is 5.
+\item \code{alpha_c_tau}: The default value is 5.
 \item \code{beta_c_xi}: The default value is 2.
 \item \code{beta_c_tau}: The default value is 2.
 }}
@@ -145,7 +145,7 @@ Any list elements that are misnamed will be ignored and a warning will be thrown
 }}
 
 \item{MH_tuning}{\emph{optional} named list containing values used to tune the MH steps for \code{a_xi}, \code{a_tau},
-\code{c_xi} and \code{c_tau}. Not all have to be supplied, with those missing being replaced by the default values.
+\code{c_xi}, and \code{c_tau}. Not all have to be supplied, with those missing being replaced by the default values.
 Any list elements that are misnamed will be ignored and a warning will be thrown.
 The arguments for \code{a_xi}(\code{a_tau}) are only used if \code{learn_a_xi}(\code{learn_a_tau})
 is set to \code{TRUE} and \code{mod_type} is not equal to \code{"ridge"}. The arguments for \code{c_xi}(\code{c_tau}) are only
@@ -256,6 +256,7 @@ parameter model with shrinkage, potentially including stochastic volatility (SV)
 }
 \details{
 For details concerning the algorithms please refer to the papers by Bitto and Frühwirth-Schnatter (2019) and Cadonna et al. (2020).
+For more details on the package and the usage of the functions, see Knaus et al. (2021).
 }
 \examples{
 \donttest{
@@ -305,6 +306,9 @@ Bitto, A., & Frühwirth-Schnatter, S. (2019). "Achieving shrinkage in a time-var
 
 Cadonna, A., Frühwirth-Schnatter, S., & Knaus, P. (2020). "Triple the Gamma—A Unifying Shrinkage Prior for Variance and Variable Selection in Sparse State Space and TVP Models."
 \emph{Econometrics}, 8(2), 20. <doi:10.3390/econometrics8020020>
+
+Knaus, P., Bitto-Nemling, A., Cadonna, A., & Frühwirth-Schnatter, S. (2021) "Shrinkage in the Time-Varying Parameter Model Framework Using the \code{R} Package \code{shrinkTVP}."
+\emph{Journal of Statistical Software} 100(13), 1–32. <doi:10.18637/jss.v100.i13>
 }
 \seealso{
 \code{\link{plot.shrinkTVP}}, \code{\link{plot.mcmc.tvp}}
