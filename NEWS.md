@@ -1,3 +1,6 @@
+## Changes in Version 2.0.5
+  - Modified shrinkTVP.ltx to work with new jss.cls
+
 ## Changes in Version 2.0.4
   - Added CITATION file
   - Modified DESCRIPTION as well as some documentation files
