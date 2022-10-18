@@ -30,7 +30,7 @@ void calc_xi2_tau2(arma::vec& param,
 
   param = 2.0 * param_til * c / (loc_shrink_til * glob_shrink * a);
 
-  if (param.has_inf() | param.has_nan() | !all(param != 0)){
+  if (param.has_inf() || param.has_nan() || !all(param != 0)){
     param = arma::exp(std::log(2) + arma::log(param_til) + std::log(c) - arma::log(loc_shrink_til) - std::log(glob_shrink) - std::log(a));
   }
 

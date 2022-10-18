@@ -38,8 +38,8 @@
 #'@export
 eval_pred_dens <- function(x, mod, data_test, log = FALSE){
 
-  if (class(mod) != "shrinkTVP"){
-    stop("mod has to be of class 'shrinkTVP'")
+  if (!inherits(mod, "shrinkTVP")) {
+    stop("mod has to be an object of class shrinkTVP")
   }
 
   if (bool_input_bad(log)){
@@ -82,7 +82,7 @@ eval_pred_dens <- function(x, mod, data_test, log = FALSE){
     sig2 <- mod$sigma2[, ncol(mod$sigma2)]
     sv_phi <- mod$sv_phi
     sv_mu <- mod$sv_mu
-    sv_sigma2 <- mod$sigma2
+    sv_sigma2 <- mod$sv_sigma2
   } else {
     sig2 <- mod$sigma2
     sv_phi = c(1)
@@ -136,25 +136,18 @@ eval_pred_dens <- function(x, mod, data_test, log = FALSE){
 #'@export
 LPDS <- function(mod, data_test){
 
-  if (class(mod) != "shrinkTVP"){
-    stop("mod has to be of class 'shrinkTVP'")
+  if (!inherits(mod, "shrinkTVP")) {
+    stop("mod has to be an object of class shrinkTVP")
   }
 
   if (is.data.frame(data_test) == FALSE || nrow(data_test) > 1){
     stop("data_test has to be a data frame with one row")
   }
 
-  mf <- match.call(expand.dots = FALSE)
-  mf$data <- data_test
-
-  m <- match(x = "data", table = names(mf), nomatch = 0L)
-  mf <- mf[c(1L, m)]
-  mf$drop.unused.levels <- TRUE
-  mf$na.action <- na.pass
-  mf[[1L]] <- quote(stats::model.frame)
-  mf <- eval(expr = mf, envir = parent.frame())
   # Create Vector y
-  y <- model.response(mf, "numeric")
+  terms <- mod$model$terms
+  m <- model.frame(terms, data = data_test, xlev = mod$model$xlevels)
+  y <- model.response(m, "numeric")
 
   return(as.numeric(eval_pred_dens(y, mod, data_test, log = TRUE)))
 }

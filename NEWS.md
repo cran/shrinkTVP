@@ -1,3 +1,8 @@
+## Changes in Version 2.0.6
+  - Fixed a bug in LPDS()
+  - Fixed issues on Fedora and Debian 
+  - Changed compiler flag -DARMA_DONT_PRINT_ERRORS to -DARMA_WARN_LEVEL=0
+
 ## Changes in Version 2.0.5
   - Modified shrinkTVP.ltx to work with new jss.cls
 

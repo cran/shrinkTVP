@@ -146,7 +146,7 @@ double do_rgig1(double lambda,
       res = 1.0/R::rgamma(-lambda, 2.0/chi); // fixed
     }
 
-  } else if ((lambda == 0) & (sqrt(psi*chi) > 0) & (sqrt(psi*chi) < 1)) {
+  } else if ((lambda == 0) && (sqrt(psi*chi) > 0) && (sqrt(psi*chi) < 1)) {
     res = univar_rgig_newapproach1(lambda, lambda, sqrt(psi*chi), sqrt(chi/psi));
   } else {
     SEXP (*fun)(int, double, double, double) = NULL;

@@ -143,22 +143,22 @@ List shrinkTVP_cpp(arma::vec y,
   arma::vec c_xi_acc_rate_save;
   arma::vec c_tau_acc_rate_save;
 
-  if (bool(adaptive(0)) & learn_a_xi & (mod_type != "ridge")) {
+  if (bool(adaptive(0)) && learn_a_xi && (mod_type != "ridge")) {
     a_xi_sd_save = arma::vec(std::floor(niter/batch_sizes(0)), arma::fill::zeros);
     a_xi_acc_rate_save = arma::vec(std::floor(niter/batch_sizes(0)), arma::fill::zeros);
   }
 
-  if (bool(adaptive(1)) & learn_a_tau & (mod_type != "ridge")) {
+  if (bool(adaptive(1)) && learn_a_tau && (mod_type != "ridge")) {
     a_tau_sd_save = arma::vec(std::floor(niter/batch_sizes(1)), arma::fill::zeros);
     a_tau_acc_rate_save = arma::vec(std::floor(niter/batch_sizes(1)), arma::fill::zeros);
   }
 
-  if (bool(adaptive(2)) & learn_c_xi & (mod_type == "triple")) {
+  if (bool(adaptive(2)) && learn_c_xi && (mod_type == "triple")) {
     c_xi_sd_save = arma::vec(std::floor(niter/batch_sizes(2)), arma::fill::zeros);
     c_xi_acc_rate_save = arma::vec(std::floor(niter/batch_sizes(2)), arma::fill::zeros);
   }
 
-  if (bool(adaptive(3)) & learn_c_tau & (mod_type == "triple")) {
+  if (bool(adaptive(3)) && learn_c_tau && (mod_type == "triple")) {
     c_tau_sd_save = arma::vec(std::floor(niter/batch_sizes(3)), arma::fill::zeros);
     c_tau_acc_rate_save = arma::vec(std::floor(niter/batch_sizes(3)), arma::fill::zeros);
   }
@@ -617,19 +617,19 @@ List shrinkTVP_cpp(arma::vec y,
       }
 
       // Conditionally store MH statistics
-      if (learn_a_xi & bool(adaptive(0)) & (batch_pos(0) == (batch_sizes(0) - 2))){
+      if (learn_a_xi && bool(adaptive(0)) && (batch_pos(0) == (batch_sizes(0) - 2))){
         a_xi_sd_save(batch_nrs(0) - 1) = curr_sds(0);
         a_xi_acc_rate_save(batch_nrs(0) - 1) = arma::accu(batches.col(0))/batch_sizes(0);
       }
-      if (learn_a_tau & bool(adaptive(1)) & (batch_pos(1) == (batch_sizes(1) - 2))){
+      if (learn_a_tau && bool(adaptive(1)) && (batch_pos(1) == (batch_sizes(1) - 2))){
         a_tau_sd_save(batch_nrs(1) - 1) = curr_sds(1);
         a_tau_acc_rate_save(batch_nrs(1) - 1) = arma::accu(batches.col(1))/batch_sizes(1);
       }
-      if (learn_c_xi & bool(adaptive(2)) & (batch_pos(2) == (batch_sizes(2) - 2))){
+      if (learn_c_xi && bool(adaptive(2)) && (batch_pos(2) == (batch_sizes(2) - 2))){
         c_xi_sd_save(batch_nrs(2) - 1) = curr_sds(2);
         c_xi_acc_rate_save(batch_nrs(2) - 1) = arma::accu(batches.col(2))/batch_sizes(2);
       }
-      if (learn_c_tau & bool(adaptive(3)) & (batch_pos(3) == (batch_sizes(3) - 2))){
+      if (learn_c_tau & bool(adaptive(3)) && (batch_pos(3) == (batch_sizes(3) - 2))){
         c_tau_sd_save(batch_nrs(3) - 1) = curr_sds(3);
         c_tau_acc_rate_save(batch_nrs(3) - 1) = arma::accu(batches.col(3))/batch_sizes(3);
       }

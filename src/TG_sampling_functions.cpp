@@ -47,7 +47,7 @@ double TG_sample_global_shrink(const arma::vec& prior_var_til,
   // double hyper2_full = hyper2 + 0.25 * arma::sum(param_vec2 % local_shrink / prior_var_til);
   double hyper2_full = hyper2 + 0.25 * a/c * arma::sum(param_vec2 % local_shrink / (prior_var_til));
 
-  if (std::isnan(hyper2_full) | std::isinf(hyper2_full)){
+  if (std::isnan(hyper2_full) || std::isinf(hyper2_full)){
     hyper2_full = hyper2 + 0.25 * a/c * arma::sum(arma::exp(arma::log(param_vec2) + arma::log(local_shrink) - arma::log(prior_var_til)));
   }
 
