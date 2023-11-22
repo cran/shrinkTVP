@@ -1,3 +1,8 @@
+## Changes in Version 2.1.0
+  - Added a more robust solve method for armadillo matrices
+  - Fixed issues with exported Bhattacharya and Rue algorithm 
+  - Fixed issue with the usenames option for xcolor in the vignette
+
 ## Changes in Version 2.0.6
   - Fixed a bug in LPDS()
   - Fixed issues on Fedora and Debian 

@@ -24,6 +24,9 @@ arma::mat robust_chol (const arma::mat& V);
 
 arma::mat robust_chol_nontri (const arma::mat& V);
 
+arma::mat robust_solve(arma::mat A,
+                       arma::mat B);
+
 double unur_bessel_k_nuasympt(double x,
                               double nu,
                               bool islog,

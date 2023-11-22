@@ -350,7 +350,7 @@ void sample_TG_TVP(const arma::vec& beta_mean,
     }
   }
 
-  // Update xi2/tau2 (needed for sammpling theta_sr and beta_mean)
+  // Update xi2/tau2 (needed for sampling theta_sr and beta_mean)
   calc_xi2_tau2(xi2,
                 xi2_til,
                 kappa2_til,

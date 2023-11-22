@@ -107,6 +107,23 @@ arma::mat robust_chol_nontri (const arma::mat& V){
   return cholV;
 }
 
+arma::mat robust_solve(arma::mat A,
+                       arma::mat B) {
+
+  arma::mat res;
+
+  bool solve_success = arma::solve(res, A, B, arma::solve_opts::equilibrate);
+  if (!solve_success) {
+    // Import Rs solve function
+    Environment base = Environment("package:base");
+    Function Rsolve = base["solve"];
+    NumericMatrix res_R = Rsolve(A, B);
+    res = arma::mat(res_R.begin(), res_R.nrow(), res_R.ncol(), false);
+  }
+
+  return res;
+}
+
 
 
 /*---------------------------------------------------------------------------*/
@@ -220,15 +237,16 @@ void sample_lin_reg_rue(arma::vec& param_vec,
   arma::vec Xty = X_til * y;
 
   arma::mat L = arma::chol(XtX + arma::diagmat(1.0/prior_var), "lower");
-  arma::mat v = arma::solve(arma::trimatl(L), Xty);
-  arma::vec mu = arma::solve(arma::trimatu(L.t()), v);
+  arma::mat v = robust_solve(arma::trimatl(L), Xty);
+  arma::vec mu = robust_solve(arma::trimatu(L.t()), v);
 
   arma::vec eps = Rcpp::rnorm(dim, 0, 1);
-  param_vec = mu + arma::solve(arma::trimatu(L.t()), eps);
+  param_vec = mu + robust_solve(arma::trimatu(L.t()), eps);
 }
 
 // Version with homoscedastic sigma2
 // For this version, X'X and X'y can be calculated once and recycled (savings can be quite large)!
+// Note that this only works for priors where variance of beta does not depend on sigma2
 void sample_lin_reg_rue_homosc(arma::vec& param_vec,
                                const arma::vec& Xty,
                                const arma::mat& XtX,
@@ -237,16 +255,16 @@ void sample_lin_reg_rue_homosc(arma::vec& param_vec,
 
   int dim = XtX.n_cols;
 
-  arma::mat XtX_til = XtX*1.0/sigma2;
 
-  arma::mat L = arma::chol(XtX_til + arma::diagmat(1.0/prior_var), "lower");
-  arma::mat v = arma::solve(arma::trimatl(L), Xty/sigma2);
-  arma::vec mu = arma::solve(arma::trimatu(L.t()), v);
+  arma::mat L = arma::chol((1/sigma2 * XtX + arma::diagmat(1.0/prior_var)), "lower");
+  arma::mat v = robust_solve(arma::trimatl(L), Xty/sigma2);
+  arma::vec mu = robust_solve(arma::trimatu(L.t()), v);
 
   arma::vec eps = Rcpp::rnorm(dim, 0, 1);
-  param_vec = mu + arma::solve(arma::trimatu(L.t()), eps);
+  param_vec = mu + robust_solve(arma::trimatu(L.t()), eps);
 }
 
+// Note that this only works for priors where variance of beta does not depend on sigma2
 void sample_lin_reg_bhat(arma::vec& param_vec,
                          const arma::vec& y,
                          const arma::mat& x,
@@ -258,33 +276,28 @@ void sample_lin_reg_bhat(arma::vec& param_vec,
   int p = x.n_cols;
 
   double sigma_inv = 1.0/std::sqrt(sigma2);
-  arma::vec y_til = y * sigma_inv;
-  arma::mat x_til = x;
-  for (int t = 0; t < N; t++) {
-    x_til.row(t) *= sigma_inv;
-  }
+  arma::vec alpha = y * sigma_inv;
+  arma::mat Phi = x * sigma_inv;
 
-  arma::vec eps = rnorm(p, 0, 1);
-  arma::vec u = arma::sqrt(prior_var * sigma2) % eps;
+  arma::vec eps = Rcpp::rnorm(p, 0, 1);
+  arma::vec u = arma::sqrt(prior_var) % eps;
   arma::vec delta = Rcpp::rnorm(N, 0, 1);
-  arma::vec v = x_til * u + delta;
+  arma::vec v = Phi * u + delta;
 
-  arma::mat pX = x_til;
+  arma::mat DPhi_t = Phi.t();
 
 
   for (int i = 0; i < p; i++) {
-    pX.col(i) *= prior_var(i) * sigma2;
+    DPhi_t.row(i) *= prior_var(i);
   }
-  pX = pX.t();
 
-  arma::mat W = x_til * pX + arma::eye(N, N);
+  arma::mat W = Phi * DPhi_t + arma::eye(N, N);
 
 
   arma::mat L = arma::chol(W, "lower");
-  arma::mat vv = arma::solve(arma::trimatl(L), y_til - v);
+  arma::mat vv = robust_solve(arma::trimatl(L), alpha - v);
 
-  arma::mat w = arma::solve(arma::trimatu(L.t()), vv);
-  // w = arma::solve(W, y_til - v, arma::solve_opts::likely_sympd);
-  param_vec = u + pX * w;
+  arma::mat w = robust_solve(arma::trimatu(L.t()), vv);
+  param_vec = u + DPhi_t * w;
 }
 

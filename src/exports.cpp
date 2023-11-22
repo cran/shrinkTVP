@@ -140,6 +140,7 @@ static int _shrinkTVP_RcppExport_validate(const char* sig) {
         signatures.insert("void(*to_NCP)(arma::mat&,const arma::mat&,const arma::vec&,const arma::vec&)");
         signatures.insert("arma::mat(*robust_chol)(const arma::mat&)");
         signatures.insert("arma::mat(*robust_chol_nontri)(const arma::mat&)");
+        signatures.insert("arma::mat(*robust_solve)(arma::mat,arma::mat)");
         signatures.insert("double(*unur_bessel_k_nuasympt)(double,double,bool,bool)");
         signatures.insert("void(*sample_lin_reg_stab)(arma::vec&,const arma::vec&,const arma::mat&,const arma::vec&,const arma::vec&)");
         signatures.insert("void(*sample_lin_reg_rue)(arma::vec&,const arma::vec&,const arma::mat&,const arma::vec&,const arma::vec&)");
@@ -178,6 +179,7 @@ RcppExport SEXP _shrinkTVP_RcppExport_registerCCallable() {
     R_RegisterCCallable("shrinkTVP", "to_NCP", (DL_FUNC)to_NCP);
     R_RegisterCCallable("shrinkTVP", "robust_chol", (DL_FUNC)robust_chol);
     R_RegisterCCallable("shrinkTVP", "robust_chol_nontri", (DL_FUNC)robust_chol_nontri);
+    R_RegisterCCallable("shrinkTVP", "robust_solve", (DL_FUNC)robust_solve);
     R_RegisterCCallable("shrinkTVP", "unur_bessel_k_nuasympt", (DL_FUNC)unur_bessel_k_nuasympt);
     R_RegisterCCallable("shrinkTVP", "sample_lin_reg_stab", (DL_FUNC)sample_lin_reg_stab);
     R_RegisterCCallable("shrinkTVP", "sample_lin_reg_rue", (DL_FUNC)sample_lin_reg_rue);

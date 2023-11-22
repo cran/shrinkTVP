@@ -615,6 +615,18 @@ inline arma::mat robust_chol (const arma::mat& V) {
   }
 }
 
+
+inline arma::mat robust_solve(arma::mat A, arma::mat B) {
+  typedef arma::mat(*Func)(arma::mat, arma::mat);
+  static Func func = NULL;
+  if (func == NULL) {
+    func = (Func)R_GetCCallable("shrinkTVP", "robust_solve");
+  }
+  {
+    return func(A, B);
+  }
+}
+
 inline arma::mat robust_chol_nontri (const arma::mat& V) {
   typedef arma::mat(*Func)(const arma::mat&);
   static Func func = NULL;

@@ -629,7 +629,7 @@ List shrinkTVP_cpp(arma::vec y,
         c_xi_sd_save(batch_nrs(2) - 1) = curr_sds(2);
         c_xi_acc_rate_save(batch_nrs(2) - 1) = arma::accu(batches.col(2))/batch_sizes(2);
       }
-      if (learn_c_tau & bool(adaptive(3)) && (batch_pos(3) == (batch_sizes(3) - 2))){
+      if (learn_c_tau && bool(adaptive(3)) && (batch_pos(3) == (batch_sizes(3) - 2))){
         c_tau_sd_save(batch_nrs(3) - 1) = curr_sds(3);
         c_tau_acc_rate_save(batch_nrs(3) - 1) = arma::accu(batches.col(3))/batch_sizes(3);
       }
