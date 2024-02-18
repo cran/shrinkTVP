@@ -110,13 +110,28 @@ dist_parser <- function(char_rep, summ_obj){
                sv_mu = "\u03bc\u209B\u1D65",
                sv_phi = "\u03c6\u209B\u1D65",
                sv_sigma2 = "\u03c3\u00b2\u209B\u1D65",
+
+               # New dynamic parts
+               w2 = "w\u00b2\u2c7c\u209c",
+               a_psi = "a\u2c7c",
+               c_psi = "c\u2c7c",
+               rho_p = "\u03c1\u2c7c",
+               theta = "\u03b8\u2c7c",
+               iid = "iid ",
+               a_rho_sym = "a\u1D68",
+               b_rho_sym = "b\u1D68",
+               alpha_rho_sym = "\u03B1\u1D68",
+               beta_rho_sym = "\u03B2\u1D68",
+
+               # Operators
                `,` = ", ",
                `+` = " + ",
                `~` = " ~ ")
 
   split <- unlist(strsplit(char_rep, split = " "))
 
-  if (split[min(which(split %in% names(dict)))] %in% summ_obj$names) {
+  # Have to hard code in w2, as it is technically not "sampled" (only indirectly)
+  if ((split[min(which(split %in% names(dict)))] %in% c(summ_obj$names, "w2"))) {
 
     # Select all parameters that potentially appear in priors and that were not sampled
     select_static_param <- split %in% names(summ_obj$priorvals) & !split %in% summ_obj$names

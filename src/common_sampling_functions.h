@@ -17,6 +17,14 @@ void resample_alpha(arma::vec& beta_mean,
                     const arma::vec& xi2,
                     const arma::vec& tau2);
 
+void resample_alpha_dyn(arma::vec& beta_mean,
+                        arma::vec& theta_sr,
+                        const arma::mat& beta,
+                        const arma::mat& beta_nc,
+                        const arma::mat& psi,
+                        const arma::vec& xi2,
+                        const arma::vec& tau2);
+
 void sample_sigma2(arma::vec& sigma2,
                    const arma::vec& y,
                    const arma::mat& x,

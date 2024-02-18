@@ -8,7 +8,7 @@
 #' @param mod an object of class \code{shrinkTVP}, containing the fitted model for which the predictive density should be evaluated.
 #' @param data_test a data frame with one row, containing the one-step ahead covariates. The names of the covariates have to match the
 #' names of the covariates used during model estimation in the call to \code{shrinkTVP}.
-#' @param log a single logical value detrmining whether the density should be evaluated on the log scale or not.
+#' @param log a single logical value determining whether the density should be evaluated on the log scale or not.
 #'
 #' @return The value returned is a vector of length \code{length(x)}, containing the values of the predictive density evaluated
 #' at the points supplied in \code{x}.
@@ -38,8 +38,8 @@
 #'@export
 eval_pred_dens <- function(x, mod, data_test, log = FALSE){
 
-  if (!inherits(mod, "shrinkTVP")) {
-    stop("mod has to be an object of class shrinkTVP")
+  if (!"shrinkTVP" %in% class(mod)){
+    stop("mod has to be of class 'shrinkTVP'")
   }
 
   if (bool_input_bad(log)){
@@ -54,9 +54,52 @@ eval_pred_dens <- function(x, mod, data_test, log = FALSE){
     stop("x has to be a vector of numbers")
   }
 
+  nsamp <- nrow(mod$beta_mean)
+  N <- length(mod$model$y)
+  d <- ncol(mod$beta_mean)
+
+  # For dynamic shrinkage, psis have to be predicted
+  if ("shrinkDTVP" %in% class(mod)){
+
+    psi_future <- matrix(NA_real_, nsamp, d)
+
+    a_psi <- attr(mod, "a_psi")
+    c_psi <- attr(mod, "c_psi")
+
+
+
+    # In the iid case, the psis are drawn from an F distribution
+    if (attr(mod, "iid")) {
+
+      for (j in 1:d) {
+        if (attr(mod, "shrink_inter") == FALSE & attr(mod, "inter_column") == j) {
+          psi_future[,j] <- 1
+        } else {
+          psi_future[,j] <- rf(nsamp, 2 * a_psi[j], 2 * c_psi[j])
+        }
+      }
+
+    } else {
+      # In the non-iid case, they are simulated from their respective law of motion
+      for (j in 1:d) {
+        if (attr(mod, "shrink_inter") == FALSE & attr(mod, "inter_column") == j) {
+          psi_future[,j] <- 1
+        } else {
+          kappa_future <- rpois(nsamp, mod$lambda_p[[j]][, N] * a_psi[j]/c_psi[j] * mod$rho_p[,j]/(1 - mod$rho_p[,j]))
+          lambda_future <- rgamma(nsamp, a_psi[j] + kappa_future, a_psi[j]/c_psi[j] * 1/(1 - mod$rho_p[,j]))
+          psi_future[,j] <- 1/rgamma(nsamp, c_psi[j], lambda_future)
+        }
+      }
+    }
+  } else {
+    # For static shrinkage, psis are set to 1, as they are essentially a special case of dynamic shrinkage
+    psi_future <- matrix(1, nsamp, d)
+  }
+
   terms <- delete.response(mod$model$terms)
   m <- model.frame(terms, data = data_test, xlev = mod$model$xlevels)
   x_test <- model.matrix(terms, m)
+
 
   if (any(is.na(x_test))){
     stop("No NA values are allowed in covariates")
@@ -90,19 +133,21 @@ eval_pred_dens <- function(x, mod, data_test, log = FALSE){
     sv_sigma2 = c(1)
   }
 
-  res <- pred_dens_mix_approx(theta_sr = as.matrix(mod$theta_sr),
-                              beta_mean = as.matrix(mod$beta_mean),
-                              sig2_samp = as.matrix(mod$sigma2),
-                              sv = attr(mod, "sv"), sv_phi = sv_phi, sv_mu = sv_mu, sv_sigma2 = sv_sigma2,
-                              x_test = x_test,
-                              y_test = x,
-                              chol_C_N_inv_samp = mod$internals$chol_C_N_inv,
-                              m_N_samp = mod$internals$m_N,
-                              M = nrow(mod$theta_sr), log = log)
+  res <- pred_dens_mix_approx_dyn(theta_sr = as.matrix(mod$theta_sr),
+                                  beta_mean = as.matrix(mod$beta_mean),
+                                  sig2_samp = as.matrix(mod$sigma2),
+                                  psi_future = psi_future,
+                                  sv = attr(mod, "sv"), sv_phi = sv_phi, sv_mu = sv_mu, sv_sigma2 = sv_sigma2,
+                                  x_test = x_test,
+                                  y_test = x,
+                                  chol_C_N_inv_samp = mod$internals$chol_C_N_inv,
+                                  m_N_samp = mod$internals$m_N,
+                                  M = nrow(mod$theta_sr), log = log)
 
   return(as.vector(res))
 
 }
+
 
 #' Calculate the Log Predictive Density Score for a fitted TVP model
 #'
@@ -136,13 +181,14 @@ eval_pred_dens <- function(x, mod, data_test, log = FALSE){
 #'@export
 LPDS <- function(mod, data_test){
 
-  if (!inherits(mod, "shrinkTVP")) {
-    stop("mod has to be an object of class shrinkTVP")
+  if (!"shrinkTVP" %in% class(mod)){
+    stop("mod has to be of class 'shrinkTVP'")
   }
 
   if (is.data.frame(data_test) == FALSE || nrow(data_test) > 1){
     stop("data_test has to be a data frame with one row")
   }
+
 
   # Create Vector y
   terms <- mod$model$terms
@@ -150,6 +196,7 @@ LPDS <- function(mod, data_test){
   y <- model.response(m, "numeric")
 
   return(as.numeric(eval_pred_dens(y, mod, data_test, log = TRUE)))
+
 }
 
 #' Draw from posterior predictive density of a fitted TVP model
@@ -222,8 +269,9 @@ forecast_shrinkTVP <- function(mod, newdata, n.ahead){
   m <- model.frame(terms, data = newdata, xlev = mod$model$xlevels)
   x_test <- model.matrix(terms, m)
 
-  # Number of saved posterior draws, number of covariates, number of ar coefficients
+  # Number of saved posterior draws, number of covariates, number of observations, number of ar coefficients
   nsamp <- nrow(mod$beta_mean)
+  N <- length(mod$model$y)
   d <- ncol(mod$beta_mean)
   p <- attr(mod, "p")
 
@@ -237,11 +285,22 @@ forecast_shrinkTVP <- function(mod, newdata, n.ahead){
     beta_prev <- as.matrix(mod$beta[, ncol(mod$beta)])
   }
 
+  # If dynamic (and not iid), get final lambda and other hyperparameters
+  if ("shrinkTVP_dyn" %in% class(mod)){
 
-  # Number of samples (= number of posterior draws), number of covariates, number of ar coefficients
-  nsamp <- nrow(mod$beta_mean)
-  d <- ncol(mod$beta_mean)
-  p <- attr(mod, "p")
+    a_psi <- attr(mod, "a_psi")
+    c_psi <- attr(mod, "c_psi")
+
+    if (!attr(mod, "iid")) {
+      if(is.list(mod$lambda_p)){
+        lambda_prev <- sapply(mod$lambda_p, function(x){
+          return(x[, ncol(x)])
+        })
+      } else {
+        lambda_prev <- as.matrix(mod$lambda_p[, ncol(mod$lambda_p)])
+      }
+    }
+  }
 
   # Storage mods
   beta_pred <- matrix(NA, nrow = nsamp, ncol = d)
@@ -257,8 +316,29 @@ forecast_shrinkTVP <- function(mod, newdata, n.ahead){
   for (ti in 1:n.ahead){
 
     for (j in 1:d){
-      beta_pred[, j] <- beta_prev[, j] + rnorm(nsamp, 0, abs(mod$theta_sr[, j]))
+
+      if ("shrinkTVP_dyn" %in% class(mod)){
+
+        # Forecast psi into the future (except for inter_column if it is not shrunken)
+        if (attr(mod, "shrink_inter") == FALSE & attr(mod, "inter_column") == j) {
+          psi_pred <- rep(1, nsamp)
+        } else {
+          if (attr(mod, "iid")) {
+            psi_pred <- rf(nsamp, 2*a_psi[j], 2*c_psi[j])
+          } else {
+            kappa_pred <- rpois(nsamp, lambda_prev[,j] * a_psi[j]/c_psi[j] * mod$rho_p[,j]/(1 - mod$rho_p[,j]))
+            lambda_pred <- rgamma(nsamp, a_psi[j] + kappa_pred, a_psi[j]/c_psi[j] * 1/(1 - mod$rho_p[,j]))
+            psi_pred <- 1/rgamma(nsamp, c_psi[j], lambda_pred)
+            lambda_prev <- lambda_pred
+          }
+        }
+        beta_pred[, j] <- beta_prev[, j] + rnorm(nsamp, 0, abs(mod$theta_sr[, j]) * sqrt(psi_pred))
+
+      } else {
+        beta_pred[, j] <- beta_prev[, j] + rnorm(nsamp, 0, abs(mod$theta_sr[, j]))
+      }
     }
+
 
     if (attr(mod, "sv") == TRUE){
       mean_ht <- mod$sv_mu + mod$sv_phi * (ht_prev - mod$sv_mu)

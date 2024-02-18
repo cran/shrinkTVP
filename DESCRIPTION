@@ -2,7 +2,7 @@ Package: shrinkTVP
 Type: Package
 Title: Efficient Bayesian Inference for Time-Varying Parameter Models
         with Shrinkage
-Version: 2.1.1
+Version: 3.0.1
 Authors@R: c(
   person("Peter", "Knaus", email = "peter.knaus@wu.ac.at",
     role = c("aut", "cre"), comment = c(ORCID = "0000-0001-6498-7084")),
@@ -13,18 +13,18 @@ Authors@R: c(
     role = "aut", comment = c(ORCID = "0000-0003-0516-5552")),
   person("Daniel", "Winkler", email = "daniel.winkler@wu.ac.at", role = "ctb"),
   person("Kemal", "Dingic", role = "ctb"))
-Description: Efficient Markov chain Monte Carlo (MCMC) algorithms for fully Bayesian estimation of time-varying parameter models with shrinkage priors. Details on the algorithms used are provided in Bitto and Frühwirth-Schnatter (2019) <doi:10.1016/j.jeconom.2018.11.006> and  
-  Cadonna et al. (2020) <doi:10.3390/econometrics8020020>. For details on the package, please see Knaus et al. (2021) <doi:10.18637/jss.v100.i13>.
+Description: Efficient Markov chain Monte Carlo (MCMC) algorithms for fully Bayesian estimation of time-varying parameter models with shrinkage priors, both dynamic and static. Details on the algorithms used are provided in Bitto and Frühwirth-Schnatter (2019) <doi:10.1016/j.jeconom.2018.11.006> and  
+  Cadonna et al. (2020) <doi:10.3390/econometrics8020020> and Knaus and Frühwirth-Schnatter (2023)  <doi:10.48550/arXiv.2312.10487>. For details on the package, please see Knaus et al. (2021) <doi:10.18637/jss.v100.i13>.
 License: GPL (>= 2)
 Encoding: UTF-8
 Depends: R (>= 3.3.0)
 Imports: Rcpp, GIGrvg, stochvol (>= 3.0.3), coda, methods, utils, zoo
-LinkingTo: Rcpp, RcppArmadillo, GIGrvg, RcppProgress, stochvol
-RoxygenNote: 7.1.1
+LinkingTo: Rcpp, RcppArmadillo, GIGrvg, RcppProgress, stochvol, RcppGSL
+RoxygenNote: 7.2.3
 Suggests: testthat, knitr, rmarkdown, R.rsp
 VignetteBuilder: R.rsp
 NeedsCompilation: yes
-Packaged: 2023-11-22 14:57:32 UTC; pknaus
+Packaged: 2024-02-18 18:49:34 UTC; Peter
 Author: Peter Knaus [aut, cre] (<https://orcid.org/0000-0001-6498-7084>),
   Angela Bitto-Nemling [aut],
   Annalisa Cadonna [aut] (<https://orcid.org/0000-0003-0360-7628>),
@@ -34,4 +34,4 @@ Author: Peter Knaus [aut, cre] (<https://orcid.org/0000-0001-6498-7084>),
   Kemal Dingic [ctb]
 Maintainer: Peter Knaus <peter.knaus@wu.ac.at>
 Repository: CRAN
-Date/Publication: 2023-11-22 17:40:02 UTC
+Date/Publication: 2024-02-18 19:40:02 UTC

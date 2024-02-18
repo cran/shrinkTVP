@@ -1,4 +1,4 @@
-context("test shrinkTVP")
+context("test shrinkDTVP")
 
 test_bed <- function(args, dummies = FALSE, transf = FALSE) {
 
@@ -7,7 +7,10 @@ test_bed <- function(args, dummies = FALSE, transf = FALSE) {
   test <- full_dat[11:16, ]
   args$data <- full_dat[1:10, ]
 
-  args$formula <- y ~ x1 + x2 - 1
+  args$formula <- y ~ x1 + x2 + 1
+
+  args$a_psi <- 3
+  args$c_psi <- 5
 
   if (dummies == TRUE) {
     args$formula <- update.formula(args$formula, "~ . + x3")
@@ -17,7 +20,7 @@ test_bed <- function(args, dummies = FALSE, transf = FALSE) {
     args$formula <- update.formula(args$formula, "~ . + I(x1^2) + I(log(x2))")
   }
 
-  res <- do.call(shrinkTVP, args)
+  res <- do.call(shrinkDTVP, args)
 
   expect_s3_class(res, "shrinkTVP")
 
@@ -58,14 +61,16 @@ params <- c(
   "a_xi_adaptive",
   "c_xi_adaptive",
   "a_tau_adaptive",
-  "c_tau_adaptive"
+  "c_tau_adaptive",
+  "iid",
+  "shrink_inter"
 )
 
 for(i in length(scenarios)) {
 
   for (j in params) {
 
-    args <- formals(shrinkTVP)
+    args <- formals(shrinkDTVP)
     args <- args[sapply(args, function(x) x != "")]
 
     if (grepl("adaptive", j)) {

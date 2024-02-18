@@ -14,7 +14,7 @@ eval_pred_dens(x, mod, data_test, log = FALSE)
 \item{data_test}{a data frame with one row, containing the one-step ahead covariates. The names of the covariates have to match the
 names of the covariates used during model estimation in the call to \code{shrinkTVP}.}
 
-\item{log}{a single logical value detrmining whether the density should be evaluated on the log scale or not.}
+\item{log}{a single logical value determining whether the density should be evaluated on the log scale or not.}
 }
 \value{
 The value returned is a vector of length \code{length(x)}, containing the values of the predictive density evaluated

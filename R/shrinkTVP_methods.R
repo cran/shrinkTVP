@@ -9,7 +9,8 @@
 #' @export
 print.shrinkTVP <- function(x, ...){
   ind <- attr(x, "index")
-  cat(paste0("Object containing a fitted TVP model ", ifelse(attr(x, "sv"), "with stochastic volatility ", ""), "with:\n",
+  dynamic <- "shrinkDTVP" %in% class(x)
+  cat(paste0("Object containing a fitted ", ifelse(dynamic, "dynamic shrinkage ", ""),  "TVP model ", ifelse(attr(x, "sv"), "with stochastic volatility ", ""), "with:\n",
              " - ", formatC(length(attr(x, "colnames")), width = 7), " covariates", ifelse(attr(x, "p") > 0, paste0(", of which ", attr(x, "p"), " are AR terms"), ""), "\n",
              " - ", formatC(length(x$model$y), width = 7), " timepoints, running from ", min(ind), " to ", max(ind), "\n",
              " - ", formatC(attr(x, "niter"), width = 7), " MCMC draws\n",
@@ -41,6 +42,10 @@ summary.shrinkTVP <- function(object, digits = 3, showprior = TRUE, ...) {
   ret$types <- lapply(object, function(mod) return(attr(mod, "type")))
   ret$digits <- digits
   ret$showprior <- showprior
+  ret$dynamic <- "shrinkDTVP" %in% class(object)
+  if (ret$dynamic) {
+    ret$iid <- attr(object, "iid")
+  }
   ret
 }
 
@@ -50,6 +55,7 @@ print.summary.shrinkTVP <- function(x, ...) {
   cat("\nSummary of ", (x$niter - x$nburn), " MCMC draws after burn-in of ", x$nburn, ".\n", sep = "")
 
   if(x$showprior == TRUE){
+
     mod_type <- x$mod_type
     cat("\nPrior distributions:\n\n")
 
@@ -109,6 +115,19 @@ print.summary.shrinkTVP <- function(x, ...) {
       cat("\n")
       dist_parser(" sigma2 | C0 ~ GammaInv ( c0 , C0 )", x)
       dist_parser(" C0 ~ Gamma ( g0 , G0 )", x)
+    }
+
+    # Prior distributions on dynamic portion of the model
+    if (x$dynamic) {
+      cat("\nDynamic prior distribution on innovations:\n")
+
+      if (x$iid) {
+        dist_parser("w2 ~ iid TG ( a_psi , c_psi , 2 / theta )", x)
+      } else {
+        dist_parser("w2 ~ DTG ( a_psi , c_psi , 2 / theta , rho_p )", x)
+        dist_parser("rho_p ~ GB1 ( a_rho_sym , b_rho_sym , alpha_rho_sym , beta_rho_sym )", x)
+      }
+
     }
 
     cat("\n")
@@ -175,6 +194,10 @@ print.summary.shrinkTVP <- function(x, ...) {
 #' @family prediction functions
 #' @export
 fitted.shrinkTVP <- function(object, ...){
+
+  if ("shrinkDTVP" %in% class(object)) {
+    object$beta <- lapply(object$beta, function(x) {return(cbind(0, x))})
+  }
 
   fitted <- calc_fitted(object$model$y, object$model$x, object$beta)
   class(fitted) <- c("shrinkTVP_fitted", "mcmc.tvp")
@@ -252,7 +275,7 @@ predict.shrinkTVP <- function(object, ...){
   nsave <- nrow(object$sigma2)
   nT <- length(attr(object, "index"))
 
-  fitted <- calc_fitted(object$model$y, object$model$x, object$beta)
+  fitted <- fitted(object)
   pred <- fitted + matrix(rnorm(nT * nsave, 0, sqrt(object$sigma2)), nsave, nT, byrow = FALSE)
   class(pred) <- c("shrinkTVP_pred", "mcmc.tvp")
   attr(pred, "index") <- attr(object, "index")

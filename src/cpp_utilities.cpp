@@ -1,18 +1,19 @@
 #include <RcppArmadillo.h>
+#include <RcppArmadilloExtensions/sample.h>
 #include <Rcpp.h>
 #include <math.h>
 #include <float.h>
 using namespace Rcpp;
 
 void res_protector(double& x){
-  if (std::abs(x) < DBL_MIN * std::pow(10, 10)){
+  if (std::abs(x) < DBL_MIN * std::pow(10, 280)){
     double sign = std::copysign(1, x);
-    x = DBL_MIN * std::pow(10, 10) * sign;
+    x = DBL_MIN * std::pow(10, 280) * sign;
   }
 
-  if (std::abs(x) > DBL_MAX * std::pow(10, -30)){
+  if (std::abs(x) > DBL_MAX * std::pow(10, -280)){
     double sign = std::copysign(1, x);
-    x = DBL_MAX * std::pow(10, -30) * sign;
+    x = DBL_MAX * std::pow(10, -280) * sign;
   }
 
   if (std::isnan(x)){
@@ -255,7 +256,6 @@ void sample_lin_reg_rue_homosc(arma::vec& param_vec,
 
   int dim = XtX.n_cols;
 
-
   arma::mat L = arma::chol((1/sigma2 * XtX + arma::diagmat(1.0/prior_var)), "lower");
   arma::mat v = robust_solve(arma::trimatl(L), Xty/sigma2);
   arma::vec mu = robust_solve(arma::trimatu(L.t()), v);
@@ -299,5 +299,13 @@ void sample_lin_reg_bhat(arma::vec& param_vec,
 
   arma::mat w = robust_solve(arma::trimatu(L.t()), vv);
   param_vec = u + DPhi_t * w;
+}
+
+
+
+
+double samp_disc_given(arma::vec to_sample,
+                       arma::vec probs) {
+  return arma::as_scalar(RcppArmadillo::sample(to_sample, 1, 1, probs));
 }
 

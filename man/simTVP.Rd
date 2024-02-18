@@ -8,12 +8,16 @@ simTVP(
   N = 200,
   d = 3,
   sv = FALSE,
+  DTG = FALSE,
   sigma2 = 1,
   theta,
   beta_mean,
   sv_mu = 0,
   sv_phi = 0.98,
-  sv_sigma2 = 0.2
+  sv_sigma2 = 0.2,
+  a_psi = 0.5,
+  c_psi = 2,
+  rho = 0.9
 )
 }
 \arguments{
@@ -25,6 +29,9 @@ The default value is 3.}
 
 \item{sv}{logical value. If set to \code{TRUE}, the data will be generated with
 stochastic volatility for the errors of the observation equation using \code{\link{svsim}}. The default value is FALSE.}
+
+\item{DTG}{logical value. If set to \code{TRUE}, the betas will be generated as dynamic triple gamma processes.
+The default value is FALSE.}
 
 \item{sigma2}{positive real number. Determines the variance of the errors of the observation
 equation. Ignored if sv is \code{TRUE}. The default value is 1.}
@@ -45,6 +52,15 @@ The default value is 0.98.}
 
 \item{sv_sigma2}{positive, real number. Determines the variance of the innovations of the logarithm of the volatility.
 Ignored if \code{sv} is \code{FALSE}. The default value is 0.2.}
+
+\item{a_psi}{positive, real number. Determines the pole parameter of the dynamic triple gamma process.
+Ignored if \code{DTG} is \code{FALSE}. The default value is 0.5.}
+
+\item{c_psi}{positive, real number. Determines the tail parameter of the dynamic triple gamma process.
+Ignored if \code{DTG} is \code{FALSE}. The default value is 2.}
+
+\item{rho}{real number between 0 and 1. Determines the persistence of the dynamic triple gamma process.
+Ignored if \code{DTG} is \code{FALSE}. The default value is 0.9}
 }
 \value{
 The value returned is a list object containing:
@@ -55,6 +71,10 @@ The value returned is a list object containing:
   \item \code{beta_mean}: the values of beta_mean used in the data generating process.
   \item \code{beta}: the true paths of beta used for the data generating process.
   \item \code{sigma2}: the value(s) of sigma2 used in the data generating process.
+  \item \code{lambda_p}: the true paths of lambda_p used for the data generating process. Not returned if DTG is \code{FALSE}.
+  \item \code{lambda_p_0}: the values of lambda_p_0 used for the data generating process. Not returned if DTG is \code{FALSE}.
+  \item \code{kappa_p}: the true paths of kappa_p used for the data generating process. Not returned if DTG is \code{FALSE}.
+  \item \code{psi}: the true paths of psi used for the data generating process. Not returned if DTG is \code{FALSE}.
   }
 }
 }
@@ -71,6 +91,10 @@ data <- res$data
 
 # Now with stochastic volatility
 res_sv <- simTVP(N = 300, sv = TRUE)
+
+# Now with dynamic triple gamma process
+res_DTG <- simTVP(N = 300, DTG = TRUE, c_psi = 1)
+
 }
 \author{
 Peter Knaus \email{peter.knaus@wu.ac.at}

@@ -183,7 +183,7 @@ The following elements can be supplied:
 The value returned is a named list object which can be immediately used as the \code{curr_draws} argument
 for another draw from the posterior with \code{updateTVP}. Note that, depending on the model setup, some elements may be matrices of dimension zero.
 It contains the following elements:
-\item{\code{beta_st}}{dx(N + 1) matrix containing the current draw from the posterior distribtuion of beta.}
+\item{\code{beta_st}}{dx(N + 1) matrix containing the current draw from the posterior distribution of beta.}
 \item{\code{beta_mean_st}}{dx1 matrix containing the current draws from the posterior distribution of beta_mean.}
 \item{\code{theta_sr_st}}{dx1 matrix containing the current draws from the posterior distribution of the square root of theta.}
 \item{\code{tau2_st}}{dx1 matrix containing the current draws from the posterior distribution of tau2.}
@@ -201,8 +201,8 @@ It contains the following elements:
 \item{\code{sv_mu_st}}{number representing the current draw from the posterior distribution of the mu parameter for the stochastic volatility model on the errors.}
 \item{\code{sv_phi_st}}{number representing the current draw from the posterior distribution of the phi parameter for the stochastic volatility model on the errors.}
 \item{\code{sv_sigma2_st}}{number representing the current draw from the posterior distribution of the sigma2 parameter for the stochastic volatility model on the errors.}
-\item{\code{h0_st}}{number representing the current draw from the posterior distribution of the h0 parmater for the stochastic volatility model on the errors.}
-\item{\code{internals}}{\code{list} object containg two arrays that are required for calculating the LPDS and bookkeeping objects required for the adaptive MH algorithm to work.}
+\item{\code{h0_st}}{number representing the current draw from the posterior distribution of the h0 parameter for the stochastic volatility model on the errors.}
+\item{\code{internals}}{\code{list} object containing two arrays that are required for calculating the LPDS and bookkeeping objects required for the adaptive MH algorithm to work.}
 }
 \description{
 \code{updateTVP} draws a single sample from the joint posterior distribution of the parameters of a time-varying

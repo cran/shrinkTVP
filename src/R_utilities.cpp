@@ -2,11 +2,13 @@
 #include <math.h>
 using namespace Rcpp;
 
-arma::vec pred_dens_mix_approx(arma::vec x_test,
+
+arma::vec pred_dens_mix_approx_dyn(arma::vec x_test,
                                arma::vec y_test,
                                arma::mat theta_sr,
                                arma::mat beta_mean,
                                arma::vec sig2_samp,
+                               arma::mat psi_future,
                                bool sv,
                                arma::vec sv_phi,
                                arma::vec sv_mu,
@@ -47,7 +49,7 @@ arma::vec pred_dens_mix_approx(arma::vec x_test,
       // Create mean and sd
       F = x_test % (theta_sr.row(m)).t();
       LF = arma::solve(arma::trimatl(chol_C_N_inv_samp.slice(m)), F);
-      S = arma::as_scalar(LF.t() * LF + F.t() * F + sig2_pred(m));
+      S = arma::as_scalar(LF.t() * LF + F.t() * arma::diagmat(psi_future.row(m)) * F + sig2_pred(m));
       mu = arma::as_scalar(x_test.t() * (beta_mean.row(m)).t() + F.t() * m_N_samp.slice(m));
 
       // Calculate analytical log densities for stability trick
@@ -69,6 +71,7 @@ arma::vec pred_dens_mix_approx(arma::vec x_test,
 
 
 }
+
 
 
 arma::mat calc_fitted_cpp(arma::vec y,

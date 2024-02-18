@@ -17,10 +17,10 @@
 
 using namespace Rcpp;
 
-// pred_dens_mix_approx
-arma::vec pred_dens_mix_approx(arma::vec x_test, arma::vec y_test, arma::mat theta_sr, arma::mat beta_mean, arma::vec sig2_samp, bool sv, arma::vec sv_phi, arma::vec sv_mu, arma::vec sv_sigma2, arma::cube chol_C_N_inv_samp, arma::cube m_N_samp, int M, bool log);
-RcppExport SEXP _shrinkTVP_pred_dens_mix_approx(SEXP x_testSEXP, SEXP y_testSEXP, SEXP theta_srSEXP, SEXP beta_meanSEXP, SEXP sig2_sampSEXP, SEXP svSEXP, SEXP sv_phiSEXP, SEXP sv_muSEXP, SEXP sv_sigma2SEXP, SEXP chol_C_N_inv_sampSEXP, SEXP m_N_sampSEXP, SEXP MSEXP, SEXP logSEXP) {
-BEGIN_RCPP
+// pred_dens_mix_approx_dyn
+arma::vec pred_dens_mix_approx_dyn(arma::vec x_test, arma::vec y_test, arma::mat theta_sr, arma::mat beta_mean, arma::vec sig2_samp, arma::mat psi_future, bool sv, arma::vec sv_phi, arma::vec sv_mu, arma::vec sv_sigma2, arma::cube chol_C_N_inv_samp, arma::cube m_N_samp, int M, bool log);
+RcppExport SEXP _shrinkTVP_pred_dens_mix_approx_dyn(SEXP x_testSEXP, SEXP y_testSEXP, SEXP theta_srSEXP, SEXP beta_meanSEXP, SEXP sig2_sampSEXP, SEXP psi_futureSEXP, SEXP svSEXP, SEXP sv_phiSEXP, SEXP sv_muSEXP, SEXP sv_sigma2SEXP, SEXP chol_C_N_inv_sampSEXP, SEXP m_N_sampSEXP, SEXP MSEXP, SEXP logSEXP) {
+    BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::vec >::type x_test(x_testSEXP);
@@ -28,6 +28,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::mat >::type theta_sr(theta_srSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type beta_mean(beta_meanSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type sig2_samp(sig2_sampSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type psi_future(psi_futureSEXP);
     Rcpp::traits::input_parameter< bool >::type sv(svSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type sv_phi(sv_phiSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type sv_mu(sv_muSEXP);
@@ -36,10 +37,11 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::cube >::type m_N_samp(m_N_sampSEXP);
     Rcpp::traits::input_parameter< int >::type M(MSEXP);
     Rcpp::traits::input_parameter< bool >::type log(logSEXP);
-    rcpp_result_gen = Rcpp::wrap(pred_dens_mix_approx(x_test, y_test, theta_sr, beta_mean, sig2_samp, sv, sv_phi, sv_mu, sv_sigma2, chol_C_N_inv_samp, m_N_samp, M, log));
+    rcpp_result_gen = Rcpp::wrap(pred_dens_mix_approx_dyn(x_test, y_test, theta_sr, beta_mean, sig2_samp, psi_future, sv, sv_phi, sv_mu, sv_sigma2, chol_C_N_inv_samp, m_N_samp, M, log));
     return rcpp_result_gen;
-END_RCPP
+    END_RCPP
 }
+
 // calc_fitted_cpp
 arma::mat calc_fitted_cpp(arma::vec y, arma::mat x, Rcpp::List beta);
 RcppExport SEXP _shrinkTVP_calc_fitted_cpp(SEXP ySEXP, SEXP xSEXP, SEXP betaSEXP) {
@@ -194,12 +196,89 @@ RcppExport SEXP _shrinkTVP_RcppExport_registerCCallable() {
     return R_NilValue;
 }
 
+// shrinkDTVP_cpp
+List shrinkDTVP_cpp(arma::vec y, arma::mat x, std::string mod_type, bool iid, int niter, int nburn, int nthin, double c0, double g0, double G0, double d1, double d2, double e1, double e2, bool learn_lambda2_B, bool learn_kappa2_B, double lambda2_B, double kappa2_B, bool learn_a_xi, bool learn_a_tau, double a_xi, double a_tau, bool learn_c_xi, bool learn_c_tau, double c_xi, double c_tau, bool a_eq_c_xi, bool a_eq_c_tau, double a_tuning_par_xi, double a_tuning_par_tau, double c_tuning_par_xi, double c_tuning_par_tau, double beta_a_xi, double beta_a_tau, double alpha_a_xi, double alpha_a_tau, double beta_c_xi, double beta_c_tau, double alpha_c_xi, double alpha_c_tau, arma::vec alpha_rho, arma::vec beta_rho, arma::vec a_psi, arma::vec c_psi, double a_rho, double b_rho, int inter_column, bool display_progress, bool sv, double Bsigma_sv, double a0_sv, double b0_sv, double bmu, double Bmu, bool adaptive_rho, double tuning_par_rho, double target_rate_rho, double max_adapt_rho, int batch_size_rho, arma::vec adaptive, arma::vec target_rates, arma::vec max_adapts, arma::ivec batch_sizes, Rcpp::List starting_vals);
+RcppExport SEXP _shrinkTVP_shrinkDTVP_cpp(SEXP ySEXP, SEXP xSEXP, SEXP mod_typeSEXP, SEXP iidSEXP, SEXP niterSEXP, SEXP nburnSEXP, SEXP nthinSEXP, SEXP c0SEXP, SEXP g0SEXP, SEXP G0SEXP, SEXP d1SEXP, SEXP d2SEXP, SEXP e1SEXP, SEXP e2SEXP, SEXP learn_lambda2_BSEXP, SEXP learn_kappa2_BSEXP, SEXP lambda2_BSEXP, SEXP kappa2_BSEXP, SEXP learn_a_xiSEXP, SEXP learn_a_tauSEXP, SEXP a_xiSEXP, SEXP a_tauSEXP, SEXP learn_c_xiSEXP, SEXP learn_c_tauSEXP, SEXP c_xiSEXP, SEXP c_tauSEXP, SEXP a_eq_c_xiSEXP, SEXP a_eq_c_tauSEXP, SEXP a_tuning_par_xiSEXP, SEXP a_tuning_par_tauSEXP, SEXP c_tuning_par_xiSEXP, SEXP c_tuning_par_tauSEXP, SEXP beta_a_xiSEXP, SEXP beta_a_tauSEXP, SEXP alpha_a_xiSEXP, SEXP alpha_a_tauSEXP, SEXP beta_c_xiSEXP, SEXP beta_c_tauSEXP, SEXP alpha_c_xiSEXP, SEXP alpha_c_tauSEXP, SEXP alpha_rhoSEXP, SEXP beta_rhoSEXP, SEXP a_psiSEXP, SEXP c_psiSEXP, SEXP a_rhoSEXP, SEXP b_rhoSEXP, SEXP inter_columnSEXP, SEXP display_progressSEXP, SEXP svSEXP, SEXP Bsigma_svSEXP, SEXP a0_svSEXP, SEXP b0_svSEXP, SEXP bmuSEXP, SEXP BmuSEXP, SEXP adaptive_rhoSEXP, SEXP tuning_par_rhoSEXP, SEXP target_rate_rhoSEXP, SEXP max_adapt_rhoSEXP, SEXP batch_size_rhoSEXP, SEXP adaptiveSEXP, SEXP target_ratesSEXP, SEXP max_adaptsSEXP, SEXP batch_sizesSEXP, SEXP starting_valsSEXP) {
+    BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type y(ySEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type x(xSEXP);
+    Rcpp::traits::input_parameter< std::string >::type mod_type(mod_typeSEXP);
+    Rcpp::traits::input_parameter< bool >::type iid(iidSEXP);
+    Rcpp::traits::input_parameter< int >::type niter(niterSEXP);
+    Rcpp::traits::input_parameter< int >::type nburn(nburnSEXP);
+    Rcpp::traits::input_parameter< int >::type nthin(nthinSEXP);
+    Rcpp::traits::input_parameter< double >::type c0(c0SEXP);
+    Rcpp::traits::input_parameter< double >::type g0(g0SEXP);
+    Rcpp::traits::input_parameter< double >::type G0(G0SEXP);
+    Rcpp::traits::input_parameter< double >::type d1(d1SEXP);
+    Rcpp::traits::input_parameter< double >::type d2(d2SEXP);
+    Rcpp::traits::input_parameter< double >::type e1(e1SEXP);
+    Rcpp::traits::input_parameter< double >::type e2(e2SEXP);
+    Rcpp::traits::input_parameter< bool >::type learn_lambda2_B(learn_lambda2_BSEXP);
+    Rcpp::traits::input_parameter< bool >::type learn_kappa2_B(learn_kappa2_BSEXP);
+    Rcpp::traits::input_parameter< double >::type lambda2_B(lambda2_BSEXP);
+    Rcpp::traits::input_parameter< double >::type kappa2_B(kappa2_BSEXP);
+    Rcpp::traits::input_parameter< bool >::type learn_a_xi(learn_a_xiSEXP);
+    Rcpp::traits::input_parameter< bool >::type learn_a_tau(learn_a_tauSEXP);
+    Rcpp::traits::input_parameter< double >::type a_xi(a_xiSEXP);
+    Rcpp::traits::input_parameter< double >::type a_tau(a_tauSEXP);
+    Rcpp::traits::input_parameter< bool >::type learn_c_xi(learn_c_xiSEXP);
+    Rcpp::traits::input_parameter< bool >::type learn_c_tau(learn_c_tauSEXP);
+    Rcpp::traits::input_parameter< double >::type c_xi(c_xiSEXP);
+    Rcpp::traits::input_parameter< double >::type c_tau(c_tauSEXP);
+    Rcpp::traits::input_parameter< bool >::type a_eq_c_xi(a_eq_c_xiSEXP);
+    Rcpp::traits::input_parameter< bool >::type a_eq_c_tau(a_eq_c_tauSEXP);
+    Rcpp::traits::input_parameter< double >::type a_tuning_par_xi(a_tuning_par_xiSEXP);
+    Rcpp::traits::input_parameter< double >::type a_tuning_par_tau(a_tuning_par_tauSEXP);
+    Rcpp::traits::input_parameter< double >::type c_tuning_par_xi(c_tuning_par_xiSEXP);
+    Rcpp::traits::input_parameter< double >::type c_tuning_par_tau(c_tuning_par_tauSEXP);
+    Rcpp::traits::input_parameter< double >::type beta_a_xi(beta_a_xiSEXP);
+    Rcpp::traits::input_parameter< double >::type beta_a_tau(beta_a_tauSEXP);
+    Rcpp::traits::input_parameter< double >::type alpha_a_xi(alpha_a_xiSEXP);
+    Rcpp::traits::input_parameter< double >::type alpha_a_tau(alpha_a_tauSEXP);
+    Rcpp::traits::input_parameter< double >::type beta_c_xi(beta_c_xiSEXP);
+    Rcpp::traits::input_parameter< double >::type beta_c_tau(beta_c_tauSEXP);
+    Rcpp::traits::input_parameter< double >::type alpha_c_xi(alpha_c_xiSEXP);
+    Rcpp::traits::input_parameter< double >::type alpha_c_tau(alpha_c_tauSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type alpha_rho(alpha_rhoSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type beta_rho(beta_rhoSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type a_psi(a_psiSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type c_psi(c_psiSEXP);
+    Rcpp::traits::input_parameter< double >::type a_rho(a_rhoSEXP);
+    Rcpp::traits::input_parameter< double >::type b_rho(b_rhoSEXP);
+    Rcpp::traits::input_parameter< int >::type inter_column(inter_columnSEXP);
+    Rcpp::traits::input_parameter< bool >::type display_progress(display_progressSEXP);
+    Rcpp::traits::input_parameter< bool >::type sv(svSEXP);
+    Rcpp::traits::input_parameter< double >::type Bsigma_sv(Bsigma_svSEXP);
+    Rcpp::traits::input_parameter< double >::type a0_sv(a0_svSEXP);
+    Rcpp::traits::input_parameter< double >::type b0_sv(b0_svSEXP);
+    Rcpp::traits::input_parameter< double >::type bmu(bmuSEXP);
+    Rcpp::traits::input_parameter< double >::type Bmu(BmuSEXP);
+    Rcpp::traits::input_parameter< bool >::type adaptive_rho(adaptive_rhoSEXP);
+    Rcpp::traits::input_parameter< double >::type tuning_par_rho(tuning_par_rhoSEXP);
+    Rcpp::traits::input_parameter< double >::type target_rate_rho(target_rate_rhoSEXP);
+    Rcpp::traits::input_parameter< double >::type max_adapt_rho(max_adapt_rhoSEXP);
+    Rcpp::traits::input_parameter< int >::type batch_size_rho(batch_size_rhoSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type adaptive(adaptiveSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type target_rates(target_ratesSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type max_adapts(max_adaptsSEXP);
+    Rcpp::traits::input_parameter< arma::ivec >::type batch_sizes(batch_sizesSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type starting_vals(starting_valsSEXP);
+    rcpp_result_gen = Rcpp::wrap(shrinkDTVP_cpp(y, x, mod_type, iid, niter, nburn, nthin, c0, g0, G0, d1, d2, e1, e2, learn_lambda2_B, learn_kappa2_B, lambda2_B, kappa2_B, learn_a_xi, learn_a_tau, a_xi, a_tau, learn_c_xi, learn_c_tau, c_xi, c_tau, a_eq_c_xi, a_eq_c_tau, a_tuning_par_xi, a_tuning_par_tau, c_tuning_par_xi, c_tuning_par_tau, beta_a_xi, beta_a_tau, alpha_a_xi, alpha_a_tau, beta_c_xi, beta_c_tau, alpha_c_xi, alpha_c_tau, alpha_rho, beta_rho, a_psi, c_psi, a_rho, b_rho, inter_column, display_progress, sv, Bsigma_sv, a0_sv, b0_sv, bmu, Bmu, adaptive_rho, tuning_par_rho, target_rate_rho, max_adapt_rho, batch_size_rho, adaptive, target_rates, max_adapts, batch_sizes, starting_vals));
+    return rcpp_result_gen;
+    END_RCPP
+}
+
+
 
 static const R_CallMethodDef CallEntries[] = {
     {"_shrinkTVP_RcppExport_registerCCallable", (DL_FUNC) &_shrinkTVP_RcppExport_registerCCallable, 0},
-    {"_shrinkTVP_pred_dens_mix_approx", (DL_FUNC) &_shrinkTVP_pred_dens_mix_approx, 13},
+    {"_shrinkTVP_pred_dens_mix_approx_dyn", (DL_FUNC) &_shrinkTVP_pred_dens_mix_approx_dyn, 14},
     {"_shrinkTVP_calc_fitted_cpp", (DL_FUNC) &_shrinkTVP_calc_fitted_cpp, 3},
     {"_shrinkTVP_shrinkTVP_cpp", (DL_FUNC) &_shrinkTVP_shrinkTVP_cpp, 51},
+    {"_shrinkTVP_shrinkDTVP_cpp", (DL_FUNC) &_shrinkTVP_shrinkDTVP_cpp, 64},
     {NULL, NULL, 0}
 };
 

@@ -56,5 +56,24 @@ void sample_lin_reg_bhat(arma::vec& param_vec,
                          double sigma2,
                          const arma::vec& prior_var);
 
+double samp_disc_given(arma::vec to_sample,
+                       arma::vec probs);
+
+double samp_disc(const arma::rowvec& lambda_p,
+                 double a,
+                 double c,
+                 double rho,
+                 double tol,
+                 int max_size);
+
+double samp_disc2(double kappa_pre,
+                  double kappa_post,
+                  double psi_curr,
+                  double psi_pre,
+                  double a,
+                  double c,
+                  double rho,
+                  double tol,
+                  int max_size);
 
 #endif

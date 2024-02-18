@@ -1,4 +1,9 @@
-## Changes in Version 2.1.0
+## Changes in Version 3.0.1
+  - Added capability to estimate models under the dynamic triple gamma prior (as in Knaus and Frühwirth-Schnatter \doi{10.48550/arXiv.2312.10487})
+  - Fixed a bug in resample_alpha
+  - Fixed an issue on Debian 
+
+## Changes in Version 2.1.1
   - Added a more robust solve method for armadillo matrices
   - Fixed issues with exported Bhattacharya and Rue algorithm 
   - Fixed issue with the usenames option for xcolor in the vignette
@@ -47,10 +52,10 @@
   - Updated the vignette.
 
 ## Changes in Version 1.1.0
-  - Overhauled plotting functions. The default is now shaded areas instead of lines and more customisation options are available.
+  - Overhauled plotting functions. The default is now shaded areas instead of lines and more customization options are available.
   - plot.mcmc.tvp now also adds time series information to the x-axis labels, thanks to zoo::index.
   - Changed the way LPDS are calculated, moving them from the shrinkTVP function to a dedicated LPDS function.
-  - Added the new eval_pred_dens function, which allows the user to evaluate the one-step ahead predctive density.
+  - Added the new eval_pred_dens function, which allows the user to evaluate the one-step ahead predictive density.
   - Objects returned from the shrinkTVP function are now of class shrinkTVP and not shrinkTVP_res. 
 
 ## Changes in Version 1.0.2:

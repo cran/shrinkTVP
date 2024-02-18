@@ -11,7 +11,7 @@
 #'
 #' @importFrom grDevices adjustcolor
 #'
-#' @importFrom stats quantile model.response model.matrix model.frame sd median rnorm na.pass delete.response .getXlevels
+#' @importFrom stats quantile model.response model.matrix model.frame sd median rnorm na.pass delete.response .getXlevels rf rgamma rpois
 #'
 #' @importFrom methods formalArgs
 #'

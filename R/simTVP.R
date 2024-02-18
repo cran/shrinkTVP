@@ -9,6 +9,8 @@
 #' The default value is 3.
 #' @param sv logical value. If set to \code{TRUE}, the data will be generated with
 #' stochastic volatility for the errors of the observation equation using \code{\link{svsim}}. The default value is FALSE.
+#' @param DTG logical value. If set to \code{TRUE}, the betas will be generated as dynamic triple gamma processes.
+#' The default value is FALSE.
 #' @param sigma2 positive real number. Determines the variance of the errors of the observation
 #' equation. Ignored if sv is \code{TRUE}. The default value is 1.
 #' @param theta \emph{(optional)} vector containing positive real numbers. If supplied, these determine the variances of the
@@ -23,6 +25,12 @@
 #' The default value is 0.98.
 #' @param sv_sigma2 positive, real number. Determines the variance of the innovations of the logarithm of the volatility.
 #' Ignored if \code{sv} is \code{FALSE}. The default value is 0.2.
+#' @param a_psi positive, real number. Determines the pole parameter of the dynamic triple gamma process.
+#' Ignored if \code{DTG} is \code{FALSE}. The default value is 0.5.
+#' @param c_psi positive, real number. Determines the tail parameter of the dynamic triple gamma process.
+#' Ignored if \code{DTG} is \code{FALSE}. The default value is 2.
+#' @param rho real number between 0 and 1. Determines the persistence of the dynamic triple gamma process.
+#' Ignored if \code{DTG} is \code{FALSE}. The default value is 0.9
 #'
 #' @return The value returned is a list object containing:
 #' \item{\code{data}}{data frame that holds the simulated data.}
@@ -32,6 +40,10 @@
 #'   \item \code{beta_mean}: the values of beta_mean used in the data generating process.
 #'   \item \code{beta}: the true paths of beta used for the data generating process.
 #'   \item \code{sigma2}: the value(s) of sigma2 used in the data generating process.
+#'   \item \code{lambda_p}: the true paths of lambda_p used for the data generating process. Not returned if DTG is \code{FALSE}.
+#'   \item \code{lambda_p_0}: the values of lambda_p_0 used for the data generating process. Not returned if DTG is \code{FALSE}.
+#'   \item \code{kappa_p}: the true paths of kappa_p used for the data generating process. Not returned if DTG is \code{FALSE}.
+#'   \item \code{psi}: the true paths of psi used for the data generating process. Not returned if DTG is \code{FALSE}.
 #'   }
 #' }
 #'
@@ -44,9 +56,13 @@
 #'
 #' # Now with stochastic volatility
 #' res_sv <- simTVP(N = 300, sv = TRUE)
+#'
+#' # Now with dynamic triple gamma process
+#' res_DTG <- simTVP(N = 300, DTG = TRUE, c_psi = 1)
+#'
 #' @author Peter Knaus \email{peter.knaus@@wu.ac.at}
 #' @export
-simTVP <- function(N = 200, d = 3, sv = FALSE, sigma2 = 1, theta, beta_mean, sv_mu = 0, sv_phi = 0.98, sv_sigma2 = 0.2){
+simTVP <- function(N = 200, d = 3, sv = FALSE, DTG = FALSE, sigma2 = 1, theta, beta_mean, sv_mu = 0, sv_phi = 0.98, sv_sigma2 = 0.2, a_psi = 0.5, c_psi = 2, rho = 0.9){
 
   # Check all inputs
   if (int_input_bad(N)){
@@ -69,24 +85,42 @@ simTVP <- function(N = 200, d = 3, sv = FALSE, sigma2 = 1, theta, beta_mean, sv_
     stop("sv has to be a single logical value")
   }
 
+  # Check inputs associated with dynamic triple gamma prior
+  if (bool_input_bad(DTG)){
+    stop("DTG has to be a single logical value")
+  }
+
+  if (DTG == TRUE){
+    if (numeric_input_bad(a_psi)){
+      stop("a_psi has to be a positive real number")
+    }
+
+    if (numeric_input_bad(c_psi)){
+      stop("c_psi has to be a positive real number")
+    }
+
+    if (numeric_input_bad_(rho) || rho < 0 || rho > 1){
+      stop("rho has to be a real number between 0 and 1")
+    }
+  }
+
   if (sv == FALSE){
     if (numeric_input_bad(sigma2)){
       stop("sigma2 has to be a positive real number")
     }
-  }
+  } else {
+    if (numeric_input_bad_(sv_mu)) {
+      stop("sv_mu has to be a real number")
+    }
 
-  if (numeric_input_bad_(sv_mu)) {
-    stop("sv_mu has to be a real number")
-  }
+    if (numeric_input_bad_(sv_phi) || abs(sv_phi) >= 1 ) {
+      stop("sv_phi has to be a real number between -1 and 1")
+    }
 
-  if (numeric_input_bad_(sv_phi) || abs(sv_phi) >= 1 ) {
-    stop("sv_phi has to be a real number between -1 and 1")
+    if (numeric_input_bad(sv_sigma2)) {
+      stop("sv_sigma2 has to be a positive real number")
+    }
   }
-
-  if (numeric_input_bad(sv_sigma2)) {
-    stop("sv_sigma2 has to be a positive real number")
-  }
-
 
 
   # Generate matrix x
@@ -94,9 +128,7 @@ simTVP <- function(N = 200, d = 3, sv = FALSE, sigma2 = 1, theta, beta_mean, sv_
   x[,1]<- rep(1,N)
 
   if (d > 1){
-    for(i in 2:d){
-      x[,i] <- rnorm(N)
-    }
+    x[, 2:d] <- matrix(rnorm(N * (d - 1)), N, d - 1)
   }
 
   # Take user supplied beta_mean/theta or generate them
@@ -131,21 +163,33 @@ simTVP <- function(N = 200, d = 3, sv = FALSE, sigma2 = 1, theta, beta_mean, sv_
     }
   }
 
-  # Simulate intial state from multivariate normal and simulate states forward
+  # If dynamic, simulate from DTG prior
+  if (DTG){
+    kappa_p <- matrix(NA_real_, d, N)
+    lambda_p <- matrix(NA_real_, d, N)
 
-  if (d == 1){
-    Q <- matrix(theta)
+    lambda_p_0 <- rgamma(d, a_psi, a_psi/c_psi)
+    kappa_p[, 1] <- rpois(d, a_psi/c_psi * rho/(1 - rho) * lambda_p_0)
+    lambda_p[, 1] <- rgamma(d, a_psi + kappa_p[, 1], a_psi/c_psi * 1/(1 - rho))
+
+    for(t in 2:N){
+      kappa_p[, t] <- rpois(d, a_psi/c_psi * rho/(1 - rho) * lambda_p[, t-1])
+      lambda_p[, t] <- rgamma(d, a_psi + kappa_p[, t], a_psi/c_psi * 1/(1 - rho))
+    }
+    psi0 <- 1/rgamma(d, c_psi, lambda_p_0)
+    psi <- matrix(1/rgamma(d*N, c_psi, lambda_p), d, N)
   } else {
-    Q <- diag(theta)
+    psi0 <- rep(1, d)
+    psi <- matrix(1, d, N)
   }
 
-  cholQ <- sqrt(Q)
+  # Simulate intial state from multivariate normal and simulate states forward
 
   beta <- matrix(NA, d, N)
-  beta_init <- beta_mean + cholQ %*% rnorm(d)
-  beta[, 1] <- beta_init + cholQ %*% rnorm(d)
+  beta_0 <- rnorm(d, beta_mean, sqrt(theta*psi0))
+  beta[, 1] <- beta_0 + rnorm(d, 0, sqrt(theta*psi[, 1])) #beta_init + cholQ %*% rnorm(d)
   for(t in 2:N){
-    beta[, t]<- beta[, t-1] + cholQ %*% rnorm(d)
+    beta[, t]<-  beta[, t-1] + rnorm(d, 0, sqrt(theta*psi[, t])) #cholQ %*% rnorm(d)
   }
 
   # Create noise depending on sv input, use svsim from stochvol
@@ -175,6 +219,13 @@ simTVP <- function(N = 200, d = 3, sv = FALSE, sigma2 = 1, theta, beta_mean, sv_
   res$true_vals$beta_mean <- beta_mean
   res$true_vals$beta <- beta
   res$true_vals$sigma2 <- sigma2
+
+  if (DTG){
+    res$true_vals$lambda_p <- lambda_p
+    res$true_vals$lambda_p_0 <- lambda_p_0
+    res$true_vals$kappa_p <- kappa_p
+    res$true_vals$psi <- psi
+  }
 
   return(res)
 

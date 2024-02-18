@@ -2,66 +2,87 @@
 #include <stochvol.h>
 #include <progress.hpp>
 #include <math.h>
-#include "sample_beta_McCausland.h"
+#include <RcppGSL.h>
+#include "dyn_sampling_steps.h"
+#include "sample_beta_McCausland_dyn.h"
 #include "common_sampling_functions.h"
 #include "sample_TG_TVP.h"
 #include "sample_DG_TVP.h"
 #include "cpp_utilities.h"
+#include "rho_p_MH_step.h"
 using namespace Rcpp;
 
+List shrinkDTVP_cpp(arma::vec y,
+                    arma::mat x,
+                    std::string mod_type,
+                    bool iid,
+                    int niter,
+                    int nburn,
+                    int nthin,
+                    double c0,
+                    double g0,
+                    double G0,
+                    double d1,
+                    double d2,
+                    double e1,
+                    double e2,
+                    bool learn_lambda2_B,
+                    bool learn_kappa2_B,
+                    double lambda2_B,
+                    double kappa2_B,
+                    bool learn_a_xi,
+                    bool learn_a_tau,
+                    double a_xi,
+                    double a_tau,
+                    bool learn_c_xi,
+                    bool learn_c_tau,
+                    double c_xi,
+                    double c_tau,
+                    bool a_eq_c_xi,
+                    bool a_eq_c_tau,
+                    double a_tuning_par_xi,
+                    double a_tuning_par_tau,
+                    double c_tuning_par_xi,
+                    double c_tuning_par_tau,
+                    double beta_a_xi,
+                    double beta_a_tau,
+                    double alpha_a_xi,
+                    double alpha_a_tau,
+                    double beta_c_xi,
+                    double beta_c_tau,
+                    double alpha_c_xi,
+                    double alpha_c_tau,
+                    arma::vec alpha_rho,
+                    arma::vec beta_rho,
+                    arma::vec a_psi,
+                    arma::vec c_psi,
+                    double a_rho,
+                    double b_rho,
+                    int inter_column,
+                    bool display_progress,
+                    bool sv,
+                    double Bsigma_sv,
+                    double a0_sv,
+                    double b0_sv,
+                    double bmu,
+                    double Bmu,
+                    bool adaptive_rho,
+                    double tuning_par_rho,
+                    double target_rate_rho,
+                    double max_adapt_rho,
+                    int batch_size_rho,
+                    arma::vec adaptive,
+                    arma::vec target_rates,
+                    arma::vec max_adapts,
+                    arma::ivec batch_sizes,
+                    Rcpp::List starting_vals) {
 
 
-List shrinkTVP_cpp(arma::vec y,
-                   arma::mat x,
-                   std::string mod_type,
-                   int niter,
-                   int nburn,
-                   int nthin,
-                   double c0,
-                   double g0,
-                   double G0,
-                   double d1,
-                   double d2,
-                   double e1,
-                   double e2,
-                   bool learn_lambda2_B,
-                   bool learn_kappa2_B,
-                   double lambda2_B,
-                   double kappa2_B,
-                   bool learn_a_xi,
-                   bool learn_a_tau,
-                   double a_xi,
-                   double a_tau,
-                   bool learn_c_xi,
-                   bool learn_c_tau,
-                   double c_xi,
-                   double c_tau,
-                   bool a_eq_c_xi,
-                   bool a_eq_c_tau,
-                   double a_tuning_par_xi,
-                   double a_tuning_par_tau,
-                   double c_tuning_par_xi,
-                   double c_tuning_par_tau,
-                   double beta_a_xi,
-                   double beta_a_tau,
-                   double alpha_a_xi,
-                   double alpha_a_tau,
-                   double beta_c_xi,
-                   double beta_c_tau,
-                   double alpha_c_xi,
-                   double alpha_c_tau,
-                   bool display_progress,
-                   bool sv,
-                   double Bsigma_sv,
-                   double a0_sv,
-                   double b0_sv,
-                   double bmu,
-                   double Bmu,
-                   arma::vec adaptive,
-                   arma::vec target_rates,
-                   arma::vec max_adapts,
-                   arma::ivec batch_sizes,
-                   Rcpp::List starting_vals) {
+  // Deactivate default GSL error handler
+  gsl_set_error_handler_off();
+
+  // Debugging instrument
+  bool geweke = false;
 
   // Progress bar setup
   arma::vec prog_rep_points = arma::round(arma::linspace(0, niter, 50));
@@ -73,12 +94,27 @@ List shrinkTVP_cpp(arma::vec y,
   int nsave = std::floor((niter - nburn)/nthin);
 
   // Storage objects (returned to R at the end)
-  arma::cube beta_save(N+1, d, nsave, arma::fill::zeros);
+  arma::cube beta_save(N, d, nsave, arma::fill::zeros);
   arma::cube sigma2_save(N,1, nsave, arma::fill::zeros);
   arma::mat theta_sr_save(d, nsave, arma::fill::zeros);
   arma::mat beta_mean_save(d, nsave, arma::fill::zeros);
 
+  arma::cube psi_save(N, d, nsave, arma::fill::zeros);
+  arma::cube lambda_p_save;
+  arma::mat rho_p_save;
+  if (iid) {
+    lambda_p_save = arma::cube(N, d, nsave, arma::fill::zeros);
+  } else {
+    lambda_p_save = arma::cube(N, d, nsave, arma::fill::zeros);
+    rho_p_save = arma::mat(d, nsave, arma::fill::zeros);
+  }
+
   // conditional storage objects (only used for some model types)
+  arma::cube kappa_p_save;
+  if (iid == false) {
+    kappa_p_save = arma::cube(N, d, nsave, arma::fill::zeros);
+  }
+
   arma::mat xi2_save;
   arma::mat tau2_save;
   if (mod_type != "ridge") {
@@ -143,6 +179,13 @@ List shrinkTVP_cpp(arma::vec y,
   arma::vec c_xi_acc_rate_save;
   arma::vec c_tau_acc_rate_save;
 
+  arma::mat rho_sd_save;
+  arma::mat rho_acc_rate_save;
+  arma::mat rho_ncp_sd_save;
+  arma::mat rho_ncp_acc_rate_save;
+  arma::mat rho_mda_sd_save;
+  arma::mat rho_mda_acc_rate_save;
+
   if (bool(adaptive(0)) && learn_a_xi && (mod_type != "ridge")) {
     a_xi_sd_save = arma::vec(std::floor(niter/batch_sizes(0)), arma::fill::zeros);
     a_xi_acc_rate_save = arma::vec(std::floor(niter/batch_sizes(0)), arma::fill::zeros);
@@ -163,10 +206,26 @@ List shrinkTVP_cpp(arma::vec y,
     c_tau_acc_rate_save = arma::vec(std::floor(niter/batch_sizes(3)), arma::fill::zeros);
   }
 
+
+  if(adaptive_rho && (iid == false)) {
+    rho_sd_save = arma::mat(d, std::floor(niter/batch_size_rho), arma::fill::zeros);
+    rho_acc_rate_save = arma::mat(d, std::floor(niter/batch_size_rho), arma::fill::zeros);
+    rho_ncp_sd_save = arma::mat(d, std::floor(niter/batch_size_rho), arma::fill::zeros);
+    rho_ncp_acc_rate_save = arma::mat(d, std::floor(niter/batch_size_rho), arma::fill::zeros);
+    rho_mda_sd_save = arma::mat(d, std::floor(niter/batch_size_rho), arma::fill::zeros);
+    rho_mda_acc_rate_save = arma::mat(d, std::floor(niter/batch_size_rho), arma::fill::zeros);
+  }
+
+
   // Initial values and objects holding current values of samples
   // Parameters where learning can be toggled are also overwritten if learning is not activated
-  arma::mat beta_samp(d, N+1, arma::fill::zeros);
-  arma::mat beta_nc_samp(d, N+1, arma::fill::zeros);
+  arma::mat beta_samp(d, N, arma::fill::zeros);
+  arma::mat beta_nc_samp(d, N, arma::fill::zeros);
+
+  beta_nc_samp = arma::mat(d, N, arma::fill::zeros);
+
+  arma::mat psi_samp(d, N, arma::fill::ones);
+  psi_samp = as<arma::mat>(starting_vals["psi_st"]);
 
   arma::vec beta_mean_samp(d);
   beta_mean_samp = as<arma::vec>(starting_vals["beta_mean_st"]);
@@ -175,6 +234,10 @@ List shrinkTVP_cpp(arma::vec y,
   theta_sr_samp = as<arma::vec>(starting_vals["theta_sr_st"]);
 
   // Conditional objects
+  arma::mat kappa_p_samp(d, N, arma::fill::zeros);
+  arma::mat lambda_p_samp(d, N, arma::fill::ones);
+  arma::vec lambda_0_samp(d, arma::fill::ones);
+
   double kappa2_B_samp;
   if (learn_kappa2_B && (mod_type != "ridge")) {
     kappa2_B_samp = as<double>(starting_vals["kappa2_B_st"]);
@@ -215,6 +278,11 @@ List shrinkTVP_cpp(arma::vec y,
     c_tau_samp = as<double>(starting_vals["c_tau_st"]);
   } else {
     c_tau_samp = c_tau;
+  }
+
+  arma::vec rho_p_samp(d);
+  if (iid == FALSE) {
+    rho_p_samp = as<arma::vec>(starting_vals["rho_st"]);
   }
 
   double d2_samp;
@@ -300,6 +368,11 @@ List shrinkTVP_cpp(arma::vec y,
   arma::ivec batch_nrs;
   arma::ivec batch_pos;
 
+  arma::mat rho_batches;
+  arma::vec rho_curr_sds;
+  arma::ivec rho_batch_nrs;
+  arma::ivec rho_batch_pos;
+
   // This ensures that adaptive MH is run correctly in the standalone case
   try {
     Rcpp::List temp = starting_vals["internals"];
@@ -307,6 +380,12 @@ List shrinkTVP_cpp(arma::vec y,
     batches = as<arma::mat>(temp["batches_st"]);
     curr_sds = as<arma::vec>(temp["curr_sds_st"]);
     batch_nrs = as<arma::ivec>(temp["batch_nrs_st"]);
+
+    rho_batch_pos = as<arma::ivec>(temp["rho_batch_pos_st"]);
+    rho_batches = as<arma::mat>(temp["rho_batches_st"]);
+    rho_curr_sds = as<arma::vec>(temp["rho_curr_sds_st"]);
+    rho_batch_nrs = as<arma::ivec>(temp["rho_batch_nrs_st"]);
+
   } catch(...) {
     batch_pos = arma::ivec(4, arma::fill::zeros);
     batches = arma::mat(arma::max(batch_sizes), 4, arma::fill::zeros);
@@ -315,34 +394,54 @@ List shrinkTVP_cpp(arma::vec y,
                 c_tuning_par_xi,
                 c_tuning_par_tau};
     batch_nrs = arma::ivec(4, arma::fill::ones);
+
+    rho_batch_pos = arma::ivec(d, arma::fill::zeros);
+    rho_batches = arma::mat(batch_size_rho, d, arma::fill::zeros);
+    rho_curr_sds = arma::vec(d);
+    rho_curr_sds.fill(tuning_par_rho);
+    rho_batch_nrs = arma::ivec(d, arma::fill::ones);
   }
 
   // Values for LPDS calculation
   arma::cube m_N_save(d, 1, nsave);
   arma::cube chol_C_N_inv_save(d, d, nsave);
-  arma::vec m_N_samp;
-  arma::mat chol_C_N_inv_samp;
+  arma::vec m_N_samp(d, arma::fill::zeros);
+  arma::mat chol_C_N_inv_samp(d, d, arma::fill::zeros);
 
   // Values to check if the sampler failed or not
   bool succesful = true;
   std::string fail;
   int fail_iter;
 
+  // Check if intercept is to be shrunken
+  bool shrink_inter = traits::is_na<INTSXP>(inter_column);
+  // Set rho_p_samp, kappa_p_samp and lamba_p_samp to 0 for inter_column if it is not shrunken
+  if (!shrink_inter && iid == false) {
+    rho_p_samp(inter_column - 1) = 0;
+    kappa_p_samp.row(inter_column - 1).fill(0);
+    lambda_p_samp.row(inter_column - 1).fill(0);
+  }
+
+  // Geweke
+  arma::vec y_new = y;
+  arma::vec err;
 
   // Introduce additional index post_j that is used to calculate accurate storage positions in case of thinning
   int post_j = 1;
   // Begin Gibbs loop
   for (int j = 0; j < niter; j++) {
+
     // sample time varying beta.tilde parameters (NC parametrization)
     try {
-      sample_beta_McCausland(beta_nc_samp,
-                             y,
-                             x,
-                             theta_sr_samp,
-                             sigma2_samp,
-                             beta_mean_samp,
-                             m_N_samp,
-                             chol_C_N_inv_samp);
+      sample_beta_McCausland_dyn(beta_nc_samp,
+                                 y_new,
+                                 x,
+                                 theta_sr_samp,
+                                 sigma2_samp,
+                                 beta_mean_samp,
+                                 psi_samp,
+                                 m_N_samp,
+                                 chol_C_N_inv_samp);
     } catch (...) {
       beta_nc_samp.fill(nanl(""));
       if (succesful == true) {
@@ -352,17 +451,17 @@ List shrinkTVP_cpp(arma::vec y,
       }
     }
 
-
     // Sample alpha (theta_sr and beta_mean)
     try {
       sample_alpha(beta_mean_samp,
                    theta_sr_samp,
-                   y,
+                   y_new,
                    x,
                    beta_nc_samp,
                    sigma2_samp,
                    tau2_samp,
                    xi2_samp);
+
     } catch(...){
       beta_mean_samp.fill(nanl(""));
       theta_sr_samp.fill(nanl(""));
@@ -380,12 +479,13 @@ List shrinkTVP_cpp(arma::vec y,
           beta_mean_samp);
 
     try {
-      resample_alpha(beta_mean_samp,
-                     theta_sr_samp,
-                     beta_samp,
-                     beta_nc_samp,
-                     xi2_samp,
-                     tau2_samp);
+      resample_alpha_dyn(beta_mean_samp,
+                         theta_sr_samp,
+                         beta_samp,
+                         beta_nc_samp,
+                         psi_samp,
+                         xi2_samp,
+                         tau2_samp);
     } catch(...) {
       beta_mean_samp.fill(nanl(""));
       theta_sr_samp.fill(nanl(""));
@@ -493,7 +593,7 @@ List shrinkTVP_cpp(arma::vec y,
     try {
       if (sv) {
 
-        arma::vec datastand = 2 * arma::log(arma::abs(y - x * beta_mean_samp - (x % beta_nc_samp.cols(1,N).t()) * theta_sr_samp));
+        arma::vec datastand = 2 * arma::log(arma::abs(y_new - x * beta_mean_samp - (x % beta_nc_samp.t()) * theta_sr_samp));
         std::for_each(datastand.begin(), datastand.end(), res_protector);
 
         // update_sv needs sigma and not sigma^2
@@ -514,7 +614,7 @@ List shrinkTVP_cpp(arma::vec y,
 
       } else {
         sample_sigma2(sigma2_samp,
-                      y,
+                      y_new,
                       x,
                       beta_nc_samp,
                       beta_mean_samp,
@@ -547,6 +647,150 @@ List shrinkTVP_cpp(arma::vec y,
       }
     }
 
+    if (iid == true) {
+      //Sample iid variances
+      for (int k = 0; k < d; k++) {
+
+        // Skip intercept column if it is not to be shrunken
+        if (!shrink_inter && (k == (inter_column - 1))) {
+          continue;
+        }
+
+        try {
+          lambda_p_samp(k, 0) = sample_lambda_iid(a_psi(k), c_psi(k), psi_samp(k,0));
+          psi_samp(k, 0) = sample_psi_iid(c_psi(k), lambda_p_samp(k, 0), beta_nc_samp(k,0));
+
+          for (int t = 1; t < N; t++) {
+            lambda_p_samp(k, t) = sample_lambda_iid(a_psi(k), c_psi(k), psi_samp(k,t));
+            psi_samp(k, t) =  sample_psi_iid(c_psi(k), lambda_p_samp(k, t), beta_nc_samp(k,t) - beta_nc_samp(k, t-1));
+          }
+        } catch(...) {
+          lambda_p_samp.row(k).fill(nanl(""));
+          psi_samp.row(k).fill(nanl(""));
+          if (succesful == true) {
+            fail = "sample lambda/psi";
+            fail_iter = j + 1;
+            succesful = false;
+          }
+        }
+
+      }
+    } else {
+      // Sample non-iid variances
+      arma::vec curr_batch;
+
+      for (int k = 0; k < d; k++) {
+
+        // Skip intercept column if it is not to be shrunken
+        if (!shrink_inter && (k == (inter_column - 1))) {
+          continue;
+        }
+
+
+        // Sample rho_p from approximate marginal conditional posterior
+        try {
+
+          if (adaptive_rho) {
+            curr_batch = rho_batches.col(k);
+          }
+
+          double psi_0_samp = 1/R::rgamma(c_psi(k), 1.0/lambda_0_samp(k));
+          rho_p_samp(k) =  rho_p_MH_step_marg_oeverything(rho_p_samp(k),
+                     (psi_samp.row(k)).t(),
+                     psi_0_samp,
+                     a_psi(k),
+                     c_psi(k),
+                     a_rho,
+                     b_rho,
+                     alpha_rho(k),
+                     beta_rho(k),
+                     tuning_par_rho,
+                     adaptive_rho,
+                     curr_batch,
+                     rho_curr_sds(k),
+                     target_rate_rho,
+                     max_adapt_rho,
+                     rho_batch_nrs(k),
+                     batch_size_rho,
+                     rho_batch_pos(k));
+
+
+          if (adaptive_rho) {
+            rho_batches.col(k) = curr_batch;
+          }
+        } catch(...) {
+          rho_p_samp(k) = nanl("");
+          if (succesful == true) {
+            fail = "sample rho_p";
+            fail_iter = j + 1;
+            succesful = false;
+          }
+        }
+
+        try {
+        // Sample kappa from partially marginalized conditional posterior
+          arma::vec kappa_tmp = (kappa_p_samp.row(k)).t();
+          sample_kappa_fast_marg_alternating(kappa_tmp,
+                                             (psi_samp.row(k)).t(),
+                                             a_psi(k),
+                                             c_psi(k),
+                                             rho_p_samp(k));
+          kappa_p_samp.row(k) = kappa_tmp.t();
+
+        } catch(...) {
+          kappa_p_samp.row(k).fill(nanl(""));
+          if (succesful == true) {
+            fail = "sample kappa_p";
+            fail_iter = j + 1;
+            succesful = false;
+          }
+        }
+
+        // Sample lambda
+        try {
+          // Throwaway lambda_0, only needed for kappa_1 and rho_p
+          lambda_0_samp(k) = sample_lambda_0(kappa_p_samp(k, 0),
+                        a_psi(k),
+                        c_psi(k),
+                        rho_p_samp(k));
+
+          lambda_p_samp.row(k) = sample_lambda((kappa_p_samp.row(k)).t(),
+                            (psi_samp.row(k)).t(),
+                            a_psi(k),
+                            c_psi(k),
+                            rho_p_samp(k));
+
+        } catch (...) {
+          lambda_0_samp(k) = nanl("");
+          lambda_p_samp.row(k).fill(nanl(""));
+          if (succesful == true) {
+            fail = "sample lambda_p";
+            fail_iter = j + 1;
+            succesful = false;
+          }
+        }
+
+        // Sample psi
+        try {
+          psi_samp.row(k) =  sample_psi((lambda_p_samp.row(k)).t(),
+                       (beta_nc_samp.row(k)).t(),
+                       c_psi(k));
+        } catch (...) {
+          psi_samp.row(k).fill(nanl(""));
+          if (succesful == true) {
+            fail = "sample psi";
+            fail_iter = j + 1;
+            succesful = false;
+          }
+        }
+      }
+    }
+
+    if (geweke) {
+      err = Rcpp::rnorm(N, 0, sqrt(sigma2_samp(0)));
+      y_new = x * beta_mean_samp + (x % beta_nc_samp.t()) * theta_sr_samp + err;
+    }
+
     // Increment index post_j if burn-in period is over
     if (j > nburn) {
       post_j++;
@@ -566,10 +810,18 @@ List shrinkTVP_cpp(arma::vec y,
         theta_sr_save.col((post_j-1)/nthin) = theta_sr_samp;
         beta_mean_save.col((post_j-1)/nthin) = beta_mean_samp;
         beta_save.slice((post_j-1)/nthin) = beta_samp.t();
+
+        psi_save.slice((post_j-1)/nthin) = psi_samp.t();
+        lambda_p_save.slice((post_j-1)/nthin) = lambda_p_samp.t();
         m_N_save.slice((post_j-1)/nthin) = m_N_samp;
         chol_C_N_inv_save.slice((post_j-1)/nthin) = chol_C_N_inv_samp;
-
         // Conditional storing
+        if (iid == false) {
+          kappa_p_save.slice((post_j-1)/nthin) = kappa_p_samp.t();
+          rho_p_save.col((post_j-1)/nthin) = rho_p_samp;
+
+        }
+
         if (mod_type == "double") {
           xi2_save.col((post_j-1)/nthin) = xi2_samp;
           tau2_save.col((post_j-1)/nthin) = tau2_samp;
@@ -633,6 +885,16 @@ List shrinkTVP_cpp(arma::vec y,
         c_tau_sd_save(batch_nrs(3) - 1) = curr_sds(3);
         c_tau_acc_rate_save(batch_nrs(3) - 1) = arma::accu(batches.col(3))/batch_sizes(3);
       }
+
+
+      if (adaptive_rho && (iid == false) && (rho_batch_pos(0) == (batch_size_rho - 2))){
+
+        rho_sd_save.col(rho_batch_nrs(0) - 1) = rho_curr_sds;
+        rho_acc_rate_save.col(rho_batch_nrs(0) - 1) = (arma::sum(rho_batches, 0)/batch_size_rho).t();
+
+      }
+
+
     }
 
     // Random sign switch
@@ -703,36 +965,48 @@ List shrinkTVP_cpp(arma::vec y,
                         _["theta_sr"] = theta_sr_save.t(),
                         _["tau2"] = tau2_save.t(),
                         _["xi2"] = xi2_save.t(),
-                        _["lambda2"] = lambda2_save.t(),
-                        _["kappa2"] = kappa2_save.t(),
+                        _["psi"] = psi_save,
+                        _["lambda_p"] = lambda_p_save,
+                        _["kappa_p"] = kappa_p_save,
                         _["a_xi"] = a_xi_save,
                         _["c_xi"] = c_xi_save,
                         _["a_tau"] = a_tau_save,
                         _["c_tau"] = c_tau_save,
-                        _["kappa2_B"] = kappa2_B_save,
-                        _["lambda2_B"] = lambda2_B_save,
+                        _["rho_p"] = rho_p_save.t(),
                         _["sigma2"] = sigma2_save,
-                        _["C0"] = C0_save,
                         _["sv_mu"] = sv_mu_save,
                         _["sv_phi"] = sv_phi_save,
                         _["sv_sigma2"] = sv_sigma2_save,
-                        _["MH_diag"] = List::create(
-                          _["a_xi_sds"] = a_xi_sd_save,
-                          _["a_xi_acc_rate"] = a_xi_acc_rate_save,
-                          _["a_tau_sds"] = a_tau_sd_save,
-                          _["a_tau_acc_rate"] = a_tau_acc_rate_save,
-                          _["c_xi_sds"] = c_xi_sd_save,
-                          _["c_xi_acc_rate"] = c_xi_acc_rate_save,
-                          _["c_tau_sds"] = c_tau_sd_save,
-                          _["c_tau_acc_rate"] = c_tau_acc_rate_save
-                        ),
-                        _["internals"] = List::create(
-                          _["m_N"] = m_N_save,
-                          _["chol_C_N_inv"] = chol_C_N_inv_save,
-                          _["success_vals"] = List::create(
-                            _["success"] = succesful,
-                            _["fail"] = fail,
-                            _["fail_iter"] = fail_iter)));
+                        // This is a list within a list, to avoid cap on list size in Rcpp
+                        _["to_unpack"] = List::create(
+                          _["lambda2"] = lambda2_save.t(),
+                          _["kappa2"] = kappa2_save.t(),
+                          _["kappa2_B"] = kappa2_B_save,
+                          _["lambda2_B"] = lambda2_B_save,
+                          _["C0"] = C0_save),
+                          _["MH_diag"] = List::create(
+                            _["a_xi_sds"] = a_xi_sd_save,
+                            _["a_xi_acc_rate"] = a_xi_acc_rate_save,
+                            _["a_tau_sds"] = a_tau_sd_save,
+                            _["a_tau_acc_rate"] = a_tau_acc_rate_save,
+                            _["c_xi_sds"] = c_xi_sd_save,
+                            _["c_xi_acc_rate"] = c_xi_acc_rate_save,
+                            _["c_tau_sds"] = c_tau_sd_save,
+                            _["c_tau_acc_rate"] = c_tau_acc_rate_save,
+                            _["rho_sds"] = rho_sd_save,
+                            _["rho_acc_rate"] = rho_acc_rate_save,
+                            _["rho_ncp_sds"] = rho_ncp_sd_save,
+                            _["rho_ncp_acc_rate"] = rho_ncp_acc_rate_save,
+                            _["rho_mda_sds"] = rho_mda_acc_rate_save,
+                            _["rho_mda_acc_rate"] = rho_mda_sd_save
+                          ),
+                          _["internals"] = List::create(
+                            _["m_N"] = m_N_save,
+                            _["chol_C_N_inv"] = chol_C_N_inv_save,
+                            _["success_vals"] = List::create(
+                              _["success"] = succesful,
+                              _["fail"] = fail,
+                              _["fail_iter"] = fail_iter)));
   }
 }
 

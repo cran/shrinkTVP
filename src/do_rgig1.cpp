@@ -1,6 +1,7 @@
 #include <Rcpp.h>
 #include <math.h>
 #include <float.h>
+
 using namespace Rcpp;
 
 double univar_rgig_newapproach1 (double lambda, double lambda_old, double omega, double alpha){
@@ -121,6 +122,7 @@ double do_rgig1(double lambda,
        (chi <  0. || psi < 0)      ||
        (chi == 0. && lambda <= 0.) ||
        (psi == 0. && lambda >= 0.) ) {
+
     throw std::bad_function_call();
   }
 
