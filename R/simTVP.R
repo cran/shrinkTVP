@@ -8,7 +8,7 @@
 #' @param d positive integer. Indicates the number of covariates to simulate.
 #' The default value is 3.
 #' @param sv logical value. If set to \code{TRUE}, the data will be generated with
-#' stochastic volatility for the errors of the observation equation using \code{\link{svsim}}. The default value is FALSE.
+#' stochastic volatility for the errors of the observation equation using \code{\link[stochvol]{svsim}}. The default value is FALSE.
 #' @param DTG logical value. If set to \code{TRUE}, the betas will be generated as dynamic triple gamma processes.
 #' The default value is FALSE.
 #' @param sigma2 positive real number. Determines the variance of the errors of the observation

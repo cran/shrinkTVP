@@ -5,7 +5,8 @@
 #' parameter model with shrinkage, potentially including stochastic volatility (SV), and returns the MCMC draws.
 #'
 #' For details concerning the algorithms please refer to the papers by Bitto and Frühwirth-Schnatter (2019) and Cadonna et al. (2020).
-#' For more details on the package and the usage of the functions, see Knaus et al. (2021).
+#' For more details on the package and the usage of the functions, see Knaus et al. (2021). For the multivariate extension,
+#' see the \code{\link[shrinkTVPVAR]{shrinkTVPVAR}} function from the \code{shrinkTVPVAR} package.
 #'
 #' @param formula object of class "formula": a symbolic representation of the model, as in the
 #' function \code{lm}. For details, see \code{\link{formula}}.
@@ -80,7 +81,7 @@
 #' @param display_progress logical value indicating whether the progress bar and other informative output should be
 #' displayed. The default value is \code{TRUE}.
 #' @param sv logical value indicating whether to use stochastic volatility for the error of the observation
-#' equation. For details please see \code{\link{stochvol}}, in particular \code{\link{svsample}}. The default value is
+#' equation. For details please see \code{\link[stochvol]{stochvol}}, in particular \code{\link[stochvol]{svsample}}. The default value is
 #' \code{FALSE}.
 #' @param sv_param \emph{optional} named list containing hyperparameter values for the stochastic volatility
 #' parameters. Not all have to be supplied, with those missing being replaced by the default values.
@@ -198,7 +199,7 @@
 #'
 #' @author Peter Knaus \email{peter.knaus@@wu.ac.at}
 #'
-#' @seealso \code{\link{plot.shrinkTVP}}, \code{\link{plot.mcmc.tvp}}
+#' @seealso \code{\link{plot.shrinkTVP}}, \code{\link{plot.mcmc.tvp}}, \code{\link[shrinkTVPVAR]{shrinkTVPVAR}}
 #' @references Bitto, A., & Frühwirth-Schnatter, S. (2019). "Achieving shrinkage in a time-varying parameter model framework."
 #' \emph{Journal of Econometrics}, 210(1), 75-97. <doi:10.1016/j.jeconom.2018.11.006>
 #'
@@ -965,7 +966,7 @@ shrinkTVP <- function(formula,
 #' \item \code{alpha_c_tau}: The default value is 5.
 #' }
 #' @param sv logical value indicating whether to use stochastic volatility for the error of the observation
-#' equation. For details please see \code{\link{stochvol}}, in particular \code{\link{svsample}}. The default value is
+#' equation. For details please see \code{\link[stochvol]{stochvol}}, in particular \code{\link[stochvol]{svsample}}. The default value is
 #' \code{FALSE}.
 #' @param sv_param \emph{optional} named list containing hyperparameter values for the stochastic volatility
 #' parameters. Not all have to be supplied, with those missing being replaced by the default values.

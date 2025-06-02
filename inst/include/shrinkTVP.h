@@ -978,9 +978,159 @@ inline double do_rgig1(double lambda,
   }
 }
 
-
-
+inline void sample_beta_McCausland_dyn(arma::mat& beta_nc_samp,
+                                       const arma::vec& y,
+                                       const arma::mat& x,
+                                       const arma::vec& theta_sr,
+                                       const arma::vec& sigma2,
+                                       const arma::vec& beta_mean,
+                                       const arma::mat& psi,
+                                       arma::vec& m_N,
+                                       arma::mat& chol_C_N_inv) {
+  typedef void(*Func)(arma::mat&, const arma::vec&, const arma::mat&, const arma::vec&, const arma::vec&, const arma::vec&, const arma::mat&, arma::vec&, arma::mat&);
+  static Func func = NULL;
+  if (func == NULL) {
+    func = (Func)R_GetCCallable("shrinkTVP", "sample_beta_McCausland_dyn");
+  }
+  {
+    func(beta_nc_samp, y, x, theta_sr, sigma2, beta_mean, psi, m_N, chol_C_N_inv);
+  }
 }
 
+inline double rho_p_MH_step_marg_oeverything(double current_val,
+                                             const arma::vec& psi,
+                                             double psi_0,
+                                             double a,
+                                             double c,
+                                             double a_rho,
+                                             double b_rho,
+                                             double alpha,
+                                             double beta,
+                                             double rho_tuning_par,
+                                             bool adaptive,
+                                             arma::vec& batch,
+                                             double& curr_sd,
+                                             double target_rate,
+                                             double max_adapt,
+                                             int& batch_nr,
+                                             int batch_size,
+                                             int& batch_pos) {
+  typedef double(*Func)(double, const arma::vec&, double, double, double, double, double, double, double, double, bool, arma::vec&, double&, double, double, int&, int, int&);
+  static Func func = NULL;
+  if (func == NULL) {
+    func = (Func)R_GetCCallable("shrinkTVP", "rho_p_MH_step_marg_oeverything");
+  }
+  {
+    return func(current_val, psi, psi_0, a, c, a_rho, b_rho, alpha, beta, rho_tuning_par, adaptive, batch, curr_sd, target_rate, max_adapt, batch_nr, batch_size, batch_pos);
+  }
+}
+
+inline void sample_kappa_fast_marg_alternating(arma::vec& kappa,
+                                               const arma::vec& psi,
+                                               double a,
+                                               double c,
+                                               double rho) {
+  typedef void(*Func)(arma::vec&, const arma::vec&, double, double, double);
+  static Func func = NULL;
+  if (func == NULL) {
+    func = (Func)R_GetCCallable("shrinkTVP", "sample_kappa_fast_marg_alternating");
+  }
+  {
+    func(kappa, psi, a, c, rho);
+  }
+}
+
+inline double sample_lambda_0(double kappa_1,
+                              double a,
+                              double c,
+                              double rho) {
+  typedef double(*Func)(double, double, double, double);
+  static Func func = NULL;
+  if (func == NULL) {
+    func = (Func)R_GetCCallable("shrinkTVP", "sample_lambda_0");
+  }
+  {
+    return func(kappa_1, a, c, rho);
+  }
+}
+
+inline arma::rowvec sample_lambda(const arma::vec & kappa,
+                                  const arma::vec & psi,
+                                  double a,
+                                  double c,
+                                  double rho) {
+  typedef arma::rowvec(*Func)(const arma::vec&, const arma::vec&, double, double, double);
+  static Func func = NULL;
+  if (func == NULL) {
+    func = (Func)R_GetCCallable("shrinkTVP", "sample_lambda");
+  }
+  {
+    return func(kappa, psi, a, c, rho);
+  }
+}
+
+inline arma::rowvec sample_psi(const arma::vec& lambda,
+                               const arma::vec& beta_nc,
+                               double c) {
+  typedef arma::rowvec(*Func)(const arma::vec&, const arma::vec&, double);
+  static Func func = NULL;
+  if (func == NULL) {
+    func = (Func)R_GetCCallable("shrinkTVP", "sample_psi");
+  }
+  {
+    return func(lambda, beta_nc, c);
+  }
+}
+
+inline void resample_alpha_dyn(arma::vec& beta_mean,
+                               arma::vec& theta_sr,
+                               const arma::mat& beta,
+                               const arma::mat& beta_nc,
+                               const arma::mat& psi,
+                               const arma::vec& xi2,
+                               const arma::vec& tau2) {
+  typedef void(*Func)(arma::vec&, arma::vec&, const arma::mat&, const arma::mat&, const arma::mat&, const arma::vec&, const arma::vec&);
+  static Func func = NULL;
+  if (func == NULL) {
+    func = (Func)R_GetCCallable("shrinkTVP", "resample_alpha_dyn");
+  }
+  {
+    func(beta_mean,
+         theta_sr,
+         beta,
+         beta_nc,
+         psi,
+         xi2,
+         tau2);
+  }
+}
+
+inline double sample_lambda_iid(double a,
+                                double c,
+                                double psi) {
+  typedef double(*Func)(double, double, double);
+  static Func func = NULL;
+  if (func == NULL) {
+    func = (Func) R_GetCCallable("shrinkTVP", "sample_lambda_iid");
+  }
+  {
+    return func(a, c, psi);
+  }
+}
+
+inline double sample_psi_iid(double c,
+                             double lambda,
+                             double w) {
+  typedef double(*Func)(double, double, double);
+  static Func func = NULL;
+  if (func == NULL) {
+    func = (Func) R_GetCCallable("shrinkTVP", "sample_psi_iid");
+  }
+  {
+    return func(c, lambda, w);
+  }
+}
+
+}
 
 #endif // RCPP_shrinkTVP_H_GEN_

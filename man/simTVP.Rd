@@ -28,7 +28,7 @@ generated. The default value is 200.}
 The default value is 3.}
 
 \item{sv}{logical value. If set to \code{TRUE}, the data will be generated with
-stochastic volatility for the errors of the observation equation using \code{\link{svsim}}. The default value is FALSE.}
+stochastic volatility for the errors of the observation equation using \code{\link[stochvol]{svsim}}. The default value is FALSE.}
 
 \item{DTG}{logical value. If set to \code{TRUE}, the betas will be generated as dynamic triple gamma processes.
 The default value is FALSE.}

@@ -23,8 +23,6 @@ double rho_p_log_ratio_value_marg_oeverything(double proposal,
   // Precalculation
   double lprop = std::log(proposal);
   double lold = std::log(old_val);
-  double lone_minus_prop = std::log(1 - proposal);
-  double lone_minus_old = std::log(1 - old_val);
 
   // Change of variable
   // with prior on (0, b)

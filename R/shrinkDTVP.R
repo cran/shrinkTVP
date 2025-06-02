@@ -99,7 +99,7 @@
 #' @param display_progress logical value indicating whether the progress bar and other informative output should be
 #' displayed. The default value is \code{TRUE}.
 #' @param sv logical value indicating whether to use stochastic volatility for the error of the observation
-#' equation. For details please see \code{\link{stochvol}}, in particular \code{\link{svsample}}. The default value is
+#' equation. For details please see \code{\link[stochvol]{stochvol}}, in particular \code{\link[stochvol]{svsample}}. The default value is
 #' \code{FALSE}.
 #' @param sv_param \emph{optional} named list containing hyperparameter values for the stochastic volatility
 #' parameters. Not all have to be supplied, with those missing being replaced by the default values.

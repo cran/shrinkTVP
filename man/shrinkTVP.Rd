@@ -129,7 +129,7 @@ supplied:
 displayed. The default value is \code{TRUE}.}
 
 \item{sv}{logical value indicating whether to use stochastic volatility for the error of the observation
-equation. For details please see \code{\link{stochvol}}, in particular \code{\link{svsample}}. The default value is
+equation. For details please see \code{\link[stochvol]{stochvol}}, in particular \code{\link[stochvol]{svsample}}. The default value is
 \code{FALSE}.}
 
 \item{sv_param}{\emph{optional} named list containing hyperparameter values for the stochastic volatility
@@ -256,7 +256,8 @@ parameter model with shrinkage, potentially including stochastic volatility (SV)
 }
 \details{
 For details concerning the algorithms please refer to the papers by Bitto and Frühwirth-Schnatter (2019) and Cadonna et al. (2020).
-For more details on the package and the usage of the functions, see Knaus et al. (2021).
+For more details on the package and the usage of the functions, see Knaus et al. (2021). For the multivariate extension,
+see the \code{\link[shrinkTVPVAR]{shrinkTVPVAR}} function from the \code{shrinkTVPVAR} package.
 }
 \examples{
 \donttest{
@@ -311,7 +312,7 @@ Knaus, P., Bitto-Nemling, A., Cadonna, A., & Frühwirth-Schnatter, S. (2021) "Sh
 \emph{Journal of Statistical Software} 100(13), 1–32. <doi:10.18637/jss.v100.i13>
 }
 \seealso{
-\code{\link{plot.shrinkTVP}}, \code{\link{plot.mcmc.tvp}}
+\code{\link{plot.shrinkTVP}}, \code{\link{plot.mcmc.tvp}}, \code{\link[shrinkTVPVAR]{shrinkTVPVAR}}
 }
 \author{
 Peter Knaus \email{peter.knaus@wu.ac.at}

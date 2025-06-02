@@ -15,6 +15,11 @@
 #include "common_sampling_functions.h"
 #include "do_rgig1.h"
 
+// New dynamic functions
+#include "sample_beta_McCausland_dyn.h"
+#include "rho_p_MH_step.h"
+#include "dyn_sampling_steps.h"
+
 using namespace Rcpp;
 
 // pred_dens_mix_approx_dyn
@@ -153,6 +158,17 @@ static int _shrinkTVP_RcppExport_validate(const char* sig) {
         signatures.insert("void(*sample_beta_McCausland)(arma::mat&,const arma::vec&,const arma::mat&,const arma::vec&,const arma::vec&,const arma::vec&,arma::vec&,arma::mat&)");
         signatures.insert("void(*FFBS)(arma::mat&,const arma::vec&,const arma::mat&,const arma::vec&,const arma::vec&,const arma::vec&,arma::vec&,arma::mat&)");
         signatures.insert("double(*do_rgig1)(double,double,double)");
+
+        // New dynamic functions
+        signatures.insert("void(*sample_beta_McCausland_dyn)(arma::mat&, const arma::vec&, const arma::mat&, const arma::vec&, const arma::vec&, const arma::vec&, const arma::mat&, arma::vec&, arma::mat&)");
+        signatures.insert("double(*rho_p_MH_step_marg_oeverything)(double, const arma::vec&, double, double, double, double, double, double, double, double, bool, arma::vec&, double&, double, double, int&, int, int&)");
+        signatures.insert("void(*sample_kappa_fast_marg_alternating)(arma::vec&, const arma::vec&, double, double, double)");
+        signatures.insert("double(*sample_lambda_0)(double, double, double, double)");
+        signatures.insert("arma::rowvec(*sample_lambda)(const arma::vec&, const arma::vec&, double, double, double)");
+        signatures.insert("arma::rowvec(*sample_psi)(const arma::vec&, const arma::vec&, double)");
+        signatures.insert("void(*resample_alpha_dyn)(arma::vec&,arma::vec&,const arma::mat&,const arma::mat&,const arma::mat&,const arma::vec&,const arma::vec&)");
+        signatures.insert("double(*sample_lambda_iid)(double,double,double)");
+        signatures.insert("double(*sample_psi_iid)(double,double,double)");
     }
     return signatures.find(sig) != signatures.end();
 }
@@ -192,6 +208,18 @@ RcppExport SEXP _shrinkTVP_RcppExport_registerCCallable() {
     R_RegisterCCallable("shrinkTVP", "sample_beta_McCausland", (DL_FUNC)sample_beta_McCausland);
     R_RegisterCCallable("shrinkTVP", "FFBS", (DL_FUNC)FFBS);
     R_RegisterCCallable("shrinkTVP", "do_rgig1", (DL_FUNC)do_rgig1);
+
+    // New dynamic functions
+    R_RegisterCCallable("shrinkTVP", "sample_beta_McCausland_dyn", (DL_FUNC)sample_beta_McCausland_dyn);
+    R_RegisterCCallable("shrinkTVP", "rho_p_MH_step_marg_oeverything", (DL_FUNC)rho_p_MH_step_marg_oeverything);
+    R_RegisterCCallable("shrinkTVP", "sample_kappa_fast_marg_alternating", (DL_FUNC)sample_kappa_fast_marg_alternating);
+    R_RegisterCCallable("shrinkTVP", "sample_lambda_0", (DL_FUNC)sample_lambda_0);
+    R_RegisterCCallable("shrinkTVP", "sample_lambda", (DL_FUNC)sample_lambda);
+    R_RegisterCCallable("shrinkTVP", "sample_psi", (DL_FUNC)sample_psi);
+    R_RegisterCCallable("shrinkTVP", "resample_alpha_dyn", (DL_FUNC)resample_alpha_dyn);
+    R_RegisterCCallable("shrinkTVP", "sample_lambda_iid", (DL_FUNC)sample_lambda_iid);
+    R_RegisterCCallable("shrinkTVP", "sample_psi_iid", (DL_FUNC)sample_psi_iid);
+
     R_RegisterCCallable("shrinkTVP", "_shrinkTVP_RcppExport_validate", (DL_FUNC)_shrinkTVP_RcppExport_validate);
     return R_NilValue;
 }

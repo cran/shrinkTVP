@@ -72,7 +72,7 @@ eval_pred_dens <- function(x, mod, data_test, log = FALSE){
     if (attr(mod, "iid")) {
 
       for (j in 1:d) {
-        if (attr(mod, "shrink_inter") == FALSE & attr(mod, "inter_column") == j) {
+        if (!is.na(attr(mod, "inter_column")) && attr(mod, "shrink_inter") == FALSE && attr(mod, "inter_column") == j) {
           psi_future[,j] <- 1
         } else {
           psi_future[,j] <- rf(nsamp, 2 * a_psi[j], 2 * c_psi[j])
@@ -82,10 +82,18 @@ eval_pred_dens <- function(x, mod, data_test, log = FALSE){
     } else {
       # In the non-iid case, they are simulated from their respective law of motion
       for (j in 1:d) {
-        if (attr(mod, "shrink_inter") == FALSE & attr(mod, "inter_column") == j) {
+        if (!is.na(attr(mod, "inter_column")) && attr(mod, "shrink_inter") == FALSE && attr(mod, "inter_column") == j) {
           psi_future[,j] <- 1
         } else {
-          kappa_future <- rpois(nsamp, mod$lambda_p[[j]][, N] * a_psi[j]/c_psi[j] * mod$rho_p[,j]/(1 - mod$rho_p[,j]))
+
+          # Handle special case where d = 1
+          if (d == 1){
+            lambda_prev <- mod$lambda_p[, N]
+          } else {
+            lambda_prev <- mod$lambda_p[[j]][, N]
+          }
+
+          kappa_future <- rpois(nsamp, lambda_prev * a_psi[j]/c_psi[j] * mod$rho_p[,j]/(1 - mod$rho_p[,j]))
           lambda_future <- rgamma(nsamp, a_psi[j] + kappa_future, a_psi[j]/c_psi[j] * 1/(1 - mod$rho_p[,j]))
           psi_future[,j] <- 1/rgamma(nsamp, c_psi[j], lambda_future)
         }
@@ -320,7 +328,7 @@ forecast_shrinkTVP <- function(mod, newdata, n.ahead){
       if ("shrinkTVP_dyn" %in% class(mod)){
 
         # Forecast psi into the future (except for inter_column if it is not shrunken)
-        if (attr(mod, "shrink_inter") == FALSE & attr(mod, "inter_column") == j) {
+        if (!is.na(attr(mod, "inter_column")) && attr(mod, "shrink_inter") == FALSE && attr(mod, "inter_column") == j) {
           psi_pred <- rep(1, nsamp)
         } else {
           if (attr(mod, "iid")) {

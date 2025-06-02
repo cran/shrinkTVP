@@ -100,8 +100,8 @@ plot(res$beta$beta_x1)
 }
 \seealso{
 Other plotting functions: 
-\code{\link{plot.shrinkTVP_forc}()},
-\code{\link{plot.shrinkTVP}()}
+\code{\link{plot.shrinkTVP}()},
+\code{\link{plot.shrinkTVP_forc}()}
 }
 \author{
 Peter Knaus \email{peter.knaus@wu.ac.at}

@@ -206,8 +206,12 @@ plot.mcmc.tvp <- function(x, probs = c(0.025, 0.25, 0.75, 0.975),
     currlwd <-  ifelse(length(quantlwd) > 1, rep_len(quantlwd, nint)[i], quantlwd)
     currbord <- ifelse(length(quantlines) > 1, rep_len(quantlines, nint)[i], quantlines)
 
-    polygon(c(x_vec, rev(x_vec)), c(quants[i, ], rev(quants[nrow(quants) + 1 - i, ])),
-            col = adjustcolor(currcol, alpha.f = curralpha), border = FALSE)
+    currshade <- ifelse(length(shaded) > 1, rep_len(shaded, nint)[i], shaded)
+
+    if (currshade == TRUE) {
+      polygon(c(x_vec, rev(x_vec)), c(quants[i, ], rev(quants[nrow(quants) + 1 - i, ])),
+              col = adjustcolor(currcol, alpha.f = curralpha), border = FALSE)
+    }
 
     if (currbord == TRUE){
       lines(y = quants[i, ], x = x_vec, col = currbordcol, lwd = currlwd, lty = currlty)
@@ -310,6 +314,7 @@ plot.shrinkTVP <- function(x, pars = c("beta"), nplot = 3, h_borders = c(0.05, 0
 
   # Save previous user defined par attributes
   prev_par <- par(no.readonly = TRUE)
+  on.exit(par(prev_par))
 
   # Idea: loop over all list elements and apply plot method specific to that object (mcmc or mcmc.tvp)
   for (i in 1:length(obj)){

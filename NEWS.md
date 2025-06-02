@@ -1,3 +1,13 @@
+## Changes in Version 3.1.0
+  - Exported all dynamic steps via inst/include/shrinkTVP.h
+  - Fixed bug in forecasting functions for dynamic shrinkage
+  - Fixed bug that prevented shaded argument in plot.mcmc.tvp from working
+  
+## Changes in Version 3.0.2
+  - Some updates in the documentation, particularly references to multivariate extension shrinkTVPVAR
+  - Moved to newer roxygen2 version
+  - Added on.exit() to better handle user par settings 
+
 ## Changes in Version 3.0.1
   - Added capability to estimate models under the dynamic triple gamma prior (as in Knaus and Frühwirth-Schnatter \doi{10.48550/arXiv.2312.10487})
   - Fixed a bug in resample_alpha

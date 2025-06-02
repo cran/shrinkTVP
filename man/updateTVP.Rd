@@ -129,7 +129,7 @@ supplied:
 }}
 
 \item{sv}{logical value indicating whether to use stochastic volatility for the error of the observation
-equation. For details please see \code{\link{stochvol}}, in particular \code{\link{svsample}}. The default value is
+equation. For details please see \code{\link[stochvol]{stochvol}}, in particular \code{\link[stochvol]{svsample}}. The default value is
 \code{FALSE}.}
 
 \item{sv_param}{\emph{optional} named list containing hyperparameter values for the stochastic volatility
