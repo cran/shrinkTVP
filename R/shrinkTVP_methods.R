@@ -196,6 +196,9 @@ print.summary.shrinkTVP <- function(x, ...) {
 fitted.shrinkTVP <- function(object, ...){
 
   if ("shrinkDTVP" %in% class(object)) {
+    if (is.list(object$beta) == FALSE){
+      object$beta <- list(beta = object$beta)
+    }
     object$beta <- lapply(object$beta, function(x) {return(cbind(0, x))})
   }
 

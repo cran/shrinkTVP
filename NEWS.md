@@ -1,3 +1,8 @@
+## Changes in Version 3.1.1
+  - Fixed a bug in the method for calculating fitted values for dynamic shrinkage models when only one covariate is present
+  - Fixed issues with links to functions in other packages in the documentation
+  - Fixed various issues with links in the vignette
+
 ## Changes in Version 3.1.0
   - Exported all dynamic steps via inst/include/shrinkTVP.h
   - Fixed bug in forecasting functions for dynamic shrinkage

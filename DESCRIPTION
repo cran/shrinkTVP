@@ -2,7 +2,7 @@ Package: shrinkTVP
 Type: Package
 Title: Efficient Bayesian Inference for Time-Varying Parameter Models
         with Shrinkage
-Version: 3.1.0
+Version: 3.1.1
 Authors@R: c(
   person("Peter", "Knaus", email = "peter.knaus@wu.ac.at",
     role = c("aut", "cre"), comment = c(ORCID = "0000-0001-6498-7084")),
@@ -24,7 +24,7 @@ RoxygenNote: 7.3.2
 Suggests: testthat, knitr, rmarkdown, R.rsp
 VignetteBuilder: R.rsp
 NeedsCompilation: yes
-Packaged: 2025-06-02 14:47:30 UTC; Peter
+Packaged: 2026-01-02 21:03:27 UTC; knaus
 Author: Peter Knaus [aut, cre] (ORCID: <https://orcid.org/0000-0001-6498-7084>),
   Angela Bitto-Nemling [aut],
   Annalisa Cadonna [aut] (ORCID: <https://orcid.org/0000-0003-0360-7628>),
@@ -34,4 +34,4 @@ Author: Peter Knaus [aut, cre] (ORCID: <https://orcid.org/0000-0001-6498-7084>),
   Kemal Dingic [ctb]
 Maintainer: Peter Knaus <peter.knaus@wu.ac.at>
 Repository: CRAN
-Date/Publication: 2025-06-02 15:40:03 UTC
+Date/Publication: 2026-01-08 08:40:26 UTC
