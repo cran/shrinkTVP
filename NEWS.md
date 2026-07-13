@@ -1,3 +1,6 @@
+## Changes in Version 3.1.2
+  - Fixed reference issues in the vignette
+
 ## Changes in Version 3.1.1
   - Fixed a bug in the method for calculating fitted values for dynamic shrinkage models when only one covariate is present
   - Fixed issues with links to functions in other packages in the documentation
